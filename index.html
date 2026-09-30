@@ -1,0 +1,3381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CYBER-GUARD // Global Threat Intelligence & Defense Portal</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600;700&family=Poppins:wght@300;400;600;700&family=Noto+Nastaliq+Urdu:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- BACKGROUND GRID MATRIX EFFECT -->
+    <div class="cyber-bg-overlay"></div>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+
+        <!-- VVIP CONTROL MENU -->
+        <button class="menu-toggle" id="menuToggle" type="button"
+                aria-label="Open control center" aria-controls="sidePanel" aria-expanded="false">
+            <span></span><span></span><span></span>
+        </button>
+
+        <div class="menu-backdrop" id="menuBackdrop"></div>
+
+        <aside class="side-panel" id="sidePanel" aria-hidden="true">
+            <div class="side-panel-glow"></div>
+            <div class="side-panel-header">
+                <div>
+                    <span class="side-kicker">CYBERGUARD // VVIP</span>
+                    <h2>Control Center</h2>
+                </div>
+                <button class="side-close" id="sideClose" type="button" aria-label="Close menu">&times;</button>
+            </div>
+
+            <div class="side-status">
+                <span class="status-dot"></span>
+                <span>SYSTEM ONLINE</span>
+                <span class="side-status-pulse"></span>
+            </div>
+<nav class="side-menu-links" aria-label="Live Cyber Threat Map">
+    <a href="About-us.html#about-us" target="cyber_portal_tab" class="side-menu-item">
+        <span class="side-menu-icon">ⓘ</span>
+        <span><strong data-key="sideAboutTitle">About Us</strong><small data-key="sideAboutDesc">Mission & platform overview</small></span>
+        <b>›</b>
+    </a>
+    <a href="About-us.html#contact-us" target="cyber_portal_tab" class="side-menu-item">
+        <span class="side-menu-icon">✉</span>
+        <span><strong data-key="sideContactTitle">Contact Us</strong><small data-key="sideContactDesc">Support & feedback channel</small></span>
+        <b>›</b>
+    </a>
+    <a href="About-us.html#Live-Cyber-Threat-Map" target="cyber_portal_tab" class="side-menu-item">
+        <span class="side-menu-icon">◈</span>
+        <span><strong data-key="sideMapTitle">Live Cyber Threat Map</strong><small data-key="sideMapDesc">Dashboard & system status</small></span>
+        <b>›</b>
+    </a>
+</nav>
+            <div class="side-panel-footer">
+                <span>THREAT DEFENSE NODE</span>
+                <span>v5.0 // READY</span>
+            </div>
+        </aside>
+        <div class="logo">
+            <span class="shield-pulse">🛡️</span> CYBER<span class="highlight">GUARD</span> <span class="badge-v2">SOC v4.0</span>
+        </div>
+        <ul class="nav-links">
+            <ul class="nav-links">
+            <li><a href="#home" class="active" data-key="navHome">Home</a></li>
+            <li><a href="#tools" data-key="navTools">Tools</a></li>
+            <li><a href="#scam-alerts" data-key="navScams">Scam Shield</a></li>
+            <li><a href="#analytics" data-key="navAnalytics">Live Analytics</a></li>
+            <li><a href="#game" data-key="navGame">Cyber Game</a></li>
+            <li><a href="#threats" data-key="navThreats">Threat Matrix</a></li>
+            <li><a href="#quiz" data-key="navQuiz">Safety Quiz</a></li>
+          <!-- NAYA (NEW) -->
+<li><a href="#feedback" class="nav-feedback-highlight" data-key="navFeedback">Live Feedback ⭐</a></li>
+        </ul>
+        
+       
+          
+
+            <!-- AUDIO PLAYER BUTTON -->
+            <div class="audio-control-wrapper">
+                <audio id="bgAudio" loop preload="auto">
+                    <source src="Sound.mp3" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                </audio>
+                <button id="cyberAudioBtn" class="cyber-audio-btn" onclick="toggleCyberAudio()" title="Play Background Sound">
+                    <span class="audio-waves-anim">
+                        <span class="bar"></span>
+                        <span class="bar"></span>
+                        <span class="bar"></span>
+                    </span>
+                    <span id="audioBtnIcon" class="audio-icon">🎵</span>
+                    <span id="audioBtnText" class="audio-text">Play Sound</span>
+                </button>
+            </div>
+
+            <!-- EMERGENCY PROTOCOL BUTTON (Single Instance) -->
+            <button class="btn-glow-danger" onclick="openModal('alertModal')" data-key="btnEmergency">🚨 Emergency Protocol</button>
+        </div>
+    </nav>
+    <!-- SECTION 1: HERO / SOC HUB -->
+    <section id="home" class="page-section hero-page">
+        <div class="hero-container">
+            <div class="hero-content">
+                <div class="terminal-box">
+                    <div class="terminal-header">
+                        <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+                        <span class="terminal-title">TERMINAL // SOC_DEFENSE_NODE_01</span>
+                    </div>
+                    <p class="typing-text" data-key="sysStatus">> SYSTEM STATUS: FULLY PROTECTED [FIREWALL ACTIVE]</p>
+                    <p class="sub-typing" data-key="sysLoaded">> ALL CYBER & FINANCIAL DEFENSE MODULES LOADED READY...</p>
+                </div>
+                <h1 class="hero-title" data-key="heroTitle">NEXT-GEN <br><span class="cyber-text">CYBER THREAT DEFENSE</span> PORTAL</h1>
+                <p class="hero-desc" data-key="heroDesc">Master global threat intelligence, analyze darknet breach leaks, protect your EasyPaisa, JazzCash, and Bank accounts from fraudulent scammers, and test your defense in interactive simulations.</p>
+                <div class="hero-buttons">
+                    <a href="#scam-alerts" class="btn-primary" data-key="btnScamGuide">Financial Scam Shield</a>
+                    <a href="#game" class="btn-secondary" data-key="btnPlayGame">Launch Cyber Simulator</a>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="hud-circle-container">
+                    <div class="radar-scan"></div>
+                    <div class="hud-center-icon">🛡️</div>
+                    <div class="hud-data-ring"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 2: SECURITY INTELLIGENCE & VIP TOOL SUITE (30 TOOLS) -->
+    <section id="tools" class="page-section tools-page">
+        <h2 class="section-title"><span class="icon">⚡</span> <span data-key="secToolsTitle">Security Intelligence & Audit Suite</span></h2>
+        <p class="section-desc">Run real-time diagnostics on passwords, email breach history, IP addresses, hashes, encryption, and network headers.</p>
+        <!-- CYBERGUARD TOOL COMMAND BAR -->
+<div class="tools-command-bar">
+
+    <div class="tools-search-wrap">
+        <span class="tools-search-icon">⌕</span>
+
+        <input
+            id="toolSearch"
+            type="search"
+            autocomplete="off"
+            placeholder="Search security tool..."
+            aria-label="Search security tools"
+        >
+    </div>
+
+    <div class="tools-filters">
+
+        <button class="tool-filter active" type="button">
+            ALL
+        </button>
+
+        <button class="tool-filter" type="button">
+            CRYPTO
+        </button>
+
+        <button class="tool-filter" type="button">
+            NETWORK
+        </button>
+
+        <button class="tool-filter" type="button">
+            WEB
+        </button>
+
+        <button class="tool-filter" type="button">
+            DEFENSE
+        </button>
+
+    </div>
+
+    <div class="tools-status">
+        <span class="tools-status-dot"></span>
+        30 MODULES READY
+    </div>
+
+</div>
+        <div class="tools-grid">
+            
+            <!-- 1. Password Analyzer -->
+            <div class="tool-card glowing-card">
+                <div class="card-tag">CRYPTO ENGINE</div>
+                <h3 data-key="passTitle">Password Resilience Analyzer</h3>
+                <p data-key="passDesc">Test password entropy & brute-force cracking resistance:</p>
+                <div class="input-group">
+                    <input type="password" id="passInput" placeholder="Type test password..." oninput="checkPasswordStrength()">
+                </div>
+                <div class="strength-bar-container">
+                    <div id="strengthBar" class="strength-bar"></div>
+                </div>
+                <p id="strengthText" class="strength-text" data-key="passAwait">Awaiting Input...</p>
+            </div>
+
+            <!-- 2. Email Breach Inspector -->
+            <div class="tool-card glowing-card">
+                <div class="card-tag">DARKNET SCANNER</div>
+                <h3 data-key="breachTitle">Data Leak & Breach Inspector</h3>
+                <p data-key="breachDesc">Scan global compromise databases for exposed credentials:</p>
+                <div class="input-group">
+                    <input type="email" id="emailInput" placeholder="enter email e.g. user@domain.com">
+                </div>
+                <button class="btn-primary-small" onclick="simulateBreachCheck()" data-key="btnScan">Scan Leaks Now</button>
+                <p id="breachResult" class="breach-result-text"></p>
+            </div>
+
+            <!-- 3. Phishing Link Inspector -->
+            <div class="tool-card glowing-card">
+                <div class="card-tag">URL SANDBOX</div>
+                <h3 data-key="linkTitle">Phishing Link & Domain Inspector</h3>
+                <p data-key="linkDesc">Verify deceptive or fake links before clicking:</p>
+                <div class="input-group">
+                    <input type="text" id="urlInput" placeholder="Paste link e.g. http://easypaisa-cashbonus.com">
+                </div>
+                <button class="btn-primary-small" onclick="inspectURL()" data-key="btnCheckURL">Inspect Link Safety</button>
+                <p id="urlResult" class="breach-result-text"></p>
+            </div>
+
+            <!-- 4. IP Geolocation Lookup -->
+            <div class="tool-card glowing-card">
+                <div class="card-tag">NETWORK INTEL</div>
+                <h3>IP Geolocation & Threat Finder</h3>
+                <p>Locate any IPv4 address or inspect your own public IP details:</p>
+                <div class="input-group">
+                    <input type="text" id="ipInput" placeholder="Enter IP (Leave blank for My IP)">
+                </div>
+                <button class="btn-primary-small" onclick="lookupIP()">Lookup IP Details</button>
+                <p id="ipResult" class="breach-result-text"></p>
+            </div>
+
+            <!-- 5. Secure Password Generator -->
+            <div class="tool-card glowing-card">
+                <div class="card-tag">CRYPTO ENGINE</div>
+                <h3>Strong Password Generator</h3>
+                <p>Generate highly resilient cryptographic passwords instantly:</p>
+                <div class="input-group">
+                    <input type="text" id="genPassOutput" readonly placeholder="Click generate...">
+                </div>
+                <button class="btn-primary-small" onclick="generatePassword()">Generate Key</button>
+            </div>
+
+            <!-- 6. JWT Decoder & Inspector -->
+            <div class="tool-card glowing-card">
+                <div class="card-tag">AUTH INSPECTOR</div>
+                <h3>JWT Token Inspector</h3>
+                <p>Decode JSON Web Tokens to inspect payload claims:</p>
+                <div class="input-group">
+                    <input type="text" id="jwtInput" placeholder="Paste eyJhbGciOiJIUzI1NiI...">
+                </div>
+                <button class="btn-primary-small" onclick="decodeJWT()">Decode Claims</button>
+                <p id="jwtResult" class="breach-result-text"></p>
+            </div>
+
+            <!-- 7. Base64 Encoder / Decoder -->
+            <div class="tool-card glowing-card">
+                <div class="card-tag">DATA CODEC</div>
+                <h3>Base64 Encoder & Decoder</h3>
+                <p>Encode plain text or decode Base64 obfuscated strings:</p>
+                <div class="input-group">
+                    <input type="text" id="base64Input" placeholder="Enter string...">
+                </div>
+                <div style="display: flex; gap: 8px; margin-top: 10px;">
+                    <button class="btn-primary-small" onclick="handleBase64('encode')">Encode</button>
+                    <button class="btn-primary-small" onclick="handleBase64('decode')">Decode</button>
+                </div>
+                <p id="base64Result" class="breach-result-text"></p>
+            </div>
+
+            <!-- 8. Hash Generator (SHA-256) -->
+            <div class="tool-card glowing-card">
+                <div class="card-tag">HASH ENGINE</div>
+                <h3>SHA-256 Hash Generator</h3>
+                <p>Generate cryptographic checksums for text input:</p>
+                <div class="input-group">
+                    <input type="text" id="hashInput" placeholder="Enter text to hash...">
+                </div>
+                <button class="btn-primary-small" onclick="generateHash()">Generate SHA-256</button>
+                <p id="hashResult" class="breach-result-text"></p>
+            </div>
+
+            <!-- 9. URL Encoder / Decoder -->
+            <div class="tool-card glowing-card">
+                <div class="card-tag">URL CODEC</div>
+                <h3>URL Encoder / Decoder</h3>
+                <p>Sanitize special characters or decode URL parameters:</p>
+                <div class="input-group">
+                    <input type="text" id="urlCodecInput" placeholder="Enter URL or text...">
+                </div>
+                <div style="display: flex; gap: 8px; margin-top: 10px;">
+                    <button class="btn-primary-small" onclick="handleURLCodec('encode')">Encode</button>
+                    <button class="btn-primary-small" onclick="handleURLCodec('decode')">Decode</button>
+                </div>
+                <p id="urlCodecResult" class="breach-result-text"></p>
+            </div>
+
+            <!-- 10. Port Scanner Simulator -->
+            <div class="tool-card glowing-card">
+                <div class="card-tag">PORT SCANNER</div>
+                <h3>Port Vulnerability Scanner</h3>
+                <p>Scan common service ports (HTTP, SSH, FTP, RDP) on target IP:</p>
+                <div class="input-group">
+                    <input type="text" id="portScanInput" placeholder="e.g. 192.168.1.1">
+                </div>
+                <button class="btn-primary-small" onclick="scanPorts()">Scan Critical Ports</button>
+                <p id="portScanResult" class="breach-result-text"></p>
+            </div>
+
+            <!-- 11. User-Agent & Device Analyzer -->
+            <div class="tool-card glowing-card">
+                <div class="card-tag">DEVICE INTEL</div>
+                <h3>Browser & Client Environment</h3>
+                <p>Inspect your browser fingerprint and OS environment:</p>
+                <button class="btn-primary-small" onclick="analyzeUserAgent()">Analyze Environment</button>
+                <p id="uaResult" class="breach-result-text"></p>
+            </div>
+
+            <!-- 12. DNS Record Lookup -->
+            <div class="tool-card glowing-card">
+                <div class="card-tag">DNS DIAGNOSTICS</div>
+                <h3>DNS Record Lookup</h3>
+                <p>Query domain A, MX, and TXT (SPF/DMARC) records:</p>
+                <div class="input-group">
+                    <input type="text" id="dnsInput" placeholder="e.g. google.com">
+                </div>
+                <button class="btn-primary-small" onclick="lookupDNS()">Fetch DNS Records</button>
+                <p id="dnsResult" class="breach-result-text"></p>
+            </div>
+
+            <!-- 13. HTTP Header Analyzer -->
+            <div class="tool-card glowing-card">
+                <div class="card-tag">HEADER SANITY</div>
+                <h3>Security Headers Audit</h3>
+                <p>Audit presence of CSP, HSTS, and X-Frame-Options:</p>
+                <div class="input-group">
+                    <input type="text" id="headerInput" placeholder="e.g. https://example.com">
+                </div>
+                <button class="btn-primary-small" onclick="auditSecurityHeaders()">Audit Headers</button>
+                <p id="headerResult" class="breach-result-text"></p>
+            </div>
+
+            <!-- 14. Credit/Debit Card BIN Checker -->
+            <div class="tool-card glowing-card">
+                <div class="card-tag">FINANCIAL GUARD</div>
+                <h3>Card BIN Inspector</h3>
+                <p>Verify bank origin and card network using 6-digit BIN:</p>
+                <div class="input-group">
+                    <input type="text" id="binInput" maxlength="6" placeholder="Enter first 6 digits e.g. 453211">
+                </div>
+                <button class="btn-primary-small" onclick="checkBIN()">Inspect BIN</button>
+                <p id="binResult" class="breach-result-text"></p>
+            </div>
+
+            <!-- 15. QR Code Link Safety Scanner -->
+            <div class="tool-card glowing-card">
+                <div class="card-tag">QR DEFENSE</div>
+                <h3>QR Code Data Safety Check</h3>
+                <p>Paste raw decoded QR code content to test for malicious redirects:</p>
+                <div class="input-group">
+                    <input type="text" id="qrInput" placeholder="Paste QR string/link...">
+                </div>
+                <button class="btn-primary-small" onclick="checkQRData()">Scan QR Content</button>
+                <p id="qrResult" class="breach-result-text"></p>
+            </div>
+
+            <!-- 16. SSL Certificate Validity Inspector -->
+            <div class="tool-card glowing-card">
+                <div class="card-tag">TLS / SSL AUDIT</div>
+                <h3>SSL Certificate Inspector</h3>
+                <p>Verify SSL certificate encryption & expiration details:</p>
+                <div class="input-group">
+                    <input type="text" id="sslInput" placeholder="e.g. https://bank.com">
+                </div>
+                <button class="btn-primary-small" onclick="checkSSL()">Check SSL Security</button>
+                <p id="sslResult" class="breach-result-text"></p>
+            </div>
+
+            <!-- 17. Subdomain Enumerator -->
+            <div class="tool-card glowing-card">
+                <div class="card-tag">RECONNAISSANCE</div>
+                <h3>Subdomain Finder</h3>
+                <p>Discover exposed subdomains for targeted domain:</p>
+                <div class="input-group">
+                    <input type="text" id="subdomainInput" placeholder="e.g. target.com">
+                </div>
+                <button class="btn-primary-small" onclick="findSubdomains()">Enumerate Subdomains</button>
+                <p id="subdomainResult" class="breach-result-text"></p>
+            </div>
+
+            <!-- 18. MAC Address Vendor Lookup -->
+            <div class="tool-card glowing-card">
+                <div class="card-tag">HARDWARE INTEL</div>
+                <h3>MAC Vendor Identifier</h3>
+                <p>Lookup NIC manufacturer details using MAC Address:</p>
+                <div class="input-group">
+                    <input type="text" id="macInput" placeholder="e.g. 00:1A:2B:3C:4D:5E">
+                </div>
+                <button class="btn-primary-small" onclick="checkMAC()">Identify Vendor</button>
+                <p id="macResult" class="breach-result-text"></p>
+            </div>
+
+            <!-- 19. Local File Hash Calculator -->
+            <div class="tool-card glowing-card">
+                <div class="card-tag">FILE INTEGRITY</div>
+                <h3>File Integrity Hash Checker</h3>
+                <p>Compute SHA-256 hash of any local file to verify tampering:</p>
+                <div class="input-group">
+                    <input type="file" id="fileHashInput" style="padding: 6px;">
+                </div>
+                <button class="btn-primary-small" onclick="calculateFileHash()">Calculate Hash</button>
+                <p id="fileHashResult" class="breach-result-text"></p>
+            </div>
+
+            <!-- 20. Simple Text Cipher (AES Engine) -->
+            <div class="tool-card glowing-card">
+                <div class="card-tag">AES CIPHER</div>
+                <h3>AES Text Cipher Vault</h3>
+                <p>Encrypt secret notes or decrypt text using a passphrase:</p>
+                <div class="input-group">
+                    <input type="text" id="aesTextInput" placeholder="Secret text...">
+                    <input type="text" id="aesKeyInput" placeholder="Secret key..." style="margin-top: 6px;">
+                </div>
+                <div style="display: flex; gap: 8px; margin-top: 10px;">
+                    <button class="btn-primary-small" onclick="handleAES('encrypt')">Encrypt</button>
+                    <button class="btn-primary-small" onclick="handleAES('decrypt')">Decrypt</button>
+                </div>
+                <p id="aesResult" class="breach-result-text"></p>
+            </div>
+
+            <!-- 21. Subnet / CIDR Calculator -->
+            <div class="tool-card glowing-card">
+                <div class="card-tag">NETWORK CALCULATOR</div>
+                <h3>CIDR Subnet Mask Calculator</h3>
+                <p>Calculate total IPs, usable hosts, and subnet range:</p>
+                <div class="input-group">
+                    <input type="text" id="cidrInput" placeholder="e.g. 192.168.1.0/24">
+                </div>
+                <button class="btn-primary-small" onclick="calculateCIDR()">Calculate CIDR Range</button>
+                <p id="cidrResult" class="breach-result-text"></p>
+            </div>
+
+            <!-- 22. Ping & Latency Simulator -->
+            <div class="tool-card glowing-card">
+                <div class="card-tag">NET LATENCY</div>
+                <h3>Network Ping & TTL Tester</h3>
+                <p>Simulate round-trip time & packet drop rate for host:</p>
+                <div class="input-group">
+                    <input type="text" id="pingInput" placeholder="e.g. 8.8.8.8 or example.com">
+                </div>
+                <button class="btn-primary-small" onclick="simulatePing()">Test Ping</button>
+                <p id="pingResult" class="breach-result-text"></p>
+            </div>
+
+            <!-- 23. Honeypot Detector -->
+            <div class="tool-card glowing-card">
+                <div class="card-tag">DECEPTION INTEL</div>
+                <h3>Honeypot Service Detector</h3>
+                <p>Detect artificial deception traps on remote server target:</p>
+                <div class="input-group">
+                    <input type="text" id="honeypotInput" placeholder="e.g. 10.0.0.45">
+                </div>
+                <button class="btn-primary-small" onclick="detectHoneypot()">Check Trap Status</button>
+                <p id="honeypotResult" class="breach-result-text"></p>
+            </div>
+
+            <!-- 24. Social Media Scam Handle Search -->
+            <div class="tool-card glowing-card">
+                <div class="card-tag">OSINT TRACKER</div>
+                <h3>Fraud Handle & Username OSINT</h3>
+                <p>Scan known Telegram/WhatsApp scam handles in repository:</p>
+                <div class="input-group">
+                    <input type="text" id="handleInput" placeholder="e.g. @free_easypaisa_bonus">
+                </div>
+                <button class="btn-primary-small" onclick="searchScamHandle()">Scan Fraud Handle</button>
+                <p id="handleResult" class="breach-result-text"></p>
+            </div>
+
+            <!-- 25. Malicious File Extension Checker -->
+            <div class="tool-card glowing-card">
+                <div class="card-tag">FILE GUARD</div>
+                <h3>Extension Risk Inspector</h3>
+                <p>Verify if a downloaded file extension is dangerous executable:</p>
+                <div class="input-group">
+                    <input type="text" id="extInput" placeholder="e.g. document.pdf.exe or bill.apk">
+                </div>
+                <button class="btn-primary-small" onclick="checkFileExtension()">Check File Risk</button>
+                <p id="extResult" class="breach-result-text"></p>
+            </div>
+
+            <!-- 26. IBAN Verification Engine -->
+            <div class="tool-card glowing-card">
+                <div class="card-tag">BANKING DEFENSE</div>
+                <h3>Pakistani IBAN Structure Validator</h3>
+                <p>Verify 24-character PK IBAN account checksum validity:</p>
+                <div class="input-group">
+                    <input type="text" id="ibanInput" placeholder="e.g. PK36HABB0000001234567801">
+                </div>
+                <button class="btn-primary-small" onclick="validateIBAN()">Validate IBAN</button>
+                <p id="ibanResult" class="breach-result-text"></p>
+            </div>
+
+            <!-- 27. Wireless Security Analyzer -->
+            <div class="tool-card glowing-card">
+                <div class="card-tag">WI-FI DEFENSE</div>
+                <h3>Wi-Fi Protocol Protocol Inspector</h3>
+                <p>Evaluate Wi-Fi encryption safety (WEP, WPA2, WPA3):</p>
+                <div class="input-group">
+                    <input type="text" id="wifiInput" placeholder="e.g. WPA2-Personal / TKIP">
+                </div>
+                <button class="btn-primary-small" onclick="analyzeWiFi()">Audit Wi-Fi Protocol</button>
+                <p id="wifiResult" class="breach-result-text"></p>
+            </div>
+
+            <!-- 28. SQL Injection Query Payload Tester -->
+            <div class="tool-card glowing-card">
+                <div class="card-tag">WEB VULN</div>
+                <h3>SQLi Vulnerability String Checker</h3>
+                <p>Test input fields for unsanitized SQL injection strings:</p>
+                <div class="input-group">
+                    <input type="text" id="sqliInput" placeholder="e.g. ' OR '1'='1">
+                </div>
+                <button class="btn-primary-small" onclick="checkSQLi()">Test Query String</button>
+                <p id="sqliResult" class="breach-result-text"></p>
+            </div>
+
+            <!-- 29. XSS Payload Sanitizer -->
+            <div class="tool-card glowing-card">
+                <div class="card-tag">WEB VULN</div>
+                <h3>Cross-Site Scripting (XSS) Sanitizer</h3>
+                <p>Sanitize HTML input tags to prevent malicious script injection:</p>
+                <div class="input-group">
+                    <input type="text" id="xssInput" placeholder="e.g. <script>alert(1)</script>">
+                </div>
+                <button class="btn-primary-small" onclick="sanitizeXSS()">Sanitize Payload</button>
+                <p id="xssResult" class="breach-result-text"></p>
+            </div>
+
+            <!-- 30. Dark Web Email Leak Monitor -->
+            <div class="tool-card glowing-card">
+                <div class="card-tag">DARK WEB INTEL</div>
+                <h3>Dark Web Monitoring Sentinel</h3>
+                <p>Check if domain credentials are listed on criminal marketplaces:</p>
+                <div class="input-group">
+                    <input type="text" id="darkwebInput" placeholder="e.g. companydomain.com">
+                </div>
+                <button class="btn-primary-small" onclick="checkDarkWeb()">Scan Darknet Feed</button>
+                <p id="darkwebResult" class="breach-result-text"></p>
+            </div>
+
+        </div>
+    </section>
+
+
+<!-- =========================================================
+     SECTION 3: CYBERGUARD VVIP SCAM SHIELD
+     ========================================================= -->
+<section id="scam-alerts" class="page-section scams-page vvip-scam-shield">
+
+    <div class="scam-hero-head">
+        <div>
+            <div class="scam-live-pill">
+                <span class="live-dot"></span>
+                SCAM INTELLIGENCE ONLINE
+            </div>
+
+            <h2 class="section-title scam-main-title">
+                <span class="icon">🛡️</span>
+                Global Scam Shield
+            </h2>
+
+            <p class="section-desc">
+                Global scam awareness, recent fraud intelligence,
+                social-media scam patterns and practical defense
+                guidance — all in one security dashboard.
+            </p>
+        </div>
+
+        <div class="scam-security-orb">
+            <span>🛡️</span>
+            <small>DEFENSE<br>ACTIVE</small>
+        </div>
+    </div>
+
+
+    <!-- LIVE STATUS DASHBOARD -->
+    <div class="scam-status-dashboard">
+
+        <div class="scam-stat-card">
+            <span class="scam-stat-icon">🌍</span>
+            <div>
+                <strong id="scamGlobalCount">GLOBAL</strong>
+                <small>Threat Intelligence</small>
+            </div>
+        </div>
+
+        <div class="scam-stat-card danger-stat">
+            <span class="scam-stat-icon">🚨</span>
+            <div>
+                <strong id="scamActiveCount">06</strong>
+                <small>Active Scam Patterns</small>
+            </div>
+        </div>
+
+        <div class="scam-stat-card warning-stat">
+            <span class="scam-stat-icon">📱</span>
+            <div>
+                <strong id="scamSocialCount">04</strong>
+                <small>Social Media Vectors</small>
+            </div>
+        </div>
+
+        <div class="scam-stat-card safe-stat">
+            <span class="scam-stat-icon">🛡️</span>
+            <div>
+                <strong>24/7</strong>
+                <small>Defense Guidance</small>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- LIVE INTELLIGENCE TICKER -->
+    <div class="scam-intel-console">
+
+        <div class="intel-console-top">
+            <span>
+                <i class="live-dot"></i>
+                GLOBAL SCAM INTELLIGENCE FEED
+            </span>
+
+            <span id="scamFeedClock">SYNCING...</span>
+        </div>
+
+        <div class="intel-console-body">
+
+            <div class="intel-radar">
+                <div class="radar-ring radar-ring-1"></div>
+                <div class="radar-ring radar-ring-2"></div>
+                <div class="radar-sweep"></div>
+                <span>SCAN</span>
+            </div>
+
+            <div class="intel-feed-content">
+                <span class="intel-feed-label">CURRENT SIGNAL</span>
+                <h3 id="scamFeedTitle">Initializing threat intelligence...</h3>
+                <p id="scamFeedDescription">
+                    Loading verified scam-awareness intelligence.
+                </p>
+
+                <div class="intel-meta">
+                    <span id="scamFeedRegion">GLOBAL</span>
+                    <span id="scamFeedDate">SYNC</span>
+                    <span id="scamFeedLevel">MONITORING</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- QUICK DEFENSE CHECK -->
+    <div class="scam-defense-check">
+
+        <div class="defense-check-heading">
+            <span>⚡</span>
+            <div>
+                <h3>60-Second Scam Defense Check</h3>
+                <p>
+                    Kisi bhi suspicious message, call, ad ya social-media
+                    offer par payment se pehle ye checks perform karo.
+                </p>
+            </div>
+        </div>
+
+        <div class="defense-check-grid">
+
+            <div class="defense-check-item">
+                <b>01</b>
+                <span>Unexpected contact?</span>
+                <small>Identity independently verify karo.</small>
+            </div>
+
+            <div class="defense-check-item">
+                <b>02</b>
+                <span>Urgent payment?</span>
+                <small>Pause. Pressure is a warning sign.</small>
+            </div>
+
+            <div class="defense-check-item">
+                <b>03</b>
+                <span>OTP / PIN requested?</span>
+                <small>Never share it with anyone.</small>
+            </div>
+
+            <div class="defense-check-item">
+                <b>04</b>
+                <span>Unknown link?</span>
+                <small>Don't click. Open official app/site yourself.</small>
+            </div>
+
+            <div class="defense-check-item">
+                <b>05</b>
+                <span>Investment guarantee?</span>
+                <small>Guaranteed high returns are a major red flag.</small>
+            </div>
+
+            <div class="defense-check-item">
+                <b>06</b>
+                <span>QR payment request?</span>
+                <small>Never enter your PIN just to receive money.</small>
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- SCAM FILTER -->
+    <div class="scam-control-panel">
+
+        <div class="scam-search-box">
+            <span>🔎</span>
+            <input
+                type="search"
+                id="scamSearch"
+                placeholder="Search scam type, platform, country..."
+                autocomplete="off"
+            >
+        </div>
+
+        <div class="scam-filter-buttons">
+            <button class="scam-filter active" data-filter="all">
+                ALL
+            </button>
+
+            <button class="scam-filter" data-filter="payment">
+                💳 PAYMENT
+            </button>
+
+            <button class="scam-filter" data-filter="social">
+                📱 SOCIAL
+            </button>
+
+            <button class="scam-filter" data-filter="phishing">
+                🎣 PHISHING
+            </button>
+
+            <button class="scam-filter" data-filter="ai">
+                🤖 AI FRAUD
+            </button>
+
+            <button class="scam-filter" data-filter="mobile">
+                📲 MOBILE
+            </button>
+        </div>
+
+    </div>
+
+
+    <!-- RECENT VERIFIED INTELLIGENCE -->
+    <div class="recent-scam-section">
+
+        <div class="subsection-heading">
+            <div>
+                <span class="mini-label">VERIFIED INTELLIGENCE</span>
+                <h3>Recent Global Scam Alerts</h3>
+            </div>
+
+            <span class="source-status">
+                ● CURATED / VERIFIED
+            </span>
+        </div>
+
+        <div class="recent-scam-grid">
+
+            <article class="recent-scam-card" data-category="social">
+                <div class="recent-card-top">
+                    <span class="country-chip">🇸🇬 SINGAPORE</span>
+                    <span class="risk-chip critical">HIGH</span>
+                </div>
+
+                <h4>Facebook & Instagram Scam Networks</h4>
+
+                <p>
+                    Authorities reported coordinated action against
+                    millions of scam-linked entities, pages and accounts
+                    during 2026.
+                </p>
+
+                <div class="recent-card-footer">
+                    <span>Social Engineering</span>
+                    <span>SEP 2026</span>
+                </div>
+            </article>
+
+
+            <article class="recent-scam-card" data-category="payment">
+                <div class="recent-card-top">
+                    <span class="country-chip">🇮🇳 INDIA</span>
+                    <span class="risk-chip critical">HIGH</span>
+                </div>
+
+                <h4>Online Investment Fraud Network</h4>
+
+                <p>
+                    A Bengaluru cyber-fraud investigation uncovered
+                    a network involving hundreds of mule bank accounts
+                    after a victim lost tens of millions of rupees.
+                </p>
+
+                <div class="recent-card-footer">
+                    <span>Investment Fraud</span>
+                    <span>SEP 2026</span>
+                </div>
+            </article>
+
+
+            <article class="recent-scam-card" data-category="phishing">
+                <div class="recent-card-top">
+                    <span class="country-chip">🌎 GLOBAL</span>
+                    <span class="risk-chip warning">HIGH</span>
+                </div>
+
+                <h4>QR-Code Payment Traps</h4>
+
+                <p>
+                    Fraudsters can replace legitimate QR codes with
+                    malicious ones that redirect victims to fake
+                    payment or credential-stealing pages.
+                </p>
+
+                <div class="recent-card-footer">
+                    <span>QR Phishing</span>
+                    <span>SEP 2026</span>
+                </div>
+            </article>
+
+
+            <article class="recent-scam-card" data-category="social">
+                <div class="recent-card-top">
+                    <span class="country-chip">🌎 GLOBAL</span>
+                    <span class="risk-chip warning">HIGH</span>
+                </div>
+
+                <h4>Fake Social-Media Shopping Ads</h4>
+
+                <p>
+                    Fake ads can imitate legitimate brands and send
+                    users toward counterfeit stores or payment pages.
+                </p>
+
+                <div class="recent-card-footer">
+                    <span>Shopping Scam</span>
+                    <span>2026</span>
+                </div>
+            </article>
+
+        </div>
+    </div>
+
+
+    <!-- MAIN SCAM KNOWLEDGE BASE -->
+    <div class="scam-knowledge-header">
+        <span class="mini-label">DEFENSE KNOWLEDGE BASE</span>
+        <h3>Know The Scam Before The Scam Knows You</h3>
+        <p>
+            Neeche common scam patterns diye gaye hain. Har card par
+            hover karke attack pattern aur defense rule dekho.
+        </p>
+    </div>
+
+
+    <div class="scam-grid vvip-scam-grid">
+
+        <article class="scam-card vvip-scam-card"
+                 data-category="payment mobile social">
+
+            <div class="scam-card-glow"></div>
+
+            <div class="scam-card-header">
+                <span class="scam-badge">💸 WALLET</span>
+                <span class="scam-risk">CRITICAL</span>
+            </div>
+
+            <h3>Fake Payment / Accidental Transfer</h3>
+
+            <p>
+                Scammer fake payment SMS, edited receipt ya fake
+                wallet notification bhej kar refund maangta hai.
+            </p>
+
+            <div class="attack-flow">
+                <span>FAKE SMS</span>
+                <b>→</b>
+                <span>PRESSURE</span>
+                <b>→</b>
+                <span>REFUND</span>
+            </div>
+
+            <div class="scam-warning-box">
+                <strong>🛡️ DEFENSE:</strong>
+                SMS screenshot par trust mat karo. Official wallet
+                app khud open karke balance aur transaction verify karo.
+            </div>
+        </article>
+
+
+        <article class="scam-card vvip-scam-card"
+                 data-category="social payment">
+
+            <div class="scam-card-header">
+                <span class="scam-badge">📱 SOCIAL</span>
+                <span class="scam-risk">HIGH</span>
+            </div>
+
+            <h3>Fake Shopping & Marketplace Scam</h3>
+
+            <p>
+                Instagram, Facebook, WhatsApp ya marketplace par
+                unbelievable discount dekar advance payment li jati hai.
+            </p>
+
+            <div class="attack-flow">
+                <span>CHEAP OFFER</span>
+                <b>→</b>
+                <span>ADVANCE</span>
+                <b>→</b>
+                <span>GHOST</span>
+            </div>
+
+            <div class="scam-warning-box">
+                <strong>🛡️ DEFENSE:</strong>
+                Seller ko independently verify karo. Unknown seller
+                ko advance payment bhejne se pehle transaction risk check karo.
+            </div>
+        </article>
+
+
+        <article class="scam-card vvip-scam-card"
+                 data-category="phishing social">
+
+            <div class="scam-card-header">
+                <span class="scam-badge">🎣 PHISHING</span>
+                <span class="scam-risk">CRITICAL</span>
+            </div>
+
+            <h3>Fake Login / Account Verification Link</h3>
+
+            <p>
+                "Account blocked", "verify now", "security alert"
+                jese messages fake login page tak le ja sakte hain.
+            </p>
+
+            <div class="attack-flow">
+                <span>URGENT MSG</span>
+                <b>→</b>
+                <span>FAKE SITE</span>
+                <b>→</b>
+                <span>CREDENTIALS</span>
+            </div>
+
+            <div class="scam-warning-box">
+                <strong>🛡️ DEFENSE:</strong>
+                Message ke link par click na karo. Official website
+                ya official app manually open karo.
+            </div>
+        </article>
+
+
+        <article class="scam-card vvip-scam-card"
+                 data-category="ai social">
+
+            <div class="scam-card-header">
+                <span class="scam-badge">🤖 AI FRAUD</span>
+                <span class="scam-risk">CRITICAL</span>
+            </div>
+
+            <h3>AI Voice Clone Family Emergency</h3>
+
+            <p>
+                AI-generated voice kisi family member ki awaaz jesi
+                lag sakti hai aur attacker emergency ka bahana bana sakta hai.
+            </p>
+
+            <div class="attack-flow">
+                <span>CLONED VOICE</span>
+                <b>→</b>
+                <span>PANIC</span>
+                <b>→</b>
+                <span>MONEY</span>
+            </div>
+
+            <div class="scam-warning-box">
+                <strong>🛡️ DEFENSE:</strong>
+                Caller ki awaaz ko identity proof mat samjho.
+                Trusted number par khud call karke verify karo.
+            </div>
+        </article>
+
+
+        <article class="scam-card vvip-scam-card"
+                 data-category="mobile social">
+
+            <div class="scam-card-header">
+                <span class="scam-badge">📲 MOBILE</span>
+                <span class="scam-risk">CRITICAL</span>
+            </div>
+
+            <h3>Malicious APK / WhatsApp App Scam</h3>
+
+            <p>
+                Fake bank, reward, government scheme ya delivery app
+                ke naam par malicious APK bheji ja sakti hai.
+            </p>
+
+            <div class="attack-flow">
+                <span>APK</span>
+                <b>→</b>
+                <span>PERMISSION</span>
+                <b>→</b>
+                <span>DATA THEFT</span>
+            </div>
+
+            <div class="scam-warning-box">
+                <strong>🛡️ DEFENSE:</strong>
+                Unknown APK install mat karo. Apps official
+                store se hi install karo aur permissions review karo.
+            </div>
+        </article>
+
+
+        <article class="scam-card vvip-scam-card"
+                 data-category="payment social">
+
+            <div class="scam-card-header">
+                <span class="scam-badge">🏦 IMPERSONATION</span>
+                <span class="scam-risk">HIGH</span>
+            </div>
+
+            <h3>Fake Bank / Support Agent</h3>
+
+            <p>
+                Caller khud ko bank representative, support agent
+                ya verification officer bata kar sensitive information maang sakta hai.
+            </p>
+
+            <div class="attack-flow">
+                <span>CALL</span>
+                <b>→</b>
+                <span>TRUST</span>
+                <b>→</b>
+                <span>OTP</span>
+            </div>
+
+            <div class="scam-warning-box">
+                <strong>🛡️ DEFENSE:</strong>
+                OTP, PIN, CVV aur passwords kisi caller ko share mat karo.
+                Official number khud find karke contact karo.
+            </div>
+        </article>
+
+
+        <article class="scam-card vvip-scam-card"
+                 data-category="phishing payment">
+
+            <div class="scam-card-header">
+                <span class="scam-badge">🔳 QR FRAUD</span>
+                <span class="scam-risk">HIGH</span>
+            </div>
+
+            <h3>QR Code Receive-Money Trap</h3>
+
+            <p>
+                Scammer keh sakta hai ke "money receive karne ke liye
+                QR scan karo", jabke QR payment action initiate kar sakta hai.
+            </p>
+
+            <div class="attack-flow">
+                <span>QR</span>
+                <b>→</b>
+                <span>APPROVE</span>
+                <b>→</b>
+                <span>DEBIT</span>
+            </div>
+
+            <div class="scam-warning-box">
+                <strong>🛡️ DEFENSE:</strong>
+                Receive-money ke naam par PIN ya payment approval
+                kabhi blindly enter mat karo.
+            </div>
+        </article>
+
+
+        <article class="scam-card vvip-scam-card"
+                 data-category="social payment">
+
+            <div class="scam-card-header">
+                <span class="scam-badge">💼 JOB SCAM</span>
+                <span class="scam-risk">HIGH</span>
+            </div>
+
+            <h3>Fake Online Job / Task Scam</h3>
+
+            <p>
+                Fake jobs, like-and-subscribe tasks ya freelance offers
+                ke naam par registration, security ya withdrawal fee maangi ja sakti hai.
+            </p>
+
+            <div class="attack-flow">
+                <span>JOB OFFER</span>
+                <b>→</b>
+                <span>FEE</span>
+                <b>→</b>
+                <span>NO JOB</span>
+            </div>
+
+            <div class="scam-warning-box">
+                <strong>🛡️ DEFENSE:</strong>
+                Job lene ke liye paisa maanga jaye to company,
+                domain aur offer ko independently verify karo.
+            </div>
+        </article>
+
+
+        <article class="scam-card vvip-scam-card"
+                 data-category="ai payment social">
+
+            <div class="scam-card-header">
+                <span class="scam-badge">📈 INVESTMENT</span>
+                <span class="scam-risk">CRITICAL</span>
+            </div>
+
+            <h3>AI Trading / Guaranteed Profit Scam</h3>
+
+            <p>
+                Fake AI trading bots, crypto groups aur influencer
+                testimonials guaranteed profit ka illusion create karte hain.
+            </p>
+
+            <div class="attack-flow">
+                <span>PROFIT</span>
+                <b>→</b>
+                <span>DEPOSIT</span>
+                <b>→</b>
+                <span>LOCKED</span>
+            </div>
+
+            <div class="scam-warning-box">
+                <strong>🛡️ DEFENSE:</strong>
+                Guaranteed returns par trust mat karo. Investment
+                platform aur registration independently verify karo.
+            </div>
+        </article>
+
+
+        <article class="scam-card vvip-scam-card"
+                 data-category="social phishing">
+
+            <div class="scam-card-header">
+                <span class="scam-badge">🎁 GIVEAWAY</span>
+                <span class="scam-risk">MEDIUM</span>
+            </div>
+
+            <h3>Fake Giveaway / Prize Link</h3>
+
+            <p>
+                "You won iPhone", "free cash", "lucky draw winner"
+                jese posts users ko fake websites ya surveys par bhejte hain.
+            </p>
+
+            <div class="attack-flow">
+                <span>PRIZE</span>
+                <b>→</b>
+                <span>LINK</span>
+                <b>→</b>
+                <span>DATA</span>
+            </div>
+
+            <div class="scam-warning-box">
+                <strong>🛡️ DEFENSE:</strong>
+                Prize claim karne ke liye password, OTP, card details
+                ya suspicious fee maangi jaye to stop.
+            </div>
+        </article>
+
+
+        <article class="scam-card vvip-scam-card"
+                 data-category="mobile payment">
+
+            <div class="scam-card-header">
+                <span class="scam-badge">📡 SIM SWAP</span>
+                <span class="scam-risk">CRITICAL</span>
+            </div>
+
+            <h3>SIM Swap / OTP Interception</h3>
+
+            <p>
+                Attacker SIM replacement ya port-out process abuse
+                karke SMS-based verification codes intercept karne ki koshish kar sakta hai.
+            </p>
+
+            <div class="attack-flow">
+                <span>SIM</span>
+                <b>→</b>
+                <span>OTP</span>
+                <b>→</b>
+                <span>ACCOUNT</span>
+            </div>
+
+            <div class="scam-warning-box">
+                <strong>🛡️ DEFENSE:</strong>
+                Unexpectedly mobile service band ho jaye to
+                telecom provider se immediately verify karo.
+            </div>
+        </article>
+
+
+        <article class="scam-card vvip-scam-card"
+                 data-category="payment social">
+
+            <div class="scam-card-header">
+                <span class="scam-badge">📦 DELIVERY</span>
+                <span class="scam-risk">HIGH</span>
+            </div>
+
+            <h3>Fake Parcel / Customs Fee Scam</h3>
+
+            <p>
+                Fake courier SMS ya email parcel clearance,
+                customs fee ya delivery payment ke naam par suspicious link bhej sakta hai.
+            </p>
+
+            <div class="attack-flow">
+                <span>PARCEL</span>
+                <b>→</b>
+                <span>FEE</span>
+                <b>→</b>
+                <span>PHISHING</span>
+            </div>
+
+            <div class="scam-warning-box">
+                <strong>🛡️ DEFENSE:</strong>
+                Courier ka official app/site manually open karke
+                tracking aur payment details verify karo.
+            </div>
+        </article>
+
+    </div>
+
+
+    <!-- INCIDENT RESPONSE -->
+    <div class="scam-response-panel">
+
+        <div class="response-icon">🚨</div>
+
+        <div class="response-content">
+            <span class="mini-label">IF YOU ALREADY CLICKED / PAID</span>
+            <h3>Scam Hone Ke Baad Kya Karna Hai?</h3>
+
+            <div class="response-steps">
+
+                <div>
+                    <b>01</b>
+                    <span>STOP</span>
+                    <small>Scammer se further communication/payment stop karo.</small>
+                </div>
+
+                <div>
+                    <b>02</b>
+                    <span>SECURE</span>
+                    <small>Passwords change karo aur affected accounts secure karo.</small>
+                </div>
+
+                <div>
+                    <b>03</b>
+                    <span>CONTACT</span>
+                    <small>Bank/wallet provider ko immediately official channel se contact karo.</small>
+                </div>
+
+                <div>
+                    <b>04</b>
+                    <span>REPORT</span>
+                    <small>Relevant platform, bank aur law-enforcement reporting channel ko report karo.</small>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- TRUST / DISCLAIMER -->
+    <div class="scam-trust-footer">
+
+        <div class="trust-shield">🛡️</div>
+
+        <div>
+            <strong>CYBERGUARD SAFETY NOTICE</strong>
+
+            <p>
+                Ye dashboard cybersecurity awareness aur education ke liye hai.
+                "Live" indicator ka matlab automated interface monitoring hai;
+                browser-only page directly social-media ya criminal databases ko
+                continuously scan nahi karta. Verified intelligence ko official
+                advisories aur reputable reporting se cross-check karna chahiye.
+            </p>
+        </div>
+
+    </div>
+
+</section>
+
+    <!-- SECTION 4: LIVE THREAT ANALYTICS & LOGS TABLE -->
+    <section id="analytics" class="page-section analytics-page">
+        <h2 class="section-title"><span class="icon">📊</span> Live SOC Cyber Attack Feed & Visual Charts</h2>
+        <p class="section-desc">Real-time threat monitoring metrics, global attack distributions, and recent attack vector logs (Pakistan + India Subcontinent Cyber Context).</p>
+
+        <!-- VISUAL GRAPH BARS (14 EXPANDED METRIC BARS) -->
+        <div class="analytics-metrics-grid">
+            <div class="metric-card">
+                <h4>Phishing Vector Volume</h4>
+                <div class="bar-chart-wrap">
+                    <div class="bar-fill" style="width: 82%;">82% High</div>
+                </div>
+            </div>
+            <div class="metric-card">
+                <h4>Ransomware Payload Threats</h4>
+                <div class="bar-chart-wrap">
+                    <div class="bar-fill danger" style="width: 65%;">65% Critical</div>
+                </div>
+            </div>
+            <div class="metric-card">
+                <h4>Mobile Wallet Spoofing</h4>
+                <div class="bar-chart-wrap">
+                    <div class="bar-fill warning" style="width: 74%;">74% Medium</div>
+                </div>
+            </div>
+            <div class="metric-card">
+                <h4>APT Hacking Group Activity (PK/IN)</h4>
+                <div class="bar-chart-wrap">
+                    <div class="bar-fill danger" style="width: 88%;">88% Extreme</div>
+                </div>
+            </div>
+            <div class="metric-card">
+                <h4>Government Portal Brute-Force</h4>
+                <div class="bar-chart-wrap">
+                    <div class="bar-fill warning" style="width: 78%;">78% High</div>
+                </div>
+            </div>
+            <div class="metric-card">
+                <h4>Telecom Infrastructure DDoS</h4>
+                <div class="bar-chart-wrap">
+                    <div class="bar-fill" style="width: 62%;">62% Elevated</div>
+                </div>
+            </div>
+            <div class="metric-card">
+                <h4>National Load Dispatch Grid Intrusion</h4>
+                <div class="bar-chart-wrap">
+                    <div class="bar-fill danger" style="width: 91%;">91% Critical</div>
+                </div>
+            </div>
+            <div class="metric-card">
+                <h4>Media Broadcast & Satellite Hijacking</h4>
+                <div class="bar-chart-wrap">
+                    <div class="bar-fill warning" style="width: 69%;">69% Severe</div>
+                </div>
+            </div>
+            <div class="metric-card">
+                <h4>Airport & Aviation Server Stress</h4>
+                <div class="bar-chart-wrap">
+                    <div class="bar-fill danger" style="width: 84%;">84% High</div>
+                </div>
+            </div>
+            <div class="metric-card">
+                <h4>Law Enforcement Database Recon</h4>
+                <div class="bar-chart-wrap">
+                    <div class="bar-fill" style="width: 58%;">58% Moderate</div>
+                </div>
+            </div>
+            <div class="metric-card">
+                <h4>BISP / Relief Fund Phishing Links</h4>
+                <div class="bar-chart-wrap">
+                    <div class="bar-fill warning" style="width: 89%;">89% High</div>
+                </div>
+            </div>
+            <div class="metric-card">
+                <h4>Drone & GPS Spoofing Signals</h4>
+                <div class="bar-chart-wrap">
+                    <div class="bar-fill danger" style="width: 76%;">76% Severe</div>
+                </div>
+            </div>
+            <div class="metric-card">
+                <h4>Cryptographic Key Leak Scans</h4>
+                <div class="bar-chart-wrap">
+                    <div class="bar-fill" style="width: 51%;">51% Moderate</div>
+                </div>
+            </div>
+            <div class="metric-card">
+                <h4>Darknet Identity Leak Trading</h4>
+                <div class="bar-chart-wrap">
+                    <div class="bar-fill warning" style="width: 80%;">80% High</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CYBER LOGS TABLE (17 REAL INCIDENT LOGS) -->
+        <div class="table-container glowing-card">
+            <h3 class="table-title">📡 Real-Time Cyber Incident Logs (Pak-India Regional Feed)</h3>
+            <table class="cyber-table">
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Attack Vector</th>
+                        <th>Target Sector</th>
+                        <th>Origin IP / Source</th>
+                        <th>Risk Level</th>
+                        <th>Mitigation Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>12:14:02 PKT</td>
+                        <td>SMS OTP Intercept Scam</td>
+                        <td>Mobile Wallet (EasyPaisa)</td>
+                        <td>Spoofed SMS Gateway</td>
+                        <td><span class="tag-badge danger">HIGH</span></td>
+                        <td><span class="status-text success">BLOCKED</span></td>
+                    </tr>
+                    <tr>
+                        <td>12:08:45 PKT</td>
+                        <td>TV Channel Broadcast Defacement</td>
+                        <td>Pak/Indian Media Transmission</td>
+                        <td>Satellite Downlink Hijack</td>
+                        <td><span class="tag-badge danger">CRITICAL</span></td>
+                        <td><span class="status-text success">ISOLATED</span></td>
+                    </tr>
+                    <tr>
+                        <td>11:55:10 PKT</td>
+                        <td>State Power Load Dispatch Attack</td>
+                        <td>National Energy Feeder Grid</td>
+                        <td>APT-36 Cyber Wing</td>
+                        <td><span class="tag-badge danger">CRITICAL</span></td>
+                        <td><span class="status-text warning">INVESTIGATING</span></td>
+                    </tr>
+                    <tr>
+                        <td>11:42:05 PKT</td>
+                        <td>BISP / Relief Fund Fake Portal</td>
+                        <td>Public Citizen Mobile Users</td>
+                        <td>103.21.244.18</td>
+                        <td><span class="tag-badge warning">MEDIUM</span></td>
+                        <td><span class="status-text success">MITIGATED</span></td>
+                    </tr>
+                    <tr>
+                        <td>11:39:12 PKT</td>
+                        <td>Spear Phishing URL</td>
+                        <td>Commercial Banking</td>
+                        <td>185.220.101.5</td>
+                        <td><span class="tag-badge danger">CRITICAL</span></td>
+                        <td><span class="status-text success">ISOLATED</span></td>
+                    </tr>
+                    <tr>
+                        <td>11:25:40 PKT</td>
+                        <td>Police Database Spyware Recon</td>
+                        <td>Provincial Law Enforcement</td>
+                        <td>TAG-179 / Bitter Cluster</td>
+                        <td><span class="tag-badge danger">HIGH</span></td>
+                        <td><span class="status-text warning">CONTAINED</span></td>
+                    </tr>
+                    <tr>
+                        <td>11:10:02 PKT</td>
+                        <td>ATM Skimmer Device Overlay</td>
+                        <td>Physical Banking ATM</td>
+                        <td>Hardware Skimmer</td>
+                        <td><span class="tag-badge danger">HIGH</span></td>
+                        <td><span class="status-text warning">INVESTIGATING</span></td>
+                    </tr>
+                    <tr>
+                        <td>10:58:33 PKT</td>
+                        <td>Airport Traffic Server DDoS</td>
+                        <td>Aviation Flight Systems</td>
+                        <td>Multi-Region Botnet</td>
+                        <td><span class="tag-badge danger">CRITICAL</span></td>
+                        <td><span class="status-text success">FILTERED</span></td>
+                    </tr>
+                    <tr>
+                        <td>10:45:19 PKT</td>
+                        <td>Petroleum Corp Database Breach</td>
+                        <td>Fuel Infrastructure DB</td>
+                        <td>194.26.29.110</td>
+                        <td><span class="tag-badge danger">HIGH</span></td>
+                        <td><span class="status-text success">BLOCKED</span></td>
+                    </tr>
+                    <tr>
+                        <td>10:32:00 PKT</td>
+                        <td>WhatsApp Screen Share Fraud</td>
+                        <td>Retail Bank Account Holder</td>
+                        <td>VOIP Spoofed Number</td>
+                        <td><span class="tag-badge warning">MEDIUM</span></td>
+                        <td><span class="status-text success">TERMINATED</span></td>
+                    </tr>
+                    <tr>
+                        <td>10:20:14 PKT</td>
+                        <td>Govt Email Service Disruption</td>
+                        <td>Federal Secretariat Portal</td>
+                        <td>45.142.214.8</td>
+                        <td><span class="tag-badge danger">HIGH</span></td>
+                        <td><span class="status-text success">RESTORED</span></td>
+                    </tr>
+                    <tr>
+                        <td>10:05:50 PKT</td>
+                        <td>GPS Signal Spoofing Campaign</td>
+                        <td>Border Logistics & Drones</td>
+                        <td>RF Transponder Array</td>
+                        <td><span class="tag-badge danger">CRITICAL</span></td>
+                        <td><span class="status-text warning">JAMMED</span></td>
+                    </tr>
+                    <tr>
+                        <td>09:50:22 PKT</td>
+                        <td>APK Malware Trojan Distribution</td>
+                        <td>Android Mobile Users</td>
+                        <td>Malicious Telegram Channel</td>
+                        <td><span class="tag-badge warning">MEDIUM</span></td>
+                        <td><span class="status-text success">TAKEN DOWN</span></td>
+                    </tr>
+                    <tr>
+                        <td>09:38:11 PKT</td>
+                        <td>SIM Swap Fraud Attempt</td>
+                        <td>High-Net-Worth Wallet User</td>
+                        <td>Fake ID Port-Out Request</td>
+                        <td><span class="tag-badge danger">HIGH</span></td>
+                        <td><span class="status-text success">VERIFICATION FAILED</span></td>
+                    </tr>
+                    <tr>
+                        <td>09:22:45 PKT</td>
+                        <td>Telecom Router Border Jamming</td>
+                        <td>ISP Fiber Core Backbone</td>
+                        <td>Distributed SYN Flood</td>
+                        <td><span class="tag-badge danger">CRITICAL</span></td>
+                        <td><span class="status-text success">REROUTED</span></td>
+                    </tr>
+                    <tr>
+                        <td>09:11:08 PKT</td>
+                        <td>AI Voice Clone Scam Call</td>
+                        <td>Resident Citizen Line</td>
+                        <td>Deepfake Audio Synthesis</td>
+                        <td><span class="tag-badge warning">MEDIUM</span></td>
+                        <td><span class="status-text success">FLAGGED</span></td>
+                    </tr>
+                    <tr>
+                        <td>09:00:00 PKT</td>
+                        <td>Municipal Council Web Defacement</td>
+                        <td>Local Government Web Portal</td>
+                        <td>Team Insane PK / Hoax 1337</td>
+                        <td><span class="tag-badge warning">MEDIUM</span></td>
+                        <td><span class="status-text success">PATCHED</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- SECTION 5: UPGRADED INTERACTIVE CYBER DEFENSE SIMULATOR GAMES -->
+<section id="game" class="page-section game-page">
+    <h2 class="section-title"><span class="icon">🎮</span> <span data-key="secGameTitle">Interactive Cyber Defense Simulator Hub</span></h2>
+    <p class="section-desc">Experience 5 specialized live cybersecurity scam games with real-time attack simulation, Start/End protocols, 2-second radar loaders, and max score caps.</p>
+    
+    <!-- GAME SELECTOR TABS -->
+    <div class="game-tabs-navigation">
+        <button class="game-tab-btn active" onclick="switchCyberGame(1)">
+            <span class="game-tab-logo">💸</span>
+            <span class="game-tab-title">Wallet Scam</span>
+        </button>
+        <button class="game-tab-btn" onclick="switchCyberGame(2)">
+            <span class="game-tab-logo">🎙️</span>
+            <span class="game-tab-title">AI Voice Clone</span>
+        </button>
+        <button class="game-tab-btn" onclick="switchCyberGame(3)">
+            <span class="game-tab-logo">📲</span>
+            <span class="game-tab-title">WhatsApp APK</span>
+        </button>
+        <button class="game-tab-btn" onclick="switchCyberGame(4)">
+            <span class="game-tab-logo">🔍</span>
+            <span class="game-tab-title">Scan QR Pay</span>
+        </button>
+        <button class="game-tab-btn" onclick="switchCyberGame(5)">
+            <span class="game-tab-logo">💳</span>
+            <span class="game-tab-title">ATM Skimmer</span>
+        </button>
+    </div>
+
+    <div class="game-container glowing-card">
+        
+        <!-- 2 SECOND RADAR LOADING OVERLAY (START & END) -->
+        <div id="gameLoaderOverlay" class="game-loader-overlay">
+            <div class="radar-scan-box">
+                <div class="loader-spinner"></div>
+                <div class="radar-hud-icon">🛡️</div>
+            </div>
+            <p id="loaderText" class="loader-text">INITIALIZING SOC DEFENSE SANDBOX...</p>
+            <div class="loader-progress-track">
+                <div id="loaderProgressBar" class="loader-progress-fill"></div>
+            </div>
+            <span id="loaderTelemetry" class="loader-telemetry">PROTOCOL SCANNING: 2000MS</span>
+        </div>
+
+        <!-- 1. BRIEFING SCREEN (BEFORE START WITH START BUTTON) -->
+        <div id="gameBriefingScreen" class="game-screen active">
+            <div class="game-header">
+                <div class="game-info-badge">
+                    <span id="briefingLogo" class="main-game-logo">💸</span>
+                    <div>
+                        <span id="briefingName" class="main-game-title">Mobile Wallet Defense</span>
+                        <small class="protocol-code">SOC-DEFENSE // v4.0</small>
+                    </div>
+                </div>
+                <div class="game-score-cap">CAP: <strong id="briefingScoreCap">300 PTS MAX</strong></div>
+            </div>
+
+            <div class="game-briefing-grid">
+                <div class="briefing-box">
+                    <div class="briefing-tag gold">⚡ MISSION OBJECTIVE:</div>
+                    <p id="briefingGoal">Protect EasyPaisa/JazzCash against fake SMS & accidental transfers.</p>
+                </div>
+                <div class="briefing-box">
+                    <div class="briefing-tag green">🛡️ CRITICAL DEFENSE RULE:</div>
+                    <p id="briefingRule">Never share OTP or PIN codes under pressure. Always verify in official app.</p>
+                </div>
+            </div>
+
+            <div class="briefing-footer">
+                <span class="briefing-hint">💡 2-Second live threat simulation protocol ready.</span>
+                <button class="btn-start-game" onclick="triggerStartGame()">
+                    <span>🚀 START GAME (2-SEC SCAN)</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 2. ACTIVE PLAYING SCREEN (WITH END GAME BUTTON) -->
+        <div id="gamePlayScreen" class="game-screen">
+            <div class="game-header">
+                <div class="game-info-badge">
+                    <span id="currentGameLogo" class="main-game-logo">💸</span>
+                    <span id="currentGameName" class="main-game-title">Mobile Wallet Defense</span>
+                </div>
+                <div class="hud-stats">
+                    <div class="game-score">Score: <span id="gameScore">0</span> / 300 PTS</div>
+                    <div class="game-streak">Streak: <span id="gameStreak">0</span></div>
+                    <div class="game-rank">Rank: <span id="gameRank">Rookie Defense Analyst</span></div>
+                </div>
+            </div>
+
+            <div class="game-meta-box">
+                <div class="meta-item"><span class="meta-label">LEVEL:</span> <span id="gameLevelDisplay" class="meta-val">1 / 3</span></div>
+                <div class="meta-item"><span class="meta-label">TARGET:</span> <span id="gameTargetDisplay" class="meta-val">Wallet Balance</span></div>
+                <div class="meta-item"><span class="meta-label">SEVERITY:</span> <span id="gameSeverityDisplay" class="meta-val tag-badge danger">HIGH</span></div>
+            </div>
+
+            <div class="game-box" id="gameBoxContainer">
+                <h3 id="scenarioTitle">Level 1: The Unexpected Bank SMS</h3>
+                <p id="scenarioDesc">You receive an SMS from 'EASY-PAY': 'Rs. 25,000 credited to your wallet by mistake. Please transfer back immediately or legal action will be initiated.'</p>
+                
+                <!-- SPECIAL INTERACTIVE DIAGNOSTIC BUTTON -->
+                <button id="specialToolBtn" class="btn-special-tool" onclick="triggerSpecialTool()">
+                    <span>🔍 Run Live Security Diagnostic</span>
+                </button>
+                <div id="specialToolResult" class="special-tool-result"></div>
+
+                <div class="game-options" id="gameOptions">
+                    <!-- Dynamic Buttons Generated via JS -->
+                </div>
+            </div>
+            
+            <p id="gameFeedback" class="game-feedback"></p>
+
+            <div class="game-controls-footer">
+                <button class="btn-secondary-small" onclick="resetCurrentGame()">🔄 Restart Level</button>
+                <!-- END GAME BUTTON WITH 2-SEC DEBRIEF SCREEN -->
+                <button class="btn-end-game" onclick="triggerEndGame()">🛑 END GAME (2-SEC DEBRIEF)</button>
+            </div>
+        </div>
+
+        <!-- 3. END DEBRIEF SCREEN -->
+        <div id="gameEndScreen" class="game-screen text-center">
+            <div class="end-trophy">🏆</div>
+            <h3 class="end-title">MISSION DEBRIEF COMPLETE</h3>
+            <p class="end-sub">Here is your cybersecurity evaluation report:</p>
+            
+            <div class="end-score-card">
+                <div class="score-block">
+                    <span>FINAL SCORE</span>
+                    <h4 id="endScoreDisplay">0 / 300 PTS</h4>
+                </div>
+                <div class="score-block">
+                    <span>DEFENSE RANK</span>
+                    <h4 id="endRankDisplay" class="rank-highlight">Rookie Defense Analyst</h4>
+                </div>
+            </div>
+<div class="end-actions">
+                <button class="btn-start-game" onclick="triggerStartGame()">🔄 Replay Mission</button>
+                <button class="btn-secondary" onclick="switchCyberGame(nextGameId())">🎮 Next Cyber Game &rarr;</button>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<!-- SECTION 6: UPGRADED THREAT MATRIX & INTERACTIVE SANDBOX LABS -->
+<section id="threats" class="page-section threats-page">
+    <div class="threats-header-wrap text-center">
+        <div class="section-kicker">
+            <span class="kicker-dot"></span>
+            <span>INTELLIGENCE RADAR // SOC TACTICAL VECTORS</span>
+        </div>
+        <h2 class="section-title"><span class="icon">⚠️</span> <span data-key="secThreatsTitle">Critical Cyber Threat Vectors</span></h2>
+        <p class="section-desc">Inspect 10 frontline exploit mechanisms with authenticated imagery, real-time threat intelligence, and centered cyber forensic modals.</p>
+    </div>
+    
+    <!-- 10 ENHANCED 3D THREAT CARDS (ALL WITH HIGH-FIDELITY IMAGES) -->
+    <div class="cards-grid">
+        
+        <!-- 1. Phishing Attacks -->
+        <div class="card-3d threat-card" onclick="openThreatModal('phishingModal')">
+            <div class="card-img-box">
+                <img src="https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?auto=format&fit=crop&w=700&q=80" alt="Phishing Attacks" loading="lazy">
+                <div class="card-scan-sheen"></div>
+                <div class="card-icon-overlay">🎣</div>
+                <span class="card-severity-pill warning">HIGH</span>
+            </div>
+            <div class="card-info">
+                <span class="card-category">IDENTITY EXPLOIT</span>
+                <h3>Phishing Attacks</h3>
+                <p>Deceptive communication tactics targeting passwords, credit card info, and session access keys via spoofed domains and emails.</p>
+                <div class="card-footer-action">
+                    <span class="btn-card">Inspect Threat Vector &rarr;</span>
+                    <span class="telemetry-tag">CVE-AUDIT</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Ransomware & Malware -->
+        <div class="card-3d threat-card" onclick="openThreatModal('malwareModal')">
+            <div class="card-img-box">
+                <img src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=700&q=80" alt="Ransomware & Malware" loading="lazy">
+                <div class="card-scan-sheen"></div>
+                <div class="card-icon-overlay">🦠</div>
+                <span class="card-severity-pill danger">CRITICAL</span>
+            </div>
+            <div class="card-info">
+                <span class="card-category">PAYLOAD ATTACK</span>
+                <h3>Ransomware & Malware</h3>
+                <p>Malicious payload engineered to encrypt critical local filesystems and demand crypto ransoms for decryption keys.</p>
+                <div class="card-footer-action">
+                    <span class="btn-card">Inspect Threat Vector &rarr;</span>
+                    <span class="telemetry-tag">RSA-4096</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Social Engineering -->
+        <div class="card-3d threat-card" onclick="openThreatModal('socialModal')">
+            <div class="card-img-box">
+                <img src="https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=700&q=80" alt="Social Engineering" loading="lazy">
+                <div class="card-scan-sheen"></div>
+                <div class="card-icon-overlay">🎭</div>
+                <span class="card-severity-pill warning">HIGH</span>
+            </div>
+            <div class="card-info">
+                <span class="card-category">HUMAN FACTOR</span>
+                <h3>Social Engineering</h3>
+                <p>Psychological manipulation coercing human targets into breaching confidential security policies or handing over OTPs.</p>
+                <div class="card-footer-action">
+                    <span class="btn-card">Inspect Threat Vector &rarr;</span>
+                    <span class="telemetry-tag">HUMAN-EXPLOIT</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Man-in-the-Middle (MitM) Attacks -->
+        <div class="card-3d threat-card" onclick="openThreatModal('mitmModal')">
+            <div class="card-img-box">
+                <img src="https://images.unsplash.com/photo-1544197150-b99a580bb7a8?auto=format&fit=crop&w=700&q=80" alt="MitM Attack" loading="lazy">
+                <div class="card-scan-sheen"></div>
+                <div class="card-icon-overlay">📡</div>
+                <span class="card-severity-pill info">SEVERE</span>
+            </div>
+            <div class="card-info">
+                <span class="card-category">NETWORK INTERCEPT</span>
+                <h3>Man-in-the-Middle (MitM)</h3>
+                <p>Interception of live network traffic over rogue Wi-Fi access points or ARP poisoning to eavesdrop and alter sensitive packet transmissions.</p>
+                <div class="card-footer-action">
+                    <span class="btn-card">Inspect Threat Vector &rarr;</span>
+                    <span class="telemetry-tag">ARP-POISON</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. Distributed Denial of Service (DDoS) -->
+        <div class="card-3d threat-card" onclick="openThreatModal('ddosModal')">
+            <div class="card-img-box">
+                <img src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=700&q=80" alt="DDoS Network Flooding" loading="lazy">
+                <div class="card-scan-sheen"></div>
+                <div class="card-icon-overlay">⚡</div>
+                <span class="card-severity-pill danger">CRITICAL</span>
+            </div>
+            <div class="card-info">
+                <span class="card-category">VOLUMETRIC FLOOD</span>
+                <h3>DDoS Network Flooding</h3>
+                <p>Overwhelming servers and network gateways with massive volumetric traffic from botnets to render public services unavailable.</p>
+                <div class="card-footer-action">
+                    <span class="btn-card">Inspect Threat Vector &rarr;</span>
+                    <span class="telemetry-tag">SYN-FLOOD</span>
+                </div>
+            </div>
+        </div>
+<!-- 6. SQL Injection (SQLi) Data Exploits -->
+<div class="card-3d threat-card" onclick="openThreatModal('sqliModal')">
+    <div class="card-img-box">
+        <!-- Yahan src me apni downloaded image ka naam likh dein: -->
+        <img src="sqli.jpg" alt="SQL Injection (SQLi)" loading="lazy">
+        <div class="card-scan-sheen"></div>
+        <div class="card-icon-overlay">💉</div>
+        <span class="card-severity-pill danger">CRITICAL</span>
+    </div>
+    <div class="card-info">
+        <span class="card-category">DATABASE EXPLOIT</span>
+        <h3>SQL Injection (SQLi)</h3>
+        <p>Injecting malicious database query strings into web form inputs to bypass authentication and exfiltrate confidential records.</p>
+        <div class="card-footer-action">
+            <span class="btn-card">Inspect Threat Vector &rarr;</span>
+            <span class="telemetry-tag">DB-DUMP</span>
+        </div>
+    </div>
+</div>
+
+        <!-- 7. Zero-Day Vulnerability Exploits -->
+        <div class="card-3d threat-card" onclick="openThreatModal('zerodayModal')">
+            <div class="card-img-box">
+                <img src="https://images.unsplash.com/photo-1526374870839-e155464bb9b2?auto=format&fit=crop&w=700&q=80" alt="Zero-Day Vulnerabilities" loading="lazy">
+                <div class="card-scan-sheen"></div>
+                <div class="card-icon-overlay">💣</div>
+                <span class="card-severity-pill danger">CRITICAL</span>
+            </div>
+            <div class="card-info">
+                <span class="card-category">UNKNOWN EXPLOIT</span>
+                <h3>Zero-Day Vulnerabilities</h3>
+                <p>Targeting unpatched security flaws in software before developers produce a fix or release defensive security patches.</p>
+                <div class="card-footer-action">
+                    <span class="btn-card">Inspect Threat Vector &rarr;</span>
+                    <span class="telemetry-tag">0-DAY-RCE</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 8. Deepfake & AI Voice Cloning Fraud -->
+        <div class="card-3d threat-card" onclick="openThreatModal('aiDeepfakeModal')">
+            <div class="card-img-box">
+                <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=700&q=80" alt="AI Voice & Video Deepfakes" loading="lazy">
+                <div class="card-scan-sheen"></div>
+                <div class="card-icon-overlay">🤖</div>
+                <span class="card-severity-pill warning">HIGH</span>
+            </div>
+            <div class="card-info">
+                <span class="card-category">NEURAL FRAUD</span>
+                <h3>AI Voice & Video Deepfakes</h3>
+                <p>Using neural network audio/video synthesis to impersonate executives or family members to authorize fake money transfers.</p>
+                <div class="card-footer-action">
+                    <span class="btn-card">Inspect Threat Vector &rarr;</span>
+                    <span class="telemetry-tag">NEURAL-CLONE</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 9. Cross-Site Scripting (XSS) Attacks -->
+        <div class="card-3d threat-card" onclick="openThreatModal('xssModal')">
+            <div class="card-img-box">
+                <img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=700&q=80" alt="Cross-Site Scripting (XSS)" loading="lazy">
+                <div class="card-scan-sheen"></div>
+                <div class="card-icon-overlay">🕸️</div>
+                <span class="card-severity-pill success">MEDIUM</span>
+            </div>
+            <div class="card-info">
+                <span class="card-category">CLIENT-SIDE SCRIPT</span>
+                <h3>Cross-Site Scripting (XSS)</h3>
+                <p>Injecting client-side JavaScript into trusted websites to hijack browser cookies, user tokens, and victim session states.</p>
+                <div class="card-footer-action">
+                    <span class="btn-card">Inspect Threat Vector &rarr;</span>
+                    <span class="telemetry-tag">COOKIE-HIJACK</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 10. Supply Chain & Dependency Compromise -->
+        <div class="card-3d threat-card" onclick="openThreatModal('supplyChainModal')">
+            <div class="card-img-box">
+                <img src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=700&q=80" alt="Supply Chain Hijacking" loading="lazy">
+                <div class="card-scan-sheen"></div>
+                <div class="card-icon-overlay">📦</div>
+                <span class="card-severity-pill danger">CRITICAL</span>
+            </div>
+            <div class="card-info">
+                <span class="card-category">ECOSYSTEM BREACH</span>
+                <h3>Supply Chain Hijacking</h3>
+                <p>Infiltrating third-party software vendors or code libraries to distribute backdoored updates directly to downstream enterprise networks.</p>
+                <div class="card-footer-action">
+                    <span class="btn-card">Inspect Threat Vector &rarr;</span>
+                    <span class="telemetry-tag">SBOM-POISON</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 11 UPGRADED INTERACTIVE SECURITY SANDBOX SUITE (11 LABS) -->
+    <div class="sandbox-main-wrapper">
+        <div class="sandbox-header-wrap text-center">
+            <div class="section-kicker">
+                <span class="kicker-dot blue"></span>
+                <span>HANDS-ON SIMULATION // FORENSIC ENVIRONMENT</span>
+            </div>
+            <h2 class="section-title"><span class="icon">🧪</span> Interactive Security Sandbox Suite (11 Labs)</h2>
+            <p class="section-desc">Step inside live cyber attack sandboxes. Test phishing headers, reverse-payment QR payloads, and malicious APK attachments in a secure sandbox.</p>
+        </div>
+
+        <div class="sandboxes-grid">
+            
+            <!-- LAB 1: Phishing Email Sandbox -->
+            <div class="phishing-box glowing-card sandbox-card" id="sandboxCard1">
+                <div class="sandbox-top-bar">
+                    <span class="lab-tag">LAB 01 // EMAIL PHISHING</span>
+                    <span class="lab-icon">🎣</span>
+                </div>
+                <h3>Interactive Phishing Email Sandbox</h3>
+                <div class="email-header">
+                    <p><strong>From:</strong> security-alert@paypa1-support.com</p>
+                    <p><strong>Subject:</strong> URGENT: Account Access Suspended within 2 Hours!</p>
+                </div>
+                <div class="email-body">
+                    <p>Dear Customer, We detected unauthorized logins from an unknown device. Please click below to verify your login credentials immediately or your account will be permanently deleted.</p>
+                    <span class="fake-link">http://paypa1-support.com/verify-login</span>
+                </div>
+                <div class="lab-actions">
+                    <button class="btn-danger" onclick="checkPhishingChoice(false, 1)">Mark as Legitimate Email</button>
+                    <button class="btn-success" onclick="checkPhishingChoice(true, 1)">Report as Phishing Scam</button>
+                </div>
+                <p id="phishingVerdict1" class="phishing-verdict"></p>
+            </div>
+
+            <!-- LAB 2: EasyPaisa / Mobile Wallet SMS Sandbox -->
+            <div class="phishing-box glowing-card sandbox-card" id="sandboxCard2">
+                <div class="sandbox-top-bar">
+                    <span class="lab-tag">LAB 02 // WALLET SMS</span>
+                    <span class="lab-icon">💸</span>
+                </div>
+                <h3>Mobile Wallet SMS Verification Lab</h3>
+                <div class="email-header">
+                    <p><strong>Header:</strong> EASYPAISA-NOTICE</p>
+                    <p><strong>SMS ID:</strong> TXN-998124</p>
+                </div>
+                <div class="email-body">
+                    <p>Rs. 35,000 sent by mistake to your wallet! Please send Rs. 35,000 back to 0300-1234567 or your account will be frozen by legal authorities immediately.</p>
+                    <span class="fake-link">SMS Ref: EP-88271</span>
+                </div>
+                <div class="lab-actions">
+                    <button class="btn-danger" onclick="checkPhishingChoice(false, 2)">Transfer Funds Back</button>
+                    <button class="btn-success" onclick="checkPhishingChoice(true, 2)">Check Official App Balance</button>
+                </div>
+                <p id="phishingVerdict2" class="phishing-verdict"></p>
+            </div>
+
+            <!-- LAB 3: WhatsApp APK Delivery Sandbox -->
+            <div class="phishing-box glowing-card sandbox-card" id="sandboxCard3">
+                <div class="sandbox-top-bar">
+                    <span class="lab-tag">LAB 03 // APK MALWARE</span>
+                    <span class="lab-icon">📲</span>
+                </div>
+                <h3>WhatsApp Malicious APK Attachment Lab</h3>
+                <div class="email-header">
+                    <p><strong>Contact:</strong> Unknown +92-311-9988123</p>
+                    <p><strong>Attachment:</strong> Electricity_Bill_Discount_v3.1.apk</p>
+                </div>
+                <div class="email-body">
+                    <p>Get 50% discount on electricity bills! Install this government verified APK app directly on your Android phone and pay bill safely.</p>
+                    <span class="fake-link">Download: Electricity_Discount.apk (14.2 MB)</span>
+                </div>
+                <div class="lab-actions">
+                    <button class="btn-danger" onclick="checkPhishingChoice(false, 3)">Install APK Package</button>
+                    <button class="btn-success" onclick="checkPhishingChoice(true, 3)">Delete & Block Sender</button>
+                </div>
+                <p id="phishingVerdict3" class="phishing-verdict"></p>
+            </div>
+
+            <!-- LAB 4: Banking Helpline Caller Sandbox -->
+            <div class="phishing-box glowing-card sandbox-card" id="sandboxCard4">
+                <div class="sandbox-top-bar">
+                    <span class="lab-tag">LAB 04 // VISHING CALL</span>
+                    <span class="lab-icon">📞</span>
+                </div>
+                <h3>Fake Banking Helpline Caller Lab</h3>
+                <div class="email-header">
+                    <p><strong>Caller ID:</strong> +92-21-111-222-333 (Spoofed)</p>
+                    <p><strong>Role:</strong> Bank Verification Officer</p>
+                </div>
+                <div class="email-body">
+                    <p>"Hello Sir, I am calling from Habib Bank Verification Department. Your ATM card is being blocked due to suspicious activity. Tell me the 6-digit OTP code sent to your mobile phone right now to stop the block."</p>
+                </div>
+                <div class="lab-actions">
+                    <button class="btn-danger" onclick="checkPhishingChoice(false, 4)">Provide 6-Digit OTP</button>
+                    <button class="btn-success" onclick="checkPhishingChoice(true, 4)">Hang Up & Call Helpline</button>
+                </div>
+                <p id="phishingVerdict4" class="phishing-verdict"></p>
+            </div>
+
+            <!-- LAB 5: Fake QR Payment Verification Sandbox -->
+            <div class="phishing-box glowing-card sandbox-card" id="sandboxCard5">
+                <div class="sandbox-top-bar">
+                    <span class="lab-tag">LAB 05 // QR SCAM</span>
+                    <span class="lab-icon">🔍</span>
+                </div>
+                <h3>QR Code Payment Verification Lab</h3>
+                <div class="email-header">
+                    <p><strong>Buyer:</strong> OLX Customer</p>
+                    <p><strong>Action:</strong> Receive Rs. 15,000 Advance</p>
+                </div>
+                <div class="email-body">
+                    <p>"I have sent you a payment QR code for the sofa set. Scan this QR code with your JazzCash app and enter your PIN to receive the Rs. 15,000 into your account."</p>
+                    <span class="fake-link">QR Code Image Payload Attached (action=DEBIT)</span>
+                </div>
+                <div class="lab-actions">
+                    <button class="btn-danger" onclick="checkPhishingChoice(false, 5)">Scan QR & Enter PIN</button>
+                    <button class="btn-success" onclick="checkPhishingChoice(true, 5)">Refuse QR Payment</button>
+                </div>
+                <p id="phishingVerdict5" class="phishing-verdict"></p>
+            </div>
+
+            <!-- LAB 6: Fake Work Visa & Job Deposit Sandbox -->
+            <div class="phishing-box glowing-card sandbox-card" id="sandboxCard6">
+                <div class="sandbox-top-bar">
+                    <span class="lab-tag">LAB 06 // JOB FRAUD</span>
+                    <span class="lab-icon">💼</span>
+                </div>
+                <h3>Data Entry & Foreign Visa Portal Lab</h3>
+                <div class="email-header">
+                    <p><strong>Portal:</strong> Dubai-Work-Permit-Dept.org</p>
+                    <p><strong>Offer:</strong> Approved Work Visa</p>
+                </div>
+                <div class="email-body">
+                    <p>Your Dubai Work Visa has been conditionally approved! Pay Rs. 12,000 medical clearance fee via EasyPaisa to activate your flight ticket now.</p>
+                    <span class="fake-link">http://dubai-work-permit-dept.org/pay</span>
+                </div>
+                <div class="lab-actions">
+                    <button class="btn-danger" onclick="checkPhishingChoice(false, 6)">Pay Rs. 12,000 Fee</button>
+                    <button class="btn-success" onclick="checkPhishingChoice(true, 6)">Report Unverified Agency</button>
+                </div>
+                <p id="phishingVerdict6" class="phishing-verdict"></p>
+            </div>
+
+            <!-- LAB 7: BISP & Government Relief Cash Scheme Sandbox -->
+            <div class="phishing-box glowing-card sandbox-card" id="sandboxCard7">
+                <div class="sandbox-top-bar">
+                    <span class="lab-tag">LAB 07 // GOVT SCHEME</span>
+                    <span class="lab-icon">🏛️</span>
+                </div>
+                <h3>BISP / Relief Cash Grant Lab</h3>
+                <div class="email-header">
+                    <p><strong>Header:</strong> BISP-GRANT-8171</p>
+                    <p><strong>Status:</strong> Approved Rs. 25,000</p>
+                </div>
+                <div class="email-body">
+                    <p>Congratulations! You are eligible for Rs. 25,000 BISP Relief Cash. Send Rs. 1,500 registration charge to activation wallet 0321-7788990 to receive funds.</p>
+                    <span class="fake-link">Ref: BISP-8171-VERIFIED</span>
+                </div>
+                <div class="lab-actions">
+                    <button class="btn-danger" onclick="checkPhishingChoice(false, 7)">Pay Registration Fee</button>
+                    <button class="btn-success" onclick="checkPhishingChoice(true, 7)">Ignore Scam Message</button>
+                </div>
+                <p id="phishingVerdict7" class="phishing-verdict"></p>
+            </div>
+
+            <!-- LAB 8: Remote Screen Share Support Sandbox -->
+            <div class="phishing-box glowing-card sandbox-card" id="sandboxCard8">
+                <div class="sandbox-top-bar">
+                    <span class="lab-tag">LAB 08 // ANYDESK FRAUD</span>
+                    <span class="lab-icon">🖥️</span>
+                </div>
+                <h3>Remote Screen Access Support Lab</h3>
+                <div class="email-header">
+                    <p><strong>Caller:</strong> Technical Desk Specialist</p>
+                    <p><strong>App Required:</strong> AnyDesk Remote Control</p>
+                </div>
+                <div class="email-body">
+                    <p>"We noticed network latency on your banking app. Install AnyDesk from Play Store and give us the 9-digit remote address code so we can fix it live."</p>
+                </div>
+                <div class="lab-actions">
+                    <button class="btn-danger" onclick="checkPhishingChoice(false, 8)">Install & Share Code</button>
+                    <button class="btn-success" onclick="checkPhishingChoice(true, 8)">Reject Remote Access</button>
+                </div>
+                <p id="phishingVerdict8" class="phishing-verdict"></p>
+            </div>
+
+            <!-- LAB 9: AI Voice Emergency Distress Sandbox -->
+            <div class="phishing-box glowing-card sandbox-card" id="sandboxCard9">
+                <div class="sandbox-top-bar">
+                    <span class="lab-tag">LAB 09 // AI VOICE CLONE</span>
+                    <span class="lab-icon">🎙️</span>
+                </div>
+                <h3>AI Voice Emergency Caller Lab</h3>
+                <div class="email-header">
+                    <p><strong>Caller:</strong> Unknown Local Number</p>
+                    <p><strong>Audio Voice:</strong> Son / Brother Voice Clone</p>
+                </div>
+                <div class="email-body">
+                    <p>"Dad! I got into a severe traffic accident and police are locking me up. Please send Rs. 50,000 immediately to this lawyer's wallet number!"</p>
+                </div>
+                <div class="lab-actions">
+                    <button class="btn-danger" onclick="checkPhishingChoice(false, 9)">Rush Money Transfer</button>
+                    <button class="btn-success" onclick="checkPhishingChoice(true, 9)">Hang Up & Call Son Directly</button>
+                </div>
+                <p id="phishingVerdict9" class="phishing-verdict"></p>
+            </div>
+
+            <!-- LAB 10: Lucky Draw Wheel & Virus Link Sandbox -->
+            <div class="phishing-box glowing-card sandbox-card" id="sandboxCard10">
+                <div class="sandbox-top-bar">
+                    <span class="lab-tag">LAB 10 // VIRAL LINK</span>
+                    <span class="lab-icon">🎁</span>
+                </div>
+                <h3>WhatsApp Viral Lucky Draw Lab</h3>
+                <div class="email-header">
+                    <p><strong>Shared By:</strong> WhatsApp Group Link</p>
+                    <p><strong>Prize:</strong> Toyota Corolla 2026 Winner</p>
+                </div>
+                <div class="email-body">
+                    <p>You won an iPhone 16 Pro Max! Spin the wheel online and forward this message to 15 WhatsApp contacts within 5 minutes to claim your gift.</p>
+                    <span class="fake-link">http://spin-win-iphone-gift.xyz</span>
+                </div>
+                <div class="lab-actions">
+                    <button class="btn-danger" onclick="checkPhishingChoice(false, 10)">Forward Link to 15 Groups</button>
+                    <button class="btn-success" onclick="checkPhishingChoice(true, 10)">Flag & Report Link</button>
+                </div>
+                <p id="phishingVerdict10" class="phishing-verdict"></p>
+            </div>
+
+            <!-- LAB 11: ATM Hardware Skimmer Detection Sandbox -->
+            <div class="phishing-box glowing-card sandbox-card" id="sandboxCard11">
+                <div class="sandbox-top-bar">
+                    <span class="lab-tag">LAB 11 // ATM HARDWARE</span>
+                    <span class="lab-icon">💳</span>
+                </div>
+                <h3>ATM Card Reader Hardware Inspection Lab</h3>
+                <div class="email-header">
+                    <p><strong>Location:</strong> Main Commercial ATM Booth</p>
+                    <p><strong>Observation:</strong> Loose Card Slot Overlay</p>
+                </div>
+                <div class="email-body">
+                    <p>You are about to insert your ATM debit card, but notice the green card reader slot is slightly wobbly and has glue marks along the edge.</p>
+                </div>
+                <div class="lab-actions">
+                    <button class="btn-danger" onclick="checkPhishingChoice(false, 11)">Insert Card & Enter PIN</button>
+                    <button class="btn-success" onclick="checkPhishingChoice(true, 11)">Do Not Use ATM & Report Bank</button>
+                </div>
+                <p id="phishingVerdict11" class="phishing-verdict"></p>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- CENTERED FORENSIC THREAT MODALS CONTAINER -->
+<div id="threatModalContainer"></div>
+<!-- ============================================================
+     CYBERGUARD // VVIP SAFETY QUIZ & CERTIFICATION VAULT
+     ============================================================ -->
+<section id="quiz" class="page-section quiz-page vvip-quiz-section">
+
+    <div class="quiz-hub-header text-center">
+
+        <div class="quiz-security-orbit">
+            <span>🛡️</span>
+        </div>
+
+        <div class="card-tag">CYBERGUARD // SECURITY AWARENESS ENGINE</div>
+
+        <h2 class="section-title">
+            <span class="icon">🧠</span>
+            Cyber Readiness & Safety Certification Vault
+        </h2>
+
+        <p class="section-desc">
+            Test your real-world cybersecurity awareness through practical
+            phishing, banking, malware, social-engineering, network and
+            identity-protection scenarios.
+        </p>
+
+        <!-- LIVE QUIZ STATUS -->
+        <div class="quiz-live-status">
+            <span class="live-dot"></span>
+            <span>LIVE SECURITY ASSESSMENT</span>
+            <span class="live-divider"></span>
+            <span id="quizStatusText">SYSTEM READY</span>
+        </div>
+
+        <!-- SCOREBOARD -->
+        <div class="quiz-tracker-bar">
+
+            <div class="tracker-item">
+                <span>PROGRESS</span>
+                <strong id="quizProgressText">0 / 8 Completed</strong>
+            </div>
+
+            <div class="tracker-item">
+                <span>SCORE</span>
+                <strong id="quizScoreText" class="cyber-score-text">
+                    0 PTS
+                </strong>
+            </div>
+
+            <div class="tracker-item">
+                <span>LEVEL</span>
+                <strong id="quizLevelText">ROOKIE</strong>
+            </div>
+
+        </div>
+
+        <!-- PROGRESS LINE -->
+        <div class="quiz-progress-shell">
+            <div id="quizProgressBar" class="quiz-progress-fill"></div>
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================
+         QUIZ CARDS
+         ======================================================== -->
+    <div class="quiz-cards-grid">
+
+
+        <!-- QUIZ 01 -->
+        <article class="quiz-card vvip-quiz-card hover-vivid-green"
+                 id="quizCard1"
+                 data-category="FINANCIAL SECURITY"
+                 data-difficulty="EASY">
+
+            <div class="quiz-card-topline">
+                <span class="card-tag">QUIZ 01 // FINANCIAL DEFENSE</span>
+                <span class="quiz-difficulty easy">EASY</span>
+            </div>
+
+            <div class="quiz-card-header">
+                <span class="quiz-icon-badge">🔐</span>
+                <div>
+                    <h3>OTP & Banking Secrets</h3>
+                    <small>Financial Identity Protection</small>
+                </div>
+            </div>
+
+            <div class="quiz-scenario">
+                <span class="scenario-label">LIVE SCENARIO</span>
+                <p>
+                    A caller claims to be from your bank and says your account
+                    will be blocked unless you immediately provide your
+                    6-digit OTP.
+                </p>
+            </div>
+
+            <div class="quiz-question-text">
+                What is the safest response?
+            </div>
+
+            <div class="quiz-options-group">
+
+                <button class="quiz-opt-btn"
+                        onclick="checkVIPQuiz(1,0,false,this)">
+                    <span>A</span>
+                    Give the OTP because the caller sounds official.
+                </button>
+
+                <button class="quiz-opt-btn"
+                        onclick="checkVIPQuiz(1,1,true,this)">
+                    <span>B</span>
+                    Never share the OTP and verify through the bank's official channel.
+                </button>
+
+                <button class="quiz-opt-btn"
+                        onclick="checkVIPQuiz(1,2,false,this)">
+                    <span>C</span>
+                    Ask for the caller's employee ID and then share it.
+                </button>
+
+            </div>
+
+            <div id="quizFeedback1" class="quiz-message-box"></div>
+
+            <div class="quiz-skill">
+                <span>SKILL</span>
+                <strong>OTP Protection • Social Engineering</strong>
+            </div>
+
+        </article>
+
+
+        <!-- QUIZ 02 -->
+        <article class="quiz-card vvip-quiz-card hover-vivid-blue"
+                 id="quizCard2"
+                 data-category="MALWARE DEFENSE"
+                 data-difficulty="MEDIUM">
+
+            <div class="quiz-card-topline">
+                <span class="card-tag">QUIZ 02 // MALWARE DEFENSE</span>
+                <span class="quiz-difficulty medium">MEDIUM</span>
+            </div>
+
+            <div class="quiz-card-header">
+                <span class="quiz-icon-badge">📱</span>
+                <div>
+                    <h3>WhatsApp APK Trap</h3>
+                    <small>Mobile Malware Awareness</small>
+                </div>
+            </div>
+
+            <div class="quiz-scenario">
+                <span class="scenario-label">LIVE SCENARIO</span>
+                <p>
+                    Someone sends you an APK through WhatsApp promising a huge
+                    electricity-bill discount.
+                </p>
+            </div>
+
+            <div class="quiz-question-text">
+                What should you do?
+            </div>
+
+            <div class="quiz-options-group">
+
+                <button class="quiz-opt-btn"
+                        onclick="checkVIPQuiz(2,0,false,this)">
+                    <span>A</span>
+                    Install it and check whether the discount works.
+                </button>
+
+                <button class="quiz-opt-btn"
+                        onclick="checkVIPQuiz(2,1,false,this)">
+                    <span>B</span>
+                    Forward the APK to friends so they can test it.
+                </button>
+
+                <button class="quiz-opt-btn"
+                        onclick="checkVIPQuiz(2,2,true,this)">
+                    <span>C</span>
+                    Do not install it; delete it and block/report the source.
+                </button>
+
+            </div>
+
+            <div id="quizFeedback2" class="quiz-message-box"></div>
+
+            <div class="quiz-skill">
+                <span>SKILL</span>
+                <strong>APK Safety • Malware Prevention</strong>
+            </div>
+
+        </article>
+
+
+        <!-- QUIZ 03 -->
+        <article class="quiz-card vvip-quiz-card hover-vivid-pink"
+                 id="quizCard3"
+                 data-category="WALLET SECURITY"
+                 data-difficulty="EASY">
+
+            <div class="quiz-card-topline">
+                <span class="card-tag">QUIZ 03 // WALLET FRAUD</span>
+                <span class="quiz-difficulty easy">EASY</span>
+            </div>
+
+            <div class="quiz-card-header">
+                <span class="quiz-icon-badge">💸</span>
+                <div>
+                    <h3>Fake Refund Attack</h3>
+                    <small>Digital Wallet Protection</small>
+                </div>
+            </div>
+
+            <div class="quiz-scenario">
+                <span class="scenario-label">LIVE SCENARIO</span>
+                <p>
+                    A stranger claims they accidentally sent Rs. 20,000 to your
+                    wallet and demands an immediate refund based on an SMS.
+                </p>
+            </div>
+
+            <div class="quiz-question-text">
+                What should you verify first?
+            </div>
+
+            <div class="quiz-options-group">
+
+                <button class="quiz-opt-btn"
+                        onclick="checkVIPQuiz(3,0,true,this)">
+                    <span>A</span>
+                    Open the official wallet app and verify the actual balance.
+                </button>
+
+                <button class="quiz-opt-btn"
+                        onclick="checkVIPQuiz(3,1,false,this)">
+                    <span>B</span>
+                    Refund the money immediately because the SMS proves it.
+                </button>
+
+                <button class="quiz-opt-btn"
+                        onclick="checkVIPQuiz(3,2,false,this)">
+                    <span>C</span>
+                    Send half the amount back as a compromise.
+                </button>
+
+            </div>
+
+            <div id="quizFeedback3" class="quiz-message-box"></div>
+
+            <div class="quiz-skill">
+                <span>SKILL</span>
+                <strong>Payment Verification • SMS Scam Defense</strong>
+            </div>
+
+        </article>
+
+
+        <!-- QUIZ 04 -->
+        <article class="quiz-card vvip-quiz-card hover-vivid-yellow"
+                 id="quizCard4"
+                 data-category="NETWORK SECURITY"
+                 data-difficulty="MEDIUM">
+
+            <div class="quiz-card-topline">
+                <span class="card-tag">QUIZ 04 // NETWORK INTEL</span>
+                <span class="quiz-difficulty medium">MEDIUM</span>
+            </div>
+
+            <div class="quiz-card-header">
+                <span class="quiz-icon-badge">📡</span>
+                <div>
+                    <h3>Public Wi-Fi Defense</h3>
+                    <small>Network Threat Awareness</small>
+                </div>
+            </div>
+
+            <div class="quiz-scenario">
+                <span class="scenario-label">LIVE SCENARIO</span>
+                <p>
+                    You are connected to an open network named
+                    <strong>Free_Airport_WiFi</strong> and need to access banking.
+                </p>
+            </div>
+
+            <div class="quiz-question-text">
+                Which option reduces unnecessary risk?
+            </div>
+
+            <div class="quiz-options-group">
+
+                <button class="quiz-opt-btn"
+                        onclick="checkVIPQuiz(4,0,false,this)">
+                    <span>A</span>
+                    Log in directly through the public Wi-Fi.
+                </button>
+
+                <button class="quiz-opt-btn"
+                        onclick="checkVIPQuiz(4,1,true,this)">
+                    <span>B</span>
+                    Prefer cellular data; if appropriate, use a trusted VPN.
+                </button>
+
+                <button class="quiz-opt-btn"
+                        onclick="checkVIPQuiz(4,2,false,this)">
+                    <span>C</span>
+                    Disable the phone's security protections.
+                </button>
+
+            </div>
+
+            <div id="quizFeedback4" class="quiz-message-box"></div>
+
+            <div class="quiz-skill">
+                <span>SKILL</span>
+                <strong>Network Hygiene • Public Wi-Fi Safety</strong>
+            </div>
+
+        </article>
+
+
+        <!-- QUIZ 05 -->
+        <article class="quiz-card vvip-quiz-card hover-vivid-purple"
+                 id="quizCard5"
+                 data-category="PAYMENT SECURITY"
+                 data-difficulty="MEDIUM">
+
+            <div class="quiz-card-topline">
+                <span class="card-tag">QUIZ 05 // QR SCAM DEFENSE</span>
+                <span class="quiz-difficulty medium">MEDIUM</span>
+            </div>
+
+            <div class="quiz-card-header">
+                <span class="quiz-icon-badge">🔎</span>
+                <div>
+                    <h3>QR Payment Trap</h3>
+                    <small>Digital Payment Awareness</small>
+                </div>
+            </div>
+
+            <div class="quiz-scenario">
+                <span class="scenario-label">LIVE SCENARIO</span>
+                <p>
+                    An online buyer sends a QR code and says you must scan it
+                    and enter your PIN to receive money.
+                </p>
+            </div>
+
+            <div class="quiz-question-text">
+                What is the safe response?
+            </div>
+
+            <div class="quiz-options-group">
+
+                <button class="quiz-opt-btn"
+                        onclick="checkVIPQuiz(5,0,false,this)">
+                    <span>A</span>
+                    Scan it and enter the PIN to receive the payment.
+                </button>
+
+                <button class="quiz-opt-btn"
+                        onclick="checkVIPQuiz(5,1,true,this)">
+                    <span>B</span>
+                    Reject the request and verify the payment through the official app.
+                </button>
+
+                <button class="quiz-opt-btn"
+                        onclick="checkVIPQuiz(5,2,false,this)">
+                    <span>C</span>
+                    Send the QR code to random people for confirmation.
+                </button>
+
+            </div>
+
+            <div id="quizFeedback5" class="quiz-message-box"></div>
+
+            <div class="quiz-skill">
+                <span>SKILL</span>
+                <strong>QR Safety • Payment Fraud Detection</strong>
+            </div>
+
+        </article>
+
+
+        <!-- QUIZ 06 -->
+        <article class="quiz-card vvip-quiz-card hover-vivid-red"
+                 id="quizCard6"
+                 data-category="AI FRAUD"
+                 data-difficulty="HARD">
+
+            <div class="quiz-card-topline">
+                <span class="card-tag">QUIZ 06 // AI DEEPFAKE DEFENSE</span>
+                <span class="quiz-difficulty hard">HARD</span>
+            </div>
+
+            <div class="quiz-card-header">
+                <span class="quiz-icon-badge">🎙️</span>
+                <div>
+                    <h3>AI Voice Emergency Scam</h3>
+                    <small>Deepfake & Social Engineering</small>
+                </div>
+            </div>
+
+            <div class="quiz-scenario">
+                <span class="scenario-label">LIVE SCENARIO</span>
+                <p>
+                    A caller sounds exactly like your family member and claims
+                    there is an emergency requiring immediate money.
+                </p>
+            </div>
+
+            <div class="quiz-question-text">
+                What should you do before sending money?
+            </div>
+
+            <div class="quiz-options-group">
+
+                <button class="quiz-opt-btn"
+                        onclick="checkVIPQuiz(6,0,false,this)">
+                    <span>A</span>
+                    Transfer the money immediately because the voice is familiar.
+                </button>
+
+                <button class="quiz-opt-btn"
+                        onclick="checkVIPQuiz(6,1,true,this)">
+                    <span>B</span>
+                    End the call and independently contact the family member.
+                </button>
+
+                <button class="quiz-opt-btn"
+                        onclick="checkVIPQuiz(6,2,false,this)">
+                    <span>C</span>
+                    Ask the caller to send an ID photo over WhatsApp.
+                </button>
+
+            </div>
+
+            <div id="quizFeedback6" class="quiz-message-box"></div>
+
+            <div class="quiz-skill">
+                <span>SKILL</span>
+                <strong>Deepfake Awareness • Independent Verification</strong>
+            </div>
+
+        </article>
+
+
+        <!-- QUIZ 07 -->
+        <article class="quiz-card vvip-quiz-card hover-vivid-cyan"
+                 id="quizCard7"
+                 data-category="ATM SECURITY"
+                 data-difficulty="HARD">
+
+            <div class="quiz-card-topline">
+                <span class="card-tag">QUIZ 07 // HARDWARE SECURITY</span>
+                <span class="quiz-difficulty hard">HARD</span>
+            </div>
+
+            <div class="quiz-card-header">
+                <span class="quiz-icon-badge">💳</span>
+                <div>
+                    <h3>ATM Skimmer Detection</h3>
+                    <small>Physical Security Awareness</small>
+                </div>
+            </div>
+
+            <div class="quiz-scenario">
+                <span class="scenario-label">LIVE SCENARIO</span>
+                <p>
+                    The ATM card slot feels loose and has unusual glue marks
+                    around its edges.
+                </p>
+            </div>
+
+            <div class="quiz-question-text">
+                What is the safest action?
+            </div>
+
+            <div class="quiz-options-group">
+
+                <button class="quiz-opt-btn"
+                        onclick="checkVIPQuiz(7,0,false,this)">
+                    <span>A</span>
+                    Insert the card quickly before anyone notices.
+                </button>
+
+                <button class="quiz-opt-btn"
+                        onclick="checkVIPQuiz(7,1,true,this)">
+                    <span>B</span>
+                    Do not use the ATM and report the suspicious hardware.
+                </button>
+
+                <button class="quiz-opt-btn"
+                        onclick="checkVIPQuiz(7,2,false,this)">
+                    <span>C</span>
+                    Remove the suspicious part yourself.
+                </button>
+
+            </div>
+
+            <div id="quizFeedback7" class="quiz-message-box"></div>
+
+            <div class="quiz-skill">
+                <span>SKILL</span>
+                <strong>ATM Safety • Hardware Tampering Detection</strong>
+            </div>
+
+        </article>
+
+
+        <!-- QUIZ 08 -->
+        <article class="quiz-card vvip-quiz-card hover-vivid-orange"
+                 id="quizCard8"
+                 data-category="ACCOUNT SECURITY"
+                 data-difficulty="HARD">
+
+            <div class="quiz-card-topline">
+                <span class="card-tag">QUIZ 08 // ACCOUNT SHIELD</span>
+                <span class="quiz-difficulty hard">HARD</span>
+            </div>
+
+            <div class="quiz-card-header">
+                <span class="quiz-icon-badge">🛡️</span>
+                <div>
+                    <h3>WhatsApp Verification Code</h3>
+                    <small>Account Takeover Prevention</small>
+                </div>
+            </div>
+
+            <div class="quiz-scenario">
+                <span class="scenario-label">LIVE SCENARIO</span>
+                <p>
+                    A friend asks you to forward a 6-digit verification code
+                    that appeared on your phone.
+                </p>
+            </div>
+
+            <div class="quiz-question-text">
+                What should you do?
+            </div>
+
+            <div class="quiz-options-group">
+
+                <button class="quiz-opt-btn"
+                        onclick="checkVIPQuiz(8,0,false,this)">
+                    <span>A</span>
+                    Send the code because the request came from a friend.
+                </button>
+
+                <button class="quiz-opt-btn"
+                        onclick="checkVIPQuiz(8,1,true,this)">
+                    <span>B</span>
+                    Never share the code; independently verify the situation.
+                </button>
+
+                <button class="quiz-opt-btn"
+                        onclick="checkVIPQuiz(8,2,false,this)">
+                    <span>C</span>
+                    Post the code in a group to verify the sender.
+                </button>
+
+            </div>
+
+            <div id="quizFeedback8" class="quiz-message-box"></div>
+
+            <div class="quiz-skill">
+                <span>SKILL</span>
+                <strong>2FA • Account Takeover Prevention</strong>
+            </div>
+
+        </article>
+
+    </div>
+
+
+    <!-- ========================================================
+         CERTIFICATION RESULT PANEL
+         ======================================================== -->
+    <div id="quizCertification" class="quiz-certification-panel">
+
+        <div class="certification-icon">🏆</div>
+
+        <div class="card-tag">CYBERGUARD // CERTIFICATION ENGINE</div>
+
+        <h3>Security Assessment Complete</h3>
+
+        <p id="quizFinalMessage">
+            Complete all 8 scenarios to unlock your CyberGuard readiness result.
+        </p>
+
+        <div class="certification-stats">
+
+            <div>
+                <span>FINAL SCORE</span>
+                <strong id="quizFinalScore">0 / 80</strong>
+            </div>
+
+            <div>
+                <span>COMPLETED</span>
+                <strong id="quizFinalCompleted">0 / 8</strong>
+            </div>
+
+            <div>
+                <span>STATUS</span>
+                <strong id="quizFinalStatus">LOCKED</strong>
+            </div>
+
+        </div>
+
+        <button type="button"
+                class="quiz-reset-btn"
+                onclick="resetVIPQuiz()">
+            ↻ RUN ASSESSMENT AGAIN
+        </button>
+
+    </div>
+
+</section>
+
+
+<!-- ============================================================
+     CYBERGUARD // FINAL CREATOR & SECURITY MISSION SECTION
+     ============================================================ -->
+<section id="creator" class="page-section creator-page">
+
+    <div class="creator-panel">
+
+        <div class="creator-grid">
+
+            <div class="creator-identity">
+
+                <div class="creator-avatar">
+                    🛡️
+                </div>
+
+                <div>
+                    <span class="card-tag">CYBERGUARD // CREATOR PROFILE</span>
+
+                    <h2>
+                        Built with Purpose.
+                        <span class="cyber-text">Protected by Knowledge.</span>
+                    </h2>
+
+                    <p>
+                        CyberGuard is designed as a cybersecurity awareness
+                        platform to help users understand common digital threats,
+                        recognize scams and build safer online habits.
+                    </p>
+                </div>
+
+            </div>
+
+
+            <div class="creator-info-card">
+
+                <div class="creator-info-row">
+                    <span>PROJECT CREATOR</span>
+                    <strong>Hafiz Abdul Moiz</strong>
+                </div>
+
+                <div class="creator-info-row">
+                    <span>FATHER'S NAME</span>
+                    <strong>Muzmmial Ahmed</strong>
+                </div>
+
+                <div class="creator-info-row">
+                    <span>PROJECT</span>
+                    <strong>CYBER GUARD // SOC v4.0</strong>
+                </div>
+
+                <div class="creator-info-row">
+                    <span>MISSION</span>
+                    <strong>Cyber Awareness • Safety • Education</strong>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="creator-divider"></div>
+
+
+        <div class="creator-bottom">
+
+            <div class="creator-message">
+                <span class="status-dot"></span>
+                <span>SECURITY AWARENESS IS EVERYONE'S RESPONSIBILITY.</span>
+            </div>
+
+            <a class="creator-whatsapp"
+               href="https://wa.me/923262116352"
+               target="_blank"
+               rel="noopener noreferrer">
+                <span>💬</span>
+                Contact on WhatsApp
+            </a>
+
+        </div>
+
+
+        <div class="creator-footer-note">
+            © 2026 CYBER GUARD // Created by Hafiz Abdul Moiz //
+            Security Awareness & Education Platform
+        </div>
+
+    </div>
+
+</section>
+<!-- ============================================================
+     CYBERGUARD // VVIP LIVE COMMUNITY FEEDBACK (FIREBASE RTDB)
+     ============================================================ -->
+<section id="feedback" class="page-section feedback-page vvip-feedback-section">
+    <div class="feedback-container">
+        
+        <!-- SECTION HEADER -->
+        <div class="feedback-header text-center">
+            <div class="feedback-header-topline">
+                <div class="feedback-live-pill">
+                    <span class="live-dot-pulse"></span>
+                    <span>CYBERGUARD // VVIP COMMUNITY PULSE</span>
+                </div>
+
+                <!-- ADMIN LOGIN BUTTON (PASSWORD: 125) -->
+                <button type="button" id="adminPortalBtn" class="admin-portal-toggle-btn" onclick="openAdminPassModal()">
+                    <span id="adminBtnIcon">🔒</span>
+                    <span id="adminBtnText">Admin Login</span>
+                </button>
+            </div>
+
+            <h2 class="section-title">
+                <span class="icon">💬</span>
+                Global Live <span class="cyber-text">Community Feedback</span>
+            </h2>
+
+            <p class="section-desc">
+                Cybersecurity defenders, students aur ethical hackers ka live feedback.
+                Real-time Firebase sync, WhatsApp auto-alerts (0326-2116352) aur Admin Moderation Suite.
+            </p>
+
+            <!-- ADMIN ACTIVE BANNER -->
+            <div id="adminActiveBanner" class="admin-active-banner" style="display: none;">
+                <div class="admin-banner-content">
+                    <span class="founder-crown-anim">👑</span>
+                    <span><strong>ADMIN CONTROL UNLOCKED:</strong> Hafiz Abdul Moiz Mode active! (Limit: 2 Admin Feedbacks). Live Edit, Delete, Pin aur Admin Emojis active hain.</span>
+                </div>
+                <button type="button" class="btn-exit-admin" onclick="logoutAdminMode()">Exit Admin</button>
+            </div>
+
+            <!-- LIVE FIREBASE STATUS PILL -->
+            <div class="feedback-db-status">
+                <span class="db-dot"></span>
+                <span>FIREBASE REALTIME DB:</span>
+                <strong id="fbDbStatusText">CONNECTED (LIVE)</strong>
+                <span class="db-divider"></span>
+            </div>
+        </div>
+
+        <!-- STATS OVERVIEW CARDS (4 CARDS) -->
+        <div class="feedback-stats-grid">
+            <div class="fb-stat-card">
+                <div class="fb-stat-top">
+                    <span>AVERAGE RATING</span>
+                    <span class="star-icon">⭐</span>
+                </div>
+                <div class="fb-stat-val">
+                    <strong id="fbAvgRating">5.0</strong>
+                    <small>/ 5.0</small>
+                </div>
+                <div class="fb-stat-sub text-amber" id="fbStarsRow">★★★★★ (100% 5-Star)</div>
+            </div>
+
+            <div class="fb-stat-card">
+                <div class="fb-stat-top">
+                    <span>TOTAL REVIEWS</span>
+                    <span class="star-icon">📝</span>
+                </div>
+                <div class="fb-stat-val">
+                    <strong id="fbTotalCount">0</strong>
+                    <small>Verified</small>
+                </div>
+                <div class="fb-stat-sub text-green">Community Approved</div>
+            </div>
+
+            <div class="fb-stat-card">
+                <div class="fb-stat-top">
+                    <span>LIVE REACTIONS</span>
+                    <span class="star-icon">🔥</span>
+                </div>
+                <div class="fb-stat-val">
+                    <strong id="fbTotalReactions">0</strong>
+                    <small>High Pulse</small>
+                </div>
+                <div class="fb-stat-sub text-cyan">Upvotes &amp; Shields</div>
+            </div>
+
+            <div class="fb-stat-card">
+                <div class="fb-stat-top">
+                    <span>DEFENSE TRUST</span>
+                    <span class="star-icon">🛡️</span>
+                </div>
+                <div class="fb-stat-val">
+                    <strong class="text-green">100%</strong>
+                    <small>Real Protocol</small>
+                </div>
+                <div class="fb-stat-sub text-green">Pakistan &amp; Global Vectors</div>
+            </div>
+        </div>
+
+        <!-- MAIN LAYOUT: FORM / STATUS (LEFT) + LIVE FEED (RIGHT) -->
+        <div class="feedback-main-layout">
+            
+            <!-- LEFT COLUMN: SUBMISSION FORM OR SUBMITTED STATE -->
+            <div class="feedback-form-box" id="feedbackFormBox">
+                
+                <!-- USER ALREADY SUBMITTED NOTICE (FORM GAYAB HONE PAR YE DIKHEGA) -->
+                <div id="userSubmittedCard" class="user-submitted-card" style="display: none;">
+                    <div class="submitted-icon-wrap">🎉</div>
+                    <h3>Feedback Submitted Successfully!</h3>
+                    <p>Aapka feedback Submitted ho gaya ha aur website par live display ho raha ha. Thank you for Exploring and supporting My website and project CyberGuard!</p>
+                    <div class="submitted-meta-badge">
+                        <span>✓ Single Submission Verified</span>
+                    </div>
+                    <small class="resubmit-hint">Agar Admin aapka feedback remove karega, to aap yahan dubara feedback submit kar sakenge.</small>
+                </div>
+
+                <!-- ADMIN LIMIT (2 FEEDBACKS) REACHED CARD WITH EDIT BUTTONS -->
+                <div id="adminLimitCard" class="admin-limit-card" style="display: none;">
+                    <div class="submitted-icon-wrap crown-glow">👑</div>
+                    <h3>Admin Limit Reached (2/2)</h3>
+                    <p>Aap ne apne dono official Founder feedbacks post kar diye hain. Neechy buttons se aap kisi bhi waqt apna text edit kar sakte hain:</p>
+                    <div class="admin-edit-buttons-grid" id="adminEditButtonsGrid"></div>
+                </div>
+
+                <!-- MAIN INTERACTIVE FORM -->
+                <div id="formFieldsContainer">
+                    <div class="form-header">
+                        <div>
+                            <span class="mini-tag" id="formHeaderTag">★ SUBMIT YOUR FEEDBACK</span>
+                            <h3 id="formHeaderTitle">Share Your Live Experience</h3>
+                        </div>
+                        <span class="form-icon-badge" id="formBadgeIcon">✨</span>
+                    </div>
+
+                    <!-- Admin Mode Toggle Inside Form -->
+                    <div id="adminPostToggleRow" class="admin-post-toggle-row" style="display: none;">
+                        <span class="admin-toggle-label">👑 Post as Project Founder:</span>
+                        <button type="button" id="btnAdminModeToggle" class="btn-admin-mode-toggle active" onclick="togglePostAsAdmin()">
+                            👑 ADMIN MODE ON (Limit: 2)
+                        </button>
+                    </div>
+
+                    <form id="cyberFeedbackForm" onsubmit="handleFeedbackSubmit(event)">
+                        <!-- Name & Role -->
+                        <div class="form-row-2">
+                            <div class="form-group">
+                                <label>YOUR NAME / ALIAS <span class="req">*</span></label>
+                                <input type="text" id="fbInputName" placeholder="e.g. Hafiz Moiz / Cyber Cadet" required autocomplete="off">
+                            </div>
+                            <div class="form-group">
+                                <label>ROLE / CITY (OPTIONAL)</label>
+                                <input type="text" id="fbInputRole" placeholder="e.g. Security Analyst / Karachi" autocomplete="off">
+                            </div>
+                        </div>
+
+                        <!-- Star Rating Interactive -->
+                        <div class="form-group">
+                            <div class="flex-between">
+                                <label>STAR RATING <span class="req">*</span></label>
+                                <span id="fbRatingLabel" class="rating-label-text">⭐⭐⭐⭐⭐ 5.0 VVIP Masterpiece!</span>
+                            </div>
+                            <div class="star-picker-row" id="starPickerRow">
+                                <button type="button" class="star-btn active" data-val="1" onclick="setStarRating(1)">★</button>
+                                <button type="button" class="star-btn active" data-val="2" onclick="setStarRating(2)">★</button>
+                                <button type="button" class="star-btn active" data-val="3" onclick="setStarRating(3)">★</button>
+                                <button type="button" class="star-btn active" data-val="4" onclick="setStarRating(4)">★</button>
+                                <button type="button" class="star-btn active" data-val="5" onclick="setStarRating(5)">★</button>
+                            </div>
+                        </div>
+
+                        <!-- Category & Mood (Includes About-us sections) -->
+                        <div class="form-row-2">
+                            <div class="form-group">
+                                <label>SECTION / TOPIC</label>
+                                <select id="fbCategorySelect">
+                                    <option value="General">🌐 Overall CyberGuard Hub</option>
+                                    <option value="Scam Shield">🛡️ Financial Scam Shield (EasyPaisa/JazzCash)</option>
+                                    <option value="Tools Suite">⚡ Security Audit Suite (30 Modules)</option>
+                                    <option value="Cyber Games">🎮 Interactive Cyber Games (5 Games)</option>
+                                    <option value="Threat Matrix">⚠️ Threat Matrix &amp; Labs</option>
+                                    <option value="About Us">🏛️ About Us &amp; Mission</option>
+                                    <option value="Live Threat Map">◈ Live Cyber Threat Map</option>
+                                    <option value="Contact Support">✉️ Contact &amp; Incident Dispatch</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>YOUR FEELING</label>
+                                <select id="fbMoodSelect">
+                                    <option value="🤩 Loved It">🤩 Loved It</option>
+                                    <option value="🛡️ Super Secure">🛡️ Super Secure</option>
+                                    <option value="⚡ Ultra Fast">⚡ Ultra Fast</option>
+                                    <option value="💯 100% Recommended">💯 100% Recommended</option>
+                                    <option value="🧠 Mindblowing">🧠 Mindblowing</option>
+                                    <option value="💡 Very Useful">💡 Very Useful</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- DAILY-USE EMOJIS TRAY -->
+                        <div class="form-group">
+                            <div class="flex-between">
+                                <label class="emoji-tray-label">✨ DAILY BASIS EMOJIS (1-CLICK INSERT):</label>
+                                <small class="hint-text">Click to add in text</small>
+                            </div>
+                            <div class="daily-emoji-tray" id="dailyEmojiTray">
+                                <button type="button" onclick="insertFeedbackEmoji('😊')">😊</button>
+                                <button type="button" onclick="insertFeedbackEmoji('😍')">😍</button>
+                                <button type="button" onclick="insertFeedbackEmoji('🔥')">🔥</button>
+                                <button type="button" onclick="insertFeedbackEmoji('💯')">💯</button>
+                                <button type="button" onclick="insertFeedbackEmoji('👍')">👍</button>
+                                <button type="button" onclick="insertFeedbackEmoji('❤️')">❤️</button>
+                                <button type="button" onclick="insertFeedbackEmoji('🛡️')">🛡️</button>
+                                <button type="button" onclick="insertFeedbackEmoji('⚡')">⚡</button>
+                                <button type="button" onclick="insertFeedbackEmoji('👏')">👏</button>
+                                <button type="button" onclick="insertFeedbackEmoji('🌟')">🌟</button>
+                                <button type="button" onclick="insertFeedbackEmoji('🚀')">🚀</button>
+                                <button type="button" onclick="insertFeedbackEmoji('🎯')">🎯</button>
+                                <button type="button" onclick="insertFeedbackEmoji('🧠')">🧠</button>
+                                <button type="button" onclick="insertFeedbackEmoji('💻')">💻</button>
+                                <button type="button" onclick="insertFeedbackEmoji('🔒')">🔒</button>
+                                <button type="button" onclick="insertFeedbackEmoji('💡')">💡</button>
+                                <button type="button" onclick="insertFeedbackEmoji('👑')">👑</button>
+                                <button type="button" onclick="insertFeedbackEmoji('🏆')">🏆</button>
+                                <button type="button" onclick="insertFeedbackEmoji('✨')">✨</button>
+                                <button type="button" onclick="insertFeedbackEmoji('🤝')">🤝</button>
+                                <button type="button" onclick="insertFeedbackEmoji('😄')">😄</button>
+                                <button type="button" onclick="insertFeedbackEmoji('🙌')">🙌</button>
+                                <button type="button" onclick="insertFeedbackEmoji('👌')">👌</button>
+                                <button type="button" onclick="insertFeedbackEmoji('🤩')">🤩</button>
+                            </div>
+                        </div>
+
+                        <!-- Message Textarea (1000 CHARS LIMIT) -->
+                        <div class="form-group">
+                            <div class="flex-between">
+                                <label>YOUR DETAILED FEEDBACK <span class="req">*</span></label>
+                                <span id="fbCharCount" class="hint-text">0 / 1000 chars</span>
+                            </div>
+                            <textarea id="fbInputMessage" rows="5" maxlength="1000" required placeholder="Share your experience, review scam simulation, tools, or About Us mission..." oninput="updateFbCharCount()"></textarea>
+                        </div>
+
+                        <!-- SUBMIT YOUR FEEDBACK BUTTON -->
+                        <button type="submit" id="fbSubmitBtn" class="btn-submit-vip-feedback">
+                            <span id="fbBtnSpinner" class="btn-spinner" style="display: none;"></span>
+                            <span id="fbBtnText">🚀 Submit Your Feedback</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Toast Status Notification -->
+                <div id="fbToastAlert" class="fb-toast-alert" style="display: none;"></div>
+
+                <!-- WhatsApp Notification Banner -->
+                <div id="fbWhatsAppBanner" class="fb-whatsapp-banner" style="display: none;">
+                    <span class="wa-banner-text">📲 WhatsApp alert dispatched to 0326-2116352</span>
+                    <a id="fbWhatsAppDirectLink" href="#" target="_blank" rel="noopener noreferrer" class="btn-open-wa">Open WhatsApp</a>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: LIVE FEED STREAM -->
+            <div class="feedback-stream-box">
+                
+                <!-- Filter & Search Toolbar -->
+                <div class="stream-toolbar">
+                    <div class="search-input-wrap">
+                        <span class="search-ico">🔍</span>
+                        <input type="text" id="fbSearchInput" placeholder="Search reviews by name, keyword or emoji..." oninput="filterFeedbacksLive()">
+                    </div>
+
+                    <div class="stream-category-filters" id="fbCategoryFilterTabs">
+                        <button type="button" class="cat-pill active" onclick="setFeedbackCategoryFilter('All', this)">All</button>
+                        <button type="button" class="cat-pill" onclick="setFeedbackCategoryFilter('Scam Shield', this)">Scam Shield</button>
+                        <button type="button" class="cat-pill" onclick="setFeedbackCategoryFilter('Tools Suite', this)">Tools Suite</button>
+                        <button type="button" class="cat-pill" onclick="setFeedbackCategoryFilter('Cyber Games', this)">Cyber Games</button>
+                        <button type="button" class="cat-pill" onclick="setFeedbackCategoryFilter('Threat Matrix', this)">Threat Matrix</button>
+                        <button type="button" class="cat-pill" onclick="setFeedbackCategoryFilter('About Us', this)">About Us</button>
+                    </div>
+                </div>
+
+                <!-- Live Stream Cards Container -->
+                <div class="feedback-cards-list" id="feedbackCardsList">
+                    <div class="loading-pulse-box">
+                        <span class="pulse-spinner"></span>
+                        <p>Syncing verified community feedbacks from Firebase Realtime DB...</p>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ADMIN PASSCODE POPUP MODAL (PASSWORD: 125) -->
+    <div id="adminPassModal" class="admin-pass-modal" style="display: none;">
+        <div class="admin-pass-card">
+            <button type="button" class="modal-close-x" onclick="closeAdminPassModal()">&times;</button>
+            <div class="admin-pass-header text-center">
+                <span class="admin-pass-crown">👑</span>
+                <h3>Enter Founder Passcode</h3>
+                <p>Enter your Admin passcode to unlock moderation control.</p>
+            </div>
+            <form onsubmit="handleAdminLoginSubmit(event)">
+                <input type="password" id="adminPassInput" placeholder="Enter Passcode ..." autocomplete="off" required>
+                <div id="adminPassError" class="admin-pass-err" style="display: none;"></div>
+                <button type="submit" class="btn-unlock-admin">UNLOCK ADMIN ACCESS</button>
+            </form>
+        </div>
+    </div>
+</section>
+    <!-- MODAL POPUPS -->
+    <div id="phishingModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('phishingModal')">&times;</span>
+            <h2 data-key="modalPhishTitle">🎣 Phishing Attack Analysis</h2>
+            <hr>
+            <p data-key="modalPhishText">Attackers duplicate real brand portals to steal login credentials and session keys.</p>
+            <p class="modal-tip" data-key="modalPhishTip">💡 Tip: Always inspect link domain names carefully before typing passwords.</p>
+        </div>
+    </div>
+
+    <div id="malwareModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('malwareModal')">&times;</span>
+            <h2 data-key="modalMalwareTitle">🦠 Ransomware & Malware Mechanics</h2>
+            <hr>
+            <p data-key="modalMalwareText">Ransomware locks local user files using asymmetric RSA encryption keypairs.</p>
+            <p class="modal-tip" data-key="modalMalwareTip">💡 Tip: Maintain isolated offline backups of critical documents routine-wise.</p>
+        </div>
+    </div>
+
+    <div id="socialModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('socialModal')">&times;</span>
+            <h2 data-key="modalSocialTitle">🎭 Social Engineering Vector</h2>
+            <hr>
+            <p data-key="modalSocialText">Tricking human targets through fabricated urgency, panic, or authority figures.</p>
+            <p class="modal-tip" data-key="modalSocialTip">💡 Tip: Verify all unexpected requests directly via official phone numbers.</p>
+        </div>
+    </div>
+
+    <!-- 7 NEW MODALS FOR ADDITIONAL THREAT CARDS -->
+    <div id="mitmModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('mitmModal')">&times;</span>
+            <h2>📡 Man-in-the-Middle (MitM) Deep Dive</h2>
+            <hr>
+            <p>MitM attacks intercept unencrypted network sessions on rogue Wi-Fi or compromised routers, reading sensitive data packets in transit.</p>
+            <p class="modal-tip">💡 Tip: Always use HTTPS and active VPNs on untrusted or open public networks.</p>
+        </div>
+    </div>
+
+    <div id="ddosModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('ddosModal')">&times;</span>
+            <h2>⚡ DDoS Volumetric Attack Mechanics</h2>
+            <hr>
+            <p>DDoS floods target servers with massive traffic bursts from global botnets, knocking online portals offline.</p>
+            <p class="modal-tip">💡 Tip: Utilize Cloudflare or automated scrubbing centers to filter malicious packet surges.</p>
+        </div>
+    </div>
+
+    <div id="sqliModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('sqliModal')">&times;</span>
+            <h2>💉 SQL Injection (SQLi) Prevention</h2>
+            <hr>
+            <p>Unsanitized inputs allow attackers to run database queries directly on backend servers to alter or steal records.</p>
+            <p class="modal-tip">💡 Tip: Use Prepared Statements and Parameterized Queries for all SQL database transactions.</p>
+        </div>
+    </div>
+
+    <div id="zerodayModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('zerodayModal')">&times;</span>
+            <h2>💣 Zero-Day Exploitation Vectors</h2>
+            <hr>
+            <p>Zero-day vulnerabilities target software code gaps before software vendors are aware or issue defensive patches.</p>
+            <p class="modal-tip">💡 Tip: Maintain Web Application Firewalls (WAF) and immediate automated patch deployment pipelines.</p>
+        </div>
+    </div>
+
+    <div id="aiDeepfakeModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('aiDeepfakeModal')">&times;</span>
+            <h2>🤖 AI Voice & Deepfake Fraud Analysis</h2>
+            <hr>
+            <p>Deepfake AI mimics human voices and video streams from brief sample recordings to commit social fraud.</p>
+            <p class="modal-tip">💡 Tip: Establish pre-agreed secret passphrase words with family members for emergency calls.</p>
+        </div>
+    </div>
+
+    <div id="xssModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('xssModal')">&times;</span>
+            <h2>🕸️ Cross-Site Scripting (XSS) Mechanics</h2>
+            <hr>
+            <p>XSS attacks execute malicious client scripts in victim browsers to hijack session tokens and local storage data.</p>
+            <p class="modal-tip">💡 Tip: Sanitize HTML output and enforce strict Content Security Policies (CSP).</p>
+        </div>
+    </div>
+
+    <div id="supplyChainModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('supplyChainModal')">&times;</span>
+            <h2>📦 Supply Chain Security Guardrails</h2>
+            <hr>
+            <p>Supply chain compromises slip malicious backdoors into legitimate software updates before distribution.</p>
+            <p class="modal-tip">💡 Tip: Audit software dependencies continuously using Software Bill of Materials (SBOM) tools.</p>
+        </div>
+    </div>
+<!-- EMERGENCY INCIDENT RESPONSE PROTOCOL MODAL -->
+    <div id="alertModal" class="modal">
+        <div class="modal-content alert-style">
+            <span class="close-btn" onclick="closeModal('alertModal')">&times;</span>
+            <h2 data-key="modalAlertTitle">🚨 Emergency Incident Response Protocol</h2>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 15px;">Follow these 15 critical emergency steps immediately if you are hacked, scammed, or experiencing a cyber incident:</p>
+            <hr style="border-color: rgba(255,51,102,0.3); margin-bottom: 15px;">
+            
+            <ol class="alert-steps">
+                <li><strong>Network Isolation:</strong> Disconnect Wi-Fi, Ethernet, and Mobile Data instantly to stop data exfiltration.</li>
+                <li><strong>Bank & Wallet Freeze:</strong> Call 3737 (EasyPaisa), 4444 (JazzCash), or your Bank Helpline to freeze accounts immediately.</li>
+                <li><strong>Session Invalidation:</strong> Go to security settings and click "Log Out of All Devices" on Email, WhatsApp, and Social accounts.</li>
+                <li><strong>Credential Rotation:</strong> Change master passwords for Email and Banking apps from a separate, secure device.</li>
+                <li><strong>DO NOT Share OTP/PIN:</strong> Never disclose OTPs or PINs to anyone, even if they claim to be Bank Officers or Police.</li>
+                <li><strong>WhatsApp Screen Sharing Warning:</strong> Immediately terminate screen sharing on WhatsApp/calls if requested by unknown callers.</li>
+                <li><strong>Malicious App Removal:</strong> Uninstall suspicious `.apk` files or remote apps like AnyDesk and TeamViewer in Safe Mode.</li>
+                <li><strong>Cybercrime Reporting:</strong> File an official complaint at <code>complaint.fia.gov.pk</code> (Pakistan) or <code>cybercrime.gov.in</code> (India).</li>
+                <li><strong>Financial Dispute Logging:</strong> Note down transaction IDs and report fraudulent transactions within 24 hours for chargeback.</li>
+                <li><strong>SIM Card Security:</strong> Contact your telecom carrier immediately if your SIM signal drops unexpectedly to prevent SIM Swap fraud.</li>
+                <li><strong>ATM Skimmer Check:</strong> Never insert your card or enter PIN if the ATM card slot feels loose, wobbly, or shows glue marks.</li>
+                <li><strong>QR Code Scanning Rule:</strong> Remember that scanning a QR code and entering your PIN always DEDUCTS money, never credits it.</li>
+                <li><strong>Family Emergency Verification:</strong> Always hang up and call family members directly to verify AI voice clone emergency calls.</li>
+                <li><strong>Evidence Preservation:</strong> Take clear screenshots of chat logs, caller numbers, and transaction receipts before deleting anything.</li>
+                <li><strong>Factory Data Reset:</strong> Perform a complete Factory Reset if deep spyware or malware persists after app uninstallation.</li>
+            </ol>
+        </div>
+    </div>
+
+
+    <!-- VVIP UI ENHANCEMENT LAYER -->
+    <div class="toast-stack" id="toastStack" aria-live="polite" aria-atomic="true"></div>
+
+    <button class="back-to-top" id="backToTop" type="button" aria-label="Back to top">
+        <span>↑</span>
+    </button>
+
+    <div class="quick-status-pill" id="quickStatusPill">
+        <span class="status-dot"></span>
+        <span>SECURE NODE</span>
+        <span class="quick-time" id="quickTime">--:--:--</span>
+    </div>
+
+    <!-- Dummy / presentation-only panels requested for the side menu -->
+    <div id="controlModal" class="modal vvip-info-modal">
+        <div class="modal-content">
+            <button class="close-btn" type="button" onclick="closeModal('controlModal')" aria-label="Close">&times;</button>
+            <span class="modal-kicker">CONTROL CENTER // DEMO</span>
+            <h2>◈ Control Center</h2>
+            <hr>
+            <p>This is a presentation-only control panel. The buttons and indicators below are demo UI elements and do not perform real administrative actions.</p>
+            <div class="demo-control-grid">
+                <div><span>Firewall</span><b>ACTIVE</b></div>
+                <div><span>Threat Monitor</span><b>ONLINE</b></div>
+                <div><span>Protection</span><b>99.9%</b></div>
+                <div><span>Node Status</span><b>READY</b></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="contactModal" class="modal vvip-info-modal">
+        <div class="modal-content">
+            <button class="close-btn" type="button" onclick="closeModal('contactModal')" aria-label="Close">&times;</button>
+            <span class="modal-kicker">CONTACT // DEMO</span>
+            <h2>✉ Contact Us</h2>
+            <hr>
+            <p>This contact panel is currently a demo placeholder. No message is sent and no external service is connected.</p>
+            <div class="demo-contact-card">
+                <span>SUPPORT CHANNEL</span>
+                <strong>CyberGuard Community Desk</strong>
+                <small>Future-ready placeholder for your real email, social links or support form.</small>
+            </div>
+        </div>
+    </div>
+
+    <div id="aboutModal" class="modal vvip-info-modal">
+        <div class="modal-content">
+            <button class="close-btn" type="button" onclick="closeModal('aboutModal')" aria-label="Close">&times;</button>
+            <span class="modal-kicker">ABOUT // CYBERGUARD</span>
+            <h2>ⓘ About Us</h2>
+            <hr>
+            <p>CyberGuard is designed as a cyber-safety education portal focused on practical awareness, scam defense, privacy hygiene and interactive learning for everyday internet users.</p>
+            <div class="about-tags">
+                <span>CYBER SAFETY</span><span>SCAM AWARENESS</span><span>PRIVACY</span><span>EDUCATION</span>
+            </div>
+        </div>
+    </div>
+<script src="script.js"></script>
+</body>
+</html>

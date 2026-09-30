@@ -1,0 +1,252 @@
+/* ============================================================
+   CYBERGUARD // ABOUT-US & UNIFIED PORTAL HUB SCRIPT
+   Multilingual Support, Counters, Incident Dispatch & Sync
+   ============================================================ */
+
+const CG_LANG_STORAGE_KEY = "cyberguard_lang";
+
+// Switch language button click function
+window.switchLanguage = function (lang) {
+    if (typeof window.applyAboutLanguage === "function") {
+        window.applyAboutLanguage(lang);
+    }
+    const dropdown = document.querySelector(".lang-dropdown");
+    if (dropdown) {
+        dropdown.classList.remove("show");
+    }
+};
+
+function initAll() {
+    initDropdownToggle();
+    initVvipCounters();
+    initWhatsAppIntegration();
+    initIncidentDispatch();
+    initAboutLanguageEngine();
+}
+
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initAll);
+} else {
+    initAll();
+}
+
+// 0. LANGUAGE DROPDOWN CLICK & HOVER TOGGLE
+function initDropdownToggle() {
+    const langToggleBtn = document.querySelector(".lang-toggle-btn");
+    const langDropdown = document.querySelector(".lang-dropdown");
+    const langWrapper = document.querySelector(".lang-switcher-wrapper");
+
+    if (langToggleBtn && langDropdown) {
+        langToggleBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            langDropdown.classList.toggle("show");
+        });
+
+        document.addEventListener("click", (e) => {
+            if (langWrapper && !langWrapper.contains(e.target)) {
+                langDropdown.classList.remove("show");
+            }
+        });
+    }
+}
+
+// 1. ANIMATED COUNTER ENGINE (WITH VISIBILITY FALLBACK)
+function initVvipCounters() {
+    const counters = document.querySelectorAll(".counter");
+    if (!counters.length) return;
+
+    function runCounter(counter) {
+        if (counter.dataset.animated === "true") return;
+        counter.dataset.animated = "true";
+        const target = +counter.getAttribute("data-target") || 0;
+        let count = 0;
+        const duration = 1200;
+        const steps = 30;
+        const stepValue = Math.max(1, Math.ceil(target / steps));
+
+        const interval = setInterval(() => {
+            count += stepValue;
+            if (count >= target) {
+                counter.innerText = target;
+                clearInterval(interval);
+            } else {
+                counter.innerText = Math.floor(count);
+            }
+        }, duration / steps);
+    }
+
+    if ("IntersectionObserver" in window) {
+        const observer = new IntersectionObserver((entries, obs) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    runCounter(entry.target);
+                    obs.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
+
+        counters.forEach(c => observer.observe(c));
+    }
+
+    // Fallback: Agar element screen par pehle se maujood hai
+    setTimeout(() => {
+        counters.forEach(c => {
+            const rect = c.getBoundingClientRect();
+            if (rect.top < window.innerHeight && rect.bottom >= 0) {
+                runCounter(c);
+            }
+        });
+    }, 250);
+}
+
+// 2. WHATSAPP INTELLIGENT DISPATCH & DIRECT LINK
+function initWhatsAppIntegration() {
+    const waNumber = "923262116352";
+    const openWaBtn = document.getElementById("openWaBtn");
+    const copyWaBtn = document.getElementById("copyWaBtn");
+    const waIncidentSelect = document.getElementById("waIncidentSelect");
+
+    if (openWaBtn) {
+        openWaBtn.addEventListener("click", () => {
+            const selectedCategory = waIncidentSelect ? waIncidentSelect.value : "general";
+            let messageText = "Hello CyberGuard Support Desk, I require immediate assistance.";
+
+            if (selectedCategory === "wallet") {
+                messageText = "*URGENT SCAM REPORT:* My Mobile Wallet (EasyPaisa/JazzCash) has received a suspicious transfer or fake SMS refund request. Please assist me immediately.";
+            } else if (selectedCategory === "phishing") {
+                messageText = "*PHISHING DOMAIN CHECK:* I encountered a suspicious login link requesting credentials or OTPs. Please analyze its safety.";
+            } else if (selectedCategory === "apk") {
+                messageText = "*MALICIOUS APK ALERT:* I was asked to install an Android APK file via WhatsApp. Please analyze this application.";
+            }
+
+            const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(messageText)}`;
+            window.open(waUrl, "_blank");
+        });
+    }
+
+    if (copyWaBtn) {
+        copyWaBtn.addEventListener("click", () => {
+            navigator.clipboard.writeText("03262116352").then(() => {
+                const lang = localStorage.getItem(CG_LANG_STORAGE_KEY) || "en";
+                const copiedText = lang === "ur" ? "✓ نمبر کاپی ہو گیا!" : (lang === "roman" ? "✓ Number Copy Ho Gaya!" : "✓ Number Copied to Clipboard!");
+                copyWaBtn.innerText = copiedText;
+                setTimeout(() => {
+                    const allTranslations = window.TRANSLATIONS || (typeof TRANSLATIONS !== "undefined" ? TRANSLATIONS : null);
+                    const dict = allTranslations ? allTranslations[lang] : null;
+                    copyWaBtn.innerText = dict?.contactWaBtnCopy || "📋 Copy Verified Number";
+                }, 2500);
+            });
+        });
+    }
+}
+
+// 3. ENCRYPTED INCIDENT REPORT DISPATCH SIMULATOR
+function initIncidentDispatch() {
+    const form = document.getElementById("incidentDispatchForm");
+    const notice = document.getElementById("dispatchSuccessNotice");
+    const ticketIdText = document.getElementById("ticketIdText");
+    const forwardTicketBtn = document.getElementById("forwardTicketBtn");
+    const submitBtn = document.getElementById("btnDispatchIncident");
+
+    if (!form) return;
+
+    form.addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        const name = document.getElementById("incName")?.value || "Anonymous";
+        const phone = document.getElementById("incPhone")?.value || "Not specified";
+        const severity = document.getElementById("incSeverity")?.value || "critical";
+        const details = document.getElementById("incDetails")?.value || "No details provided";
+
+        if (submitBtn) {
+            submitBtn.innerText = "⏳ Encrypting (AES-256) & Generating Ticket...";
+            submitBtn.disabled = true;
+        }
+
+        setTimeout(() => {
+            const ticketId = "CG-INC-" + Math.floor(1000 + Math.random() * 9000);
+            if (ticketIdText) ticketIdText.innerText = `Ticket ID: ${ticketId}`;
+
+            const dossier = `*INCIDENT DOSSIER [#${ticketId}]*\n*Name:* ${name}\n*Contact:* ${phone}\n*Severity:* ${severity.toUpperCase()}\n*Details:* ${details}\n*Status:* DISPATCHED TO SOC`;
+            if (forwardTicketBtn) {
+                forwardTicketBtn.href = `https://wa.me/923262116352?text=${encodeURIComponent(dossier)}`;
+            }
+
+            if (notice) notice.style.display = "flex";
+            if (submitBtn) {
+                submitBtn.innerText = "✓ Dossier Generated Successfully";
+                submitBtn.disabled = false;
+            }
+        }, 1500);
+    });
+}
+
+// 4. MULTI-LANGUAGE DUBBING & SYNCHRONIZATION ENGINE
+function initAboutLanguageEngine() {
+    const savedLang = localStorage.getItem(CG_LANG_STORAGE_KEY) || "en";
+    applyAboutLanguage(savedLang);
+
+    window.addEventListener("storage", (e) => {
+        if (e.key === CG_LANG_STORAGE_KEY && e.newValue) {
+            applyAboutLanguage(e.newValue);
+        }
+    });
+}
+
+window.applyAboutLanguage = function (lang) {
+    const allTranslations = window.TRANSLATIONS || (typeof TRANSLATIONS !== "undefined" ? TRANSLATIONS : null);
+    if (!allTranslations) {
+        setTimeout(() => {
+            if (window.TRANSLATIONS || typeof TRANSLATIONS !== "undefined") {
+                window.applyAboutLanguage(lang);
+            }
+        }, 100);
+        return;
+    }
+
+    const dict = allTranslations[lang] || allTranslations.en;
+    if (!dict) return;
+
+    // 1. Replace all elements with data-key
+    document.querySelectorAll("[data-key]").forEach((el) => {
+        const key = el.getAttribute("data-key");
+        if (dict[key] !== undefined) {
+            el.innerHTML = dict[key];
+        } else if (allTranslations.en && allTranslations.en[key] !== undefined) {
+            el.innerHTML = allTranslations.en[key];
+        }
+    });
+
+    // 2. Replace all placeholder texts with data-key-placeholder
+    document.querySelectorAll("[data-key-placeholder]").forEach((input) => {
+        const key = input.getAttribute("data-key-placeholder");
+        if (dict[key] !== undefined) {
+            input.setAttribute("placeholder", dict[key]);
+        } else if (allTranslations.en && allTranslations.en[key] !== undefined) {
+            input.setAttribute("placeholder", allTranslations.en[key]);
+        }
+    });
+
+    // 3. Handle direction & RTL layout
+    const isUrdu = lang === "ur";
+    document.body.classList.toggle("rtl", isUrdu);
+    document.documentElement.setAttribute("lang", isUrdu ? "ur" : (lang === "roman" ? "ur-Latn" : "en"));
+    document.documentElement.setAttribute("dir", isUrdu ? "rtl" : "ltr");
+
+    // 4. Update Dropdown Display
+    const labelMap = { en: "English", roman: "Roman English", ur: "اردو (Urdu)" };
+    const displayEl = document.getElementById("currentLangDisplay");
+    if (displayEl) {
+        displayEl.textContent = labelMap[lang] || "English";
+    }
+
+    // 5. Active state in dropdown
+    document.querySelectorAll(".lang-option").forEach((btn) => {
+        const onclickAttr = btn.getAttribute("onclick") || "";
+        btn.classList.toggle("active", onclickAttr.includes(`'${lang}'`));
+    });
+
+    try {
+        localStorage.setItem(CG_LANG_STORAGE_KEY, lang);
+    } catch (_) {}
+};
