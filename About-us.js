@@ -4,6 +4,90 @@
    ============================================================ */
 
 const CG_LANG_STORAGE_KEY = "cyberguard_lang";
+const CYBER_AUDIO_STATE_KEY = "cyberguard_audio_state";
+const CYBER_AUDIO_POSITION_KEY = "cyberguard_audio_position";
+
+function ensureSharedAudio() {
+    if (window.parent !== window) return null;
+
+    let audio = document.getElementById('bgAudio');
+    if (!audio) {
+        audio = document.createElement('audio');
+        audio.id = 'bgAudio';
+        audio.loop = true;
+        audio.preload = 'auto';
+        const source = document.createElement('source');
+        source.src = 'Sound.mp3';
+        source.type = 'audio/mpeg';
+        audio.appendChild(source);
+        document.body.appendChild(audio);
+    }
+    return audio;
+}
+
+function saveSharedAudioPosition(audio) {
+    if (audio && Number.isFinite(audio.currentTime)) {
+        localStorage.setItem(CYBER_AUDIO_POSITION_KEY, String(audio.currentTime));
+    }
+}
+
+function restoreSharedAudioPosition(audio) {
+    const savedPosition = Number(localStorage.getItem(CYBER_AUDIO_POSITION_KEY));
+    if (Number.isFinite(savedPosition) && savedPosition > 0) {
+        audio.currentTime = savedPosition;
+    }
+}
+
+function syncSharedAudioFromStorage() {
+    const audio = ensureSharedAudio();
+    if (!audio) return;
+    const isPlaying = localStorage.getItem(CYBER_AUDIO_STATE_KEY) === 'playing';
+
+    if (isPlaying && audio.paused) {
+        audio.play().catch((error) => {
+            console.warn('Background audio could not resume:', error);
+        });
+    } else if (!isPlaying && !audio.paused) {
+        audio.pause();
+    }
+}
+
+window.addEventListener('storage', (event) => {
+    if (event.key === CYBER_AUDIO_STATE_KEY) {
+        syncSharedAudioFromStorage();
+    }
+});
+
+window.addEventListener('pagehide', () => {
+    saveSharedAudioPosition(document.getElementById('bgAudio'));
+});
+
+window.addEventListener('DOMContentLoaded', () => {
+    const audio = ensureSharedAudio();
+    if (audio) {
+        audio.loop = true;
+        audio.addEventListener('timeupdate', () => saveSharedAudioPosition(audio));
+        audio.addEventListener('loadedmetadata', () => {
+            restoreSharedAudioPosition(audio);
+            syncSharedAudioFromStorage();
+        }, { once: true });
+
+        if (audio.readyState >= 1) {
+            restoreSharedAudioPosition(audio);
+            syncSharedAudioFromStorage();
+        }
+    }
+
+    if (window.parent !== window) {
+        const backButton = document.querySelector('[data-key="btnBackMain"]');
+        if (backButton) {
+            backButton.addEventListener('click', (event) => {
+                event.preventDefault();
+                window.parent.postMessage('cyberguard:close-about', '*');
+            });
+        }
+    }
+});
 
 // Switch language button click function
 window.switchLanguage = function (lang) {

@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="Live-Cyber-Threat Map.css">
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600;700&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="responsive.css">
+    <link rel="stylesheet" href="Honeypot-Lab.css">
     <!-- Favicon -->
     <style>
         html {
@@ -43,8 +44,8 @@
     <li><a href="#about-us" data-key="aboutNavTitle">About Us</a></li>
     <li><a href="#contact-us" data-key="aboutNavContact">Contact Us</a></li>
     <li><a href="#Live-Cyber-Threat-Map" data-key="aboutNavMap">Live Cyber Threat Map</a></li>
+    <li><a href="#Honeypot-Lab">🎯 Honeypot Forensics Lab</a></li>
 </ul>
-       
 
             <a href="index.html" class="btn-glow-danger" data-key="btnBackMain">← Back to Main Site</a>
         </div>
@@ -799,9 +800,251 @@
     </div>
 
 </section>
+<!-- ==========================================================================
+     CYBER-SENTINEL // AUTONOMOUS HONEYPOT GRID & PAYLOAD FORENSICS LAB
+     ========================================================================== -->
+<section id="Honeypot-Lab" class="page-section honeypot-lab-section">
+    <div class="honeypot-container">
+        
+        <!-- SECTION HEADER -->
+        <div class="hp-header">
+            <div class="hp-live-pill">
+                <span class="hp-pulse-dot"></span>
+                <span>CYBERGUARD // AUTONOMOUS HONEYPOT & FORENSIC SUITE</span>
+            </div>
+            <h2 class="hp-title">
+                <span class="icon">🎯</span>
+                Autonomous Honeypot Grid & <span class="hp-gradient-text">Payload Forensics Lab</span>
+            </h2>
+            <p class="hp-subtitle">
+                Next-generation decoy sensor matrix. Trap real-world brute-force & SCADA exploits on interactive honeypots, reverse-engineer obfuscated shellcode with Shannon entropy gauges, generate YARA rules, and broadcast Indicators of Compromise (IoC) to Firebase in real-time.
+            </p>
+        </div>
+
+        <!-- SPEECH & AUDIO BAR -->
+        <div class="hp-audio-bar">
+            <div class="hp-audio-status">
+                <span>📡 SENSORS ACTIVE: 4 DECOYS ARMED</span>
+                <span>|</span>
+                <span>🛡️ TRAP DISCIPLINE: CLIENT-SIDE ISOLATED</span>
+            </div>
+            <div class="hp-audio-btns">
+                <button type="button" id="hpVoiceBtn" class="hp-audio-btn active" onclick="toggleTacticalVoice()">
+                    🗣️ AI Voice Alerts: ON
+                </button>
+                <button type="button" id="hpAudioFxBtn" class="hp-audio-btn active" onclick="toggleAudioFx()">
+                    🔊 Sound FX: ON
+                </button>
+            </div>
+        </div>
+
+        <!-- 1. SENSOR RADAR (CANVAS) & 4-HONEYPOT DECOY BAY -->
+        <div class="hp-sensor-grid">
+            
+            <!-- LEFT: INTERACTIVE HTML5 CANVAS RADAR -->
+            <div class="hp-radar-card">
+                <div class="hp-card-topline">
+                    <h3><span>🛰️</span> Orbital Honeypot Decoy Radar</h3>
+                    <span class="card-tag">CANVAS SONAR MESH</span>
+                </div>
+
+                <div class="hp-canvas-wrapper">
+                    <canvas id="honeypotCanvas"></canvas>
+                    <div id="canvasStatsOverlay" class="hp-canvas-overlay-stats">
+                        SCANNING AIRSPACE // CLICK ANY NODE TO ISOLATE
+                    </div>
+                </div>
+
+                <div class="hp-canvas-controls">
+                    <div>
+                        <span>🔵 Decoy Nodes</span> &bull; 
+                        <span style="color:#ff0055;">🔴 Live Probes</span> &bull; 
+                        <span style="color:#ffaa00;">🟠 PLC Intrusions</span>
+                    </div>
+                    <button type="button" class="btn-deploy-decoy" onclick="deployDecoyTrap()">
+                        + Deploy Decoy Sensor Node
+                    </button>
+                </div>
+            </div>
+
+            <!-- RIGHT: 4 DECOY BAY TERMINAL -->
+            <div class="hp-decoy-card">
+                <div class="hp-card-topline">
+                    <h3><span>🪤</span> Active Honeypot Decoy Bay</h3>
+                    <span class="card-tag">4 ENGINES ARMED</span>
+                </div>
+
+                <div class="hp-tabs-row">
+                    <button type="button" class="hp-tab-btn active" data-sensor="cowrie" onclick="switchHoneypotSensor('cowrie')">
+                        Cowrie SSH
+                    </button>
+                    <button type="button" class="hp-tab-btn" data-sensor="conpot" onclick="switchHoneypotSensor('conpot')">
+                        Conpot SCADA
+                    </button>
+                    <button type="button" class="hp-tab-btn" data-sensor="dionaea" onclick="switchHoneypotSensor('dionaea')">
+                        Dionaea SMB
+                    </button>
+                    <button type="button" class="hp-tab-btn" data-sensor="glastopf" onclick="switchHoneypotSensor('glastopf')">
+                        Glastopf Web
+                    </button>
+                </div>
+
+                <div class="hp-decoy-console">
+                    <div>
+                        <div class="hp-decoy-meta-line">
+                            <strong id="hpDecoyName">Cowrie SSH / Telnet Decoy</strong>
+                            <span id="hpDecoyPort">Port 22 & 23 // Linux Brute-force Collector</span>
+                        </div>
+                        <div class="hp-log-stream" id="hpLogStream"></div>
+                    </div>
+
+                    <button type="button" class="btn-isolate-attacker" onclick="isolateCurrentAttacker()">
+                        ⚡ Sever & Isolate Attacker IP (Firewall Drop)
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- 2. MALICIOUS PAYLOAD DE-OBFUSCATOR & SHELLCODE FORENSIC LAB -->
+        <div class="hp-forensics-workbench">
+            <div class="hp-card-topline">
+                <div>
+                    <span class="mini-hud-label">ADVANCED REVERSE-ENGINEERING ENGINE</span>
+                    <h3 style="margin-top: 4px;"><span>🔬</span> Malicious Shellcode De-Obfuscator & Shannon Entropy Analyzer</h3>
+                </div>
+                <span class="card-tag">STATIC BYTE ANALYSIS</span>
+            </div>
+
+            <!-- Sample Selector -->
+            <div class="hp-sample-picker-bar">
+                <span class="hp-sample-label">⚡ LOAD REAL MALWARE SAMPLES:</span>
+                <button type="button" class="hp-sample-chip active" data-sample="powershell" onclick="selectMalwareSample('powershell')">
+                    Cobalt Strike PowerShell
+                </button>
+                <button type="button" class="hp-sample-chip" data-sample="mirai" onclick="selectMalwareSample('mirai')">
+                    Mirai Botnet Dropper
+                </button>
+                <button type="button" class="hp-sample-chip" data-sample="phish_eval" onclick="selectMalwareSample('phish_eval')">
+                    EasyPaisa Phish Script
+                </button>
+                <button type="button" class="hp-sample-chip" data-sample="xor_shellcode" onclick="selectMalwareSample('xor_shellcode')">
+                    XOR Packed Shellcode
+                </button>
+            </div>
+
+            <!-- Dual Columns: Input Raw vs De-obfuscated Output -->
+            <div class="hp-workbench-grid">
+                <div class="hp-input-col">
+                    <span class="hp-col-title">RAW OBFUSCATED PAYLOAD STRING:</span>
+                    <textarea id="hpPayloadInput" class="hp-payload-input" placeholder="Paste Base64, Hex, URL-encoded or XOR obfuscated payload here..."></textarea>
+                </div>
+                <div class="hp-output-col">
+                    <span class="hp-col-title" style="color: #00f0ff;">DE-OBFUSCATED CODE & EXTRACTED C2 / IoCs:</span>
+                    <div id="hpOutputBox" class="hp-output-box">Click 'Run Forensic De-Obfuscation' below to disassemble payload...</div>
+                </div>
+            </div>
+
+            <!-- Shannon Entropy & MITRE Strip -->
+            <div class="hp-metrics-strip">
+                <div class="hp-metric-box">
+                    <span>SHANNON ENTROPY:</span>
+                    <strong id="hpEntropyVal">5.82 bits/byte</strong>
+                    <div class="hp-entropy-bar">
+                        <div id="hpEntropyFill" class="hp-entropy-fill" style="width: 72%;"></div>
+                    </div>
+                </div>
+                <div class="hp-metric-box">
+                    <span>ANALYSIS LATENCY:</span>
+                    <strong id="hpSpeedVal">1.4 ms</strong>
+                </div>
+                <div class="hp-metric-box">
+                    <span>EXTRACTED IoCs:</span>
+                    <strong id="hpIocCount">2 IoCs Found</strong>
+                </div>
+                <div class="hp-metric-box">
+                    <span>MITRE ATT&CK TTP:</span>
+                    <strong id="hpMitreTtp" style="font-size: 0.85rem; color: #ff0055;">T1059.001 (PowerShell)</strong>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="hp-workbench-actions">
+                <button type="button" class="btn-run-deobfuscate" onclick="runPayloadDeobfuscation()">
+                    ⚡ Run Forensic De-Obfuscation
+                </button>
+                <button type="button" class="btn-gen-yara" onclick="openYaraRuleModal()">
+                    🛡️ Generate YARA Detection Rule
+                </button>
+            </div>
+        </div>
+
+        <!-- 3. LIVE FIREBASE DARKNET LEAKS & IoC STREAM -->
+        <div class="hp-leak-stream-section">
+            <div class="hp-leak-header">
+                <h3><span>📡</span> Live Darknet Leaks & Indicator of Compromise (IoC) Stream</h3>
+                <div class="hp-firebase-badge">
+                    <span class="fb-sync-dot"></span>
+                    <span>FIREBASE REALTIME DB SYNC ACTIVE</span>
+                </div>
+            </div>
+
+            <!-- Community Threat Submission Form -->
+            <div class="hp-report-card">
+                <form class="hp-report-form" onsubmit="handleIocSubmit(event)">
+                    <div class="hp-form-field">
+                        <label>IoC CATEGORY *</label>
+                        <select id="hpIocType">
+                            <option value="MALICIOUS IP">MALICIOUS IP</option>
+                            <option value="SCAM SENDER ID">SCAM SENDER ID (SMS)</option>
+                            <option value="MALWARE SHA-256">MALWARE SHA-256 HASH</option>
+                            <option value="PHISHING DOMAIN">PHISHING DOMAIN</option>
+                        </select>
+                    </div>
+                    <div class="hp-form-field">
+                        <label>THREAT VALUE / IP / HASH *</label>
+                        <input type="text" id="hpIocVal" placeholder="e.g. 185.220.101.5 or EASY-BONUS" required autocomplete="off">
+                    </div>
+                    <div class="hp-form-field">
+                        <label>TARGETED SECTOR</label>
+                        <input type="text" id="hpIocTarget" placeholder="e.g. EasyPaisa / JazzCash / Banking" autocomplete="off">
+                    </div>
+                    <div class="hp-form-field" style="display: flex; gap: 8px;">
+                        <input type="text" id="hpIocNotes" placeholder="Forensic notes..." required autocomplete="off">
+                        <button type="submit" class="btn-submit-ioc">
+                            🚀 Broadcast IoC
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Leak Feed Cards -->
+            <div class="hp-leak-cards-grid" id="hpLeakCardsGrid">
+                <!-- Populated via Firebase -->
+            </div>
+        </div>
+
+    </div>
+
+    <!-- YARA RULE POPUP MODAL -->
+    <div id="hpYaraModal" class="hp-modal-overlay">
+        <div class="hp-modal-box">
+            <div class="hp-modal-header">
+                <h3>🛡️ Generated YARA Detection Rule</h3>
+                <button type="button" class="close-btn" onclick="closeYaraModal()">&times;</button>
+            </div>
+            <pre class="hp-yara-code" id="hpYaraCode">Generating YARA rule signature...</pre>
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" class="btn-secondary" onclick="copyYaraRule()">📋 Copy Rule</button>
+                <button type="button" class="btn-primary" onclick="closeYaraModal()">Done</button>
+            </div>
+        </div>
+    </div>
+</section>
 <!-- JS Scripts Included -->
     <script src="About-us.js"></script>
     <script src="Contact-us.js"></script>
     <script src="Live-Cyber-Threat Map.js"></script>
+    <script src="Honeypot-Lab.js"></script>
 </body>
 </html>

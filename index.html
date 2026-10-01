@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600;700&family=Poppins:wght@300;400;600;700&family=Noto+Nastaliq+Urdu:wght@400;700&display=swap" rel="stylesheet">
 </head>
-<body>
+<body onload="window.name = 'cyber_portal_tab';">
 
     <!-- BACKGROUND GRID MATRIX EFFECT -->
     <div class="cyber-bg-overlay"></div>
@@ -39,19 +39,25 @@
                 <span class="side-status-pulse"></span>
             </div>
 <nav class="side-menu-links" aria-label="Live Cyber Threat Map">
-    <a href="About-us.html#about-us" target="cyber_portal_tab" class="side-menu-item">
+    <a href="About-us.html#about-us" target="cyberAboutFrame" class="side-menu-item">
         <span class="side-menu-icon">ⓘ</span>
         <span><strong data-key="sideAboutTitle">About Us</strong><small data-key="sideAboutDesc">Mission & platform overview</small></span>
         <b>›</b>
     </a>
-    <a href="About-us.html#contact-us" target="cyber_portal_tab" class="side-menu-item">
+    <a href="About-us.html#contact-us" target="cyberAboutFrame" class="side-menu-item">
         <span class="side-menu-icon">✉</span>
         <span><strong data-key="sideContactTitle">Contact Us</strong><small data-key="sideContactDesc">Support & feedback channel</small></span>
         <b>›</b>
     </a>
-    <a href="About-us.html#Live-Cyber-Threat-Map" target="cyber_portal_tab" class="side-menu-item">
+    <a href="About-us.html#Live-Cyber-Threat-Map" target="cyberAboutFrame" class="side-menu-item">
         <span class="side-menu-icon">◈</span>
         <span><strong data-key="sideMapTitle">Live Cyber Threat Map</strong><small data-key="sideMapDesc">Dashboard & system status</small></span>
+        <b>›</b>
+    </a>
+     <!-- NAYA 4th BUTTON (BILKUL SAME DESIGN & BEHAVIOR) -->
+    <a href="About-us.html#Honeypot-Lab" target="cyberAboutFrame" class="side-menu-item">
+        <span class="side-menu-icon">🎯</span>
+        <span><strong data-key="sideHoneypotTitle">Honeypot Forensics Lab</strong><small data-key="sideHoneypotDesc">Decoy sensor grid & payload analysis</small></span>
         <b>›</b>
     </a>
 </nav>
@@ -93,6 +99,10 @@
                     </span>
                     <span id="audioBtnIcon" class="audio-icon">🎵</span>
                     <span id="audioBtnText" class="audio-text">Play Sound</span>
+                </button>
+                <button id="cyberAudioRestartBtn" class="cyber-audio-btn cyber-audio-restart-btn" onclick="startCyberAudioFromBeginning()" title="Start Sound from the beginning">
+                    <span class="audio-icon" aria-hidden="true">↺</span>
+                    <span class="audio-text">Start Sound</span>
                 </button>
             </div>
 
@@ -3375,6 +3385,9 @@
                 <span>CYBER SAFETY</span><span>SCAM AWARENESS</span><span>PRIVACY</span><span>EDUCATION</span>
             </div>
         </div>
+    </div>
+    <div id="aboutPageOverlay" class="about-page-overlay" aria-hidden="true">
+        <iframe id="aboutPageFrame" name="cyberAboutFrame" title="CyberGuard information pages"></iframe>
     </div>
 <script src="script.js"></script>
 </body>

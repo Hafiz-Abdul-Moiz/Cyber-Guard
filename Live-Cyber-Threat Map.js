@@ -8,6 +8,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     "use strict";
 
+    const THREAT_MAP_FIREBASE_URL =
+        "https://cyber-guard-live-feedback-default-rtdb.firebaseio.com/threat_map.json";
+
     // =====================================================
     // MAIN SECTION
     // =====================================================
@@ -91,6 +94,8 @@ document.addEventListener("DOMContentLoaded", () => {
     let clockTimer = null;
 
     let refreshResetTimer = null;
+
+    let liveThreatSource = [];
 
 
     // =====================================================
@@ -201,6 +206,74 @@ document.addEventListener("DOMContentLoaded", () => {
 
     ];
 
+
+    function normalizeThreatEntry(entry) {
+
+        if (!entry || typeof entry !== "object") {
+            return null;
+        }
+
+        const severityMap = {
+            critical: "CRITICAL",
+            warning: "HIGH",
+            info: "INFO",
+            high: "HIGH",
+            medium: "INFO"
+        };
+
+        const level =
+            severityMap[String(entry.level || "").toLowerCase()] ||
+            entry.level ||
+            "INFO";
+
+        const threatType =
+            entry.type ||
+            "RECON";
+
+        const region = entry.region || "PK";
+
+        return {
+            level,
+            className: level === "CRITICAL" ? "critical" : level === "HIGH" ? "warning" : "info",
+            type: threatType,
+            title: entry.title || "Regional Threat Event",
+            location: entry.location || "Global Edge Node",
+            region,
+            origin: entry.origin || "10.0.0.1"
+        };
+
+    }
+
+    async function fetchThreatMapFeed() {
+
+        try {
+            const response = await fetch(THREAT_MAP_FIREBASE_URL, {
+                cache: "no-store"
+            });
+
+            if (!response.ok) {
+                throw new Error("Threat map endpoint unavailable");
+            }
+
+            const data = await response.json();
+
+            if (data && typeof data === "object") {
+                const entries = Object.values(data)
+                    .map(item => normalizeThreatEntry(item))
+                    .filter(Boolean);
+
+                if (entries.length > 0) {
+                    liveThreatSource = entries;
+                    return;
+                }
+            }
+        } catch (error) {
+            console.info("Using fallback threat telemetry for Cyber Threat Map.", error.message || error);
+        }
+
+        liveThreatSource = threatPool.slice();
+
+    }
 
     // =====================================================
     // UTILITY
@@ -353,10 +426,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function pushLiveThreat() {
 
+        const sourcePool =
+            liveThreatSource.length > 0 ?
+                liveThreatSource :
+                threatPool;
+
         if (
             isPaused ||
             !threatFeedList ||
-            threatPool.length === 0
+            sourcePool.length === 0
         ) {
             return;
         }
@@ -364,11 +442,11 @@ document.addEventListener("DOMContentLoaded", () => {
         const randomIndex =
             Math.floor(
                 Math.random() *
-                threatPool.length
+                sourcePool.length
             );
 
         const threat =
-            threatPool[randomIndex];
+            sourcePool[randomIndex];
 
         const item =
             createThreatItem(threat);

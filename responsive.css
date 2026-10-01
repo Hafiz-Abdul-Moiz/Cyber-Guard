@@ -572,3 +572,200 @@
         grid-template-columns: repeat(2, 1fr) !important;
     }
 }
+
+/* Shared responsive overrides for every page and embedded dashboard. */
+@media (max-width: 991px) {
+    .about-container,
+    .contact-container,
+    .threat-map-container,
+    .honeypot-container {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    .about-container img,
+    .contact-container img,
+    .threat-map-container img,
+    .honeypot-container img,
+    .about-container canvas,
+    .contact-container canvas,
+    .threat-map-container canvas,
+    .honeypot-container canvas,
+    .about-container iframe,
+    .contact-container iframe,
+    .threat-map-container iframe,
+    .honeypot-container iframe {
+        max-width: 100%;
+    }
+
+    .stats-grid,
+    .pillars-grid,
+    .helpline-grid,
+    .tm-intelligence-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    .tm-node-panel {
+        grid-column: 1 / -1 !important;
+    }
+
+    .hp-report-form,
+    .hp-leak-cards-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    .hp-form-field,
+    .hp-leak-item,
+    .tm-panel,
+    .pillar-card,
+    .stat-card {
+        min-width: 0 !important;
+    }
+
+    .table-container,
+    .table-wrap,
+    .table-responsive {
+        max-width: 100% !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .audio-control-wrapper {
+        flex-wrap: wrap !important;
+    }
+}
+
+@media (max-width: 600px) {
+    .page-section {
+        min-width: 0 !important;
+        scroll-margin-top: 120px;
+    }
+
+    .about-container,
+    .contact-container,
+    .threat-map-container,
+    .honeypot-container {
+        padding-inline: 0 !important;
+    }
+
+    .stats-grid,
+    .tm-stats-grid,
+    .hp-metrics-strip,
+    .feedback-stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 10px !important;
+    }
+
+    .pillars-grid,
+    .helpline-grid,
+    .contact-dispatch-grid,
+    .tm-dashboard-grid,
+    .tm-intelligence-grid,
+    .hp-sensor-grid,
+    .hp-workbench-grid,
+    .hp-leak-cards-grid {
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+
+    .tm-node-panel {
+        grid-column: auto !important;
+    }
+
+    .hp-report-form {
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+
+    .stat-card,
+    .pillar-card,
+    .hp-radar-card,
+    .hp-decoy-card {
+        padding: 16px 12px !important;
+    }
+
+    .tm-stat-card {
+        min-width: 0 !important;
+        min-height: 0 !important;
+        padding: 12px !important;
+        gap: 9px !important;
+    }
+
+    .tm-stat-icon {
+        width: 40px !important;
+        height: 40px !important;
+        flex: 0 0 40px !important;
+        font-size: 1.15rem !important;
+    }
+
+    .tm-stat-value {
+        font-size: 1.3rem !important;
+        overflow-wrap: anywhere;
+    }
+
+    .tm-feed-item {
+        grid-template-columns: 48px 54px minmax(0, 1fr) !important;
+        gap: 6px !important;
+        padding: 12px 8px !important;
+    }
+
+    .tm-feed-content,
+    .tm-feed-origin {
+        min-width: 0 !important;
+        overflow-wrap: anywhere;
+    }
+
+    .tm-control-actions {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+    }
+
+    .tm-control-btn {
+        min-width: 0 !important;
+        white-space: normal !important;
+    }
+
+    .hp-tabs-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    .hp-canvas-wrapper {
+        height: clamp(210px, 62vw, 290px) !important;
+    }
+
+    .hp-card-topline,
+    .hp-canvas-controls,
+    .hp-leak-top {
+        flex-wrap: wrap !important;
+        min-width: 0 !important;
+    }
+
+    .hp-form-field,
+    .hp-form-field input,
+    .hp-form-field select,
+    .hp-report-form .btn-submit-ioc {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    .table-container,
+    .table-wrap,
+    .table-responsive {
+        margin-inline: -4px;
+    }
+
+    .table-container table,
+    .table-wrap table,
+    .table-responsive table {
+        min-width: 520px;
+    }
+
+    .hero-title,
+    .section-title,
+    .section-desc,
+    .about-hero,
+    .contact-hero {
+        max-width: 100% !important;
+        overflow-wrap: anywhere;
+    }
+}

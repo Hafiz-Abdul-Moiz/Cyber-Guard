@@ -2163,6 +2163,26 @@ body::before {
     visibility: visible;
 }
 
+.about-page-overlay {
+    position: fixed;
+    inset: 0;
+    display: none;
+    z-index: 1200;
+    background: #03060e;
+}
+
+.about-page-overlay.is-open {
+    display: block;
+}
+
+.about-page-overlay iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    background: #03060e;
+}
+
 .side-panel {
     position: fixed;
     top: 0;
@@ -2680,6 +2700,12 @@ body, h1, h2, h3, h4, h5, h6, p, span, a, label, li, td, th {
 .btn-primary {
     background-color: var(--primary-cyan) !important;
     color: #000000 !important;
+}
+
+.hero-buttons .btn-primary {
+    background-color: #00ffaa !important;
+    border-color: #00ffaa !important;
+    color: #03060e !important;
 }
 
 .cyber-bg-overlay {
@@ -4988,6 +5014,16 @@ body, h1, h2, h3, h4, h5, h6, p, span, a, label, li, td, th {
     border-color: #ffaa00;
     color: #ffaa00;
     box-shadow: 0 0 15px rgba(255, 170, 0, 0.4);
+}
+
+.cyber-audio-restart-btn {
+    border-color: rgba(255, 170, 0, 0.45);
+    color: #ffc857;
+}
+
+.cyber-audio-restart-btn:hover {
+    border-color: #ffc857;
+    box-shadow: 0 0 18px rgba(255, 200, 87, 0.35);
 }
 
 /* Audio Wave Equalizer Animation */

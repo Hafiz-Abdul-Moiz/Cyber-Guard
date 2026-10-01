@@ -62,6 +62,26 @@
             menuBackdrop.addEventListener("click", closeSideMenu);
         }
 
+        const aboutPageOverlay = document.getElementById("aboutPageOverlay");
+        const aboutPageFrame = document.getElementById("aboutPageFrame");
+
+        document.querySelectorAll('.side-menu-item[href^="About-us.html"]').forEach(function (link) {
+            link.addEventListener("click", function () {
+                if (aboutPageOverlay) {
+                    aboutPageOverlay.classList.add("is-open");
+                    aboutPageOverlay.setAttribute("aria-hidden", "false");
+                }
+                closeSideMenu();
+            });
+        });
+
+        window.addEventListener("message", function (event) {
+            if (!aboutPageFrame || event.source !== aboutPageFrame.contentWindow || event.data !== "cyberguard:close-about") return;
+            aboutPageOverlay.classList.remove("is-open");
+            aboutPageOverlay.setAttribute("aria-hidden", "true");
+            aboutPageFrame.src = "about:blank";
+        });
+
         /* ESC key se menu close */
 
         document.addEventListener("keydown", function (event) {
@@ -4445,6 +4465,15 @@ function showScreen(screenId) {
     });
 }
 
+function shuffleCyberOptions(options) {
+    const shuffled = [...options];
+    for (let index = shuffled.length - 1; index > 0; index--) {
+        const randomIndex = Math.floor(Math.random() * (index + 1));
+        [shuffled[index], shuffled[randomIndex]] = [shuffled[randomIndex], shuffled[index]];
+    }
+    return shuffled;
+}
+
 // Load Scenario Content
 function loadCyberLevel(gameId, levelIdx) {
     isAnswerLocked = false;
@@ -4475,7 +4504,7 @@ function loadCyberLevel(gameId, levelIdx) {
     const optContainer = document.getElementById('gameOptions');
     optContainer.innerHTML = "";
 
-    scenario.options.forEach((opt, idx) => {
+    shuffleCyberOptions(scenario.options).forEach((opt, idx) => {
         const btn = document.createElement('button');
         btn.className = "btn-primary-small";
         btn.style.width = "100%";
@@ -4955,38 +4984,123 @@ window.addEventListener('DOMContentLoaded', () => {
 /* =========================================================
    BACKGROUND AUDIO CONTROL ENGINE
    ========================================================= */
-function toggleCyberAudio() {
-    const audio = document.getElementById('bgAudio');
+const CYBER_AUDIO_STATE_KEY = 'cyberguard_audio_state';
+const CYBER_AUDIO_POSITION_KEY = 'cyberguard_audio_position';
+
+function saveCyberAudioPosition(audio) {
+    if (audio && Number.isFinite(audio.currentTime)) {
+        localStorage.setItem(CYBER_AUDIO_POSITION_KEY, String(audio.currentTime));
+    }
+}
+
+function restoreCyberAudioPosition(audio) {
+    const savedPosition = Number(localStorage.getItem(CYBER_AUDIO_POSITION_KEY));
+    if (Number.isFinite(savedPosition) && savedPosition > 0) {
+        audio.currentTime = savedPosition;
+    }
+}
+
+function syncCyberAudioUi() {
     const btn = document.getElementById('cyberAudioBtn');
     const icon = document.getElementById('audioBtnIcon');
     const text = document.getElementById('audioBtnText');
+    const audio = document.getElementById('bgAudio');
+    const isPlaying = audio ? !audio.paused && !audio.ended : localStorage.getItem(CYBER_AUDIO_STATE_KEY) === 'playing';
+    const hasSavedPosition = Number(localStorage.getItem(CYBER_AUDIO_POSITION_KEY)) > 0;
+
+    if (audio) {
+        audio.loop = true;
+    }
+
+    if (btn) {
+        btn.classList.toggle('playing', isPlaying);
+        btn.classList.toggle('paused', !isPlaying);
+        btn.title = isPlaying ? 'Pause Background Sound' : 'Play or resume Background Sound';
+    }
+
+    if (icon) {
+        icon.textContent = isPlaying ? '🔊' : '▶️';
+    }
+
+    if (text) {
+        text.textContent = isPlaying ? 'Pause Sound' : hasSavedPosition ? 'Resume Sound' : 'Play Sound';
+    }
+}
+
+function toggleCyberAudio() {
+    const audio = document.getElementById('bgAudio');
 
     if (!audio) return;
 
-    // Direct HTML loop ensuring infinite play on end
     audio.loop = true;
 
-    if (audio.paused) {
-        // Play ya Resume (Jahan se ruka tha wahan se chalega)
-        audio.play().then(() => {
-            btn.classList.remove('paused');
-            btn.classList.add('playing');
-            icon.textContent = '🔊';
-            text.textContent = 'Stop Sound';
-            btn.title = 'Click to Stop Sound';
-        }).catch(err => {
-            console.error("Audio playback error:", err);
-        });
-    } else {
-        // Sound Rokna (Pause at current time position)
+    if (!audio.paused && !audio.ended) {
+        saveCyberAudioPosition(audio);
         audio.pause();
-        btn.classList.remove('playing');
-        btn.classList.add('paused');
-        icon.textContent = '▶️';
-        text.textContent = 'Unpause Sound';
-        btn.title = 'Click to Resume Sound';
+    } else {
+        if (audio.readyState >= 1) {
+            restoreCyberAudioPosition(audio);
+        }
+        audio.play().catch(() => {
+            localStorage.setItem(CYBER_AUDIO_STATE_KEY, 'paused');
+            syncCyberAudioUi();
+            console.warn('Background audio could not play.');
+        });
     }
+
+    syncCyberAudioUi();
 }
+
+function startCyberAudioFromBeginning() {
+    const audio = document.getElementById('bgAudio');
+    if (!audio) return;
+
+    audio.loop = true;
+    localStorage.setItem(CYBER_AUDIO_POSITION_KEY, '0');
+    if (audio.readyState >= 1) {
+        audio.currentTime = 0;
+    }
+
+    audio.play().catch(() => {
+        localStorage.setItem(CYBER_AUDIO_STATE_KEY, 'paused');
+        syncCyberAudioUi();
+        console.warn('Background audio could not play.');
+    });
+    syncCyberAudioUi();
+}
+
+window.addEventListener('storage', (event) => {
+    if (event.key === CYBER_AUDIO_STATE_KEY) {
+        syncCyberAudioUi();
+    }
+});
+
+window.addEventListener('DOMContentLoaded', () => {
+    const audio = document.getElementById('bgAudio');
+    if (audio) {
+        audio.loop = true;
+        audio.addEventListener('loadedmetadata', () => restoreCyberAudioPosition(audio), { once: true });
+        audio.addEventListener('timeupdate', () => saveCyberAudioPosition(audio));
+        audio.addEventListener('play', () => {
+            localStorage.setItem(CYBER_AUDIO_STATE_KEY, 'playing');
+            syncCyberAudioUi();
+        });
+        audio.addEventListener('pause', () => {
+            saveCyberAudioPosition(audio);
+            localStorage.setItem(CYBER_AUDIO_STATE_KEY, 'paused');
+            syncCyberAudioUi();
+        });
+        window.addEventListener('pagehide', () => saveCyberAudioPosition(audio));
+
+        if (audio.readyState >= 1) {
+            restoreCyberAudioPosition(audio);
+        }
+        if (localStorage.getItem(CYBER_AUDIO_STATE_KEY) === 'playing') {
+            audio.play().catch(() => {});
+        }
+    }
+    syncCyberAudioUi();
+});
 
 /* ============================================================
    MULTI-LANGUAGE ENGINE (English / Roman Urdu / Urdu)
@@ -5718,14 +5832,24 @@ function filterFeedbacksLive() {
 }
 
 function formatFeedbackTime(timestamp) {
-    if (!timestamp) return "Just now";
-    const diff = Math.max(0, Date.now() - timestamp);
-    const mins = Math.floor(diff / 60000);
-    if (mins < 1) return "Just now";
-    if (mins < 60) return `${mins}m ago`;
-    const hours = Math.floor(mins / 60);
-    if (hours < 24) return `${hours}h ago`;
-    return `${Math.floor(hours / 24)}d ago`;
+    if (timestamp == null || timestamp === "") return "Date unavailable";
+    const date = new Date(Number(timestamp));
+    if (!Number.isFinite(date.getTime())) return "Date unavailable";
+
+    const dateText = new Intl.DateTimeFormat("en-GB", {
+        timeZone: "Asia/Karachi",
+        day: "numeric",
+        month: "numeric",
+        year: "numeric"
+    }).format(date);
+    const timeText = new Intl.DateTimeFormat("en-US", {
+        timeZone: "Asia/Karachi",
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true
+    }).format(date);
+
+    return `${dateText}, ${timeText} PKT`;
 }
 
 function escapeHtml(str) {
