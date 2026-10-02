@@ -1323,10 +1323,38 @@
 
     <!-- SECTION 4: LIVE THREAT ANALYTICS & LOGS TABLE -->
     <section id="analytics" class="page-section analytics-page">
-        <h2 class="section-title"><span class="icon">📊</span> Live SOC Cyber Attack Feed & Visual Charts</h2>
-        <p class="section-desc">Real-time threat monitoring metrics, global attack distributions, and recent attack vector logs (Pakistan + India Subcontinent Cyber Context).</p>
+        <h2 class="section-title"><span class="icon">📊</span> Live SOC Analytics Simulator</h2>
+        <p class="section-desc">Interactive local simulation of SOC metrics and sample incident events. This dashboard is not connected to a real threat-intelligence feed.</p>
 
-        <!-- VISUAL GRAPH BARS (14 EXPANDED METRIC BARS) -->
+        <div class="analytics-console" aria-label="Analytics stream controls">
+            <div class="analytics-stream-status">
+                <span class="analytics-live-indicator" id="analyticsLiveIndicator"></span>
+                <span id="analyticsStreamStatus" role="status">SIMULATION STARTING</span>
+                <span class="analytics-console-divider"></span>
+                <span>LAST UPDATE <strong id="analyticsLastUpdate">--:--:--</strong></span>
+            </div>
+            <div class="analytics-controls">
+                <label class="analytics-search-label" for="analyticsSearch">Filter events</label>
+                <input id="analyticsSearch" class="analytics-search" type="search" placeholder="Search events..." oninput="filterAnalyticsEvents()">
+                <select id="analyticsSeverityFilter" class="analytics-severity-filter" aria-label="Filter by severity" onchange="filterAnalyticsEvents()">
+                    <option value="all">All severities</option>
+                    <option value="critical">Critical</option>
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                </select>
+                <button type="button" class="analytics-control-btn" onclick="analyticsRefreshNow()" aria-label="Refresh analytics">↻ <span>Refresh</span></button>
+                <button type="button" class="analytics-control-btn analytics-pause-btn" id="analyticsPauseBtn" onclick="analyticsToggleStream()" aria-pressed="false">Ⅱ <span>Pause</span></button>
+            </div>
+        </div>
+
+        <div class="analytics-summary-grid" aria-label="Simulation summary">
+            <article class="analytics-summary-card"><span>EVENTS IN BUFFER</span><strong id="analyticsEventCount">0</strong><small>Sample events</small></article>
+            <article class="analytics-summary-card"><span>BLOCKED / CONTAINED</span><strong id="analyticsContainedCount">0</strong><small>Mitigated scenarios</small></article>
+            <article class="analytics-summary-card"><span>UNDER INVESTIGATION</span><strong id="analyticsInvestigatingCount">0</strong><small>Open scenarios</small></article>
+            <article class="analytics-summary-card"><span>AVERAGE SIGNAL</span><strong id="analyticsAverageSignal">0%</strong><small>Across monitored vectors</small></article>
+        </div>
+
+        <!-- SIMULATED METRIC BARS -->
         <div class="analytics-metrics-grid">
             <div class="metric-card">
                 <h4>Phishing Vector Volume</h4>
@@ -1414,9 +1442,9 @@
             </div>
         </div>
 
-        <!-- CYBER LOGS TABLE (17 REAL INCIDENT LOGS) -->
+        <!-- LOCALLY GENERATED SAMPLE EVENTS -->
         <div class="table-container glowing-card">
-            <h3 class="table-title">📡 Real-Time Cyber Incident Logs (Pak-India Regional Feed)</h3>
+            <h3 class="table-title">📡 Recent Simulated SOC Events</h3>
             <table class="cyber-table">
                 <thead>
                     <tr>
@@ -1428,7 +1456,7 @@
                         <th>Mitigation Status</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="analyticsEventRows" aria-live="polite">
                     <tr>
                         <td>12:14:02 PKT</td>
                         <td>SMS OTP Intercept Scam</td>
@@ -2901,7 +2929,7 @@
                     <span>CYBERGUARD // VVIP COMMUNITY PULSE</span>
                 </div>
 
-                <!-- ADMIN LOGIN BUTTON (PASSWORD: 125) -->
+                <!-- ADMIN LOGIN BUTTON -->
                 <button type="button" id="adminPortalBtn" class="admin-portal-toggle-btn" onclick="openAdminPassModal()">
                     <span id="adminBtnIcon">🔒</span>
                     <span id="adminBtnText">Admin Login</span>
@@ -3182,7 +3210,7 @@
 
     </div>
 
-    <!-- ADMIN PASSCODE POPUP MODAL (PASSWORD: 125) -->
+    <!-- ADMIN PASSCODE POPUP MODAL -->
     <div id="adminPassModal" class="admin-pass-modal" style="display: none;">
         <div class="admin-pass-card">
             <button type="button" class="modal-close-x" onclick="closeAdminPassModal()">&times;</button>

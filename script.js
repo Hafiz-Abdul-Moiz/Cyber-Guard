@@ -5231,7 +5231,7 @@ let isPostAsAdminActive = false;
 const SEED_FEEDBACKS = [
     {
         id: "seed-1",
-        name: "Tariq Javed (SOC Lead)",
+        name: "Tariq Javed Khan",
         role: "Cybersecurity Analyst",
         rating: 5,
         category: "Scam Shield",
@@ -5352,7 +5352,7 @@ function handleAdminLoginSubmit(e) {
     const err = document.getElementById("adminPassError");
     if (!input) return;
 
-    if (input.value.trim() === "125") {
+    if (input.value.trim() === "Fba@125") {
         isAdminLoggedIn = true;
         isPostAsAdminActive = true;
         closeAdminPassModal();
@@ -5540,7 +5540,7 @@ function renderFeedbackCards() {
         if (item.adminEmoji && item.adminEmoji.emoji) {
             adminEmojiHtml = `
                 <span class="admin-emoji-award-badge">
-                    <span>👑 Admin Awarded:</span>
+                    <span class="admin-award-label">👑 Admin Awarded:</span>
                     <span class="awarded-emoji-anim">${item.adminEmoji.emoji}</span>
                 </span>
             `;
@@ -5620,11 +5620,18 @@ function renderFeedbackCards() {
 async function deleteFeedbackLive(id, name) {
     if (!confirm(`Permanently delete feedback from "${name}"?`)) return;
 
+    const deletedFeedback = currentFeedbackList.find(item => item.id === id);
+    const isAdminFeedback = Boolean(
+        deletedFeedback &&
+        (deletedFeedback.isAdmin || (deletedFeedback.name && deletedFeedback.name.includes("Hafiz Abdul Moiz")))
+    );
+
     saveDeletedFeedbackId(id);
     currentFeedbackList = currentFeedbackList.filter(item => item.id !== id);
 
-    // Delete hone par normal users ka form foran wapas open ho jaye!
-    localStorage.removeItem(USER_SUBMITTED_FLAG_KEY);
+    if (deletedFeedback && !isAdminFeedback) {
+        localStorage.removeItem(USER_SUBMITTED_FLAG_KEY);
+    }
 
     renderFeedbackCards();
     updateFeedbackStats();
@@ -5636,7 +5643,9 @@ async function deleteFeedbackLive(id, name) {
         });
     } catch {}
 
-    alert(`🗑️ Feedback permanently removed. Users can now submit again!`);
+    alert(isAdminFeedback
+        ? "🗑️ Admin feedback permanently removed. User submission status is unchanged."
+        : "🗑️ Feedback permanently removed. Users can now submit again!");
 }
 
 // 9. Admin Edit Feedback Feature (Kisi bhi waqt text edit karein)
@@ -5858,7 +5867,188 @@ function escapeHtml(str) {
     }[c]));
 }
 
+const ANALYTICS_VECTOR_NAMES = [
+    "Phishing Vector Volume", "Ransomware Payload Threats", "Mobile Wallet Spoofing",
+    "APT Group Activity", "Government Portal Brute-Force", "Telecom Infrastructure DDoS",
+    "Power Grid Intrusion", "Media & Satellite Hijacking", "Aviation Server Stress",
+    "Law Enforcement Recon", "Relief Fund Phishing", "Drone & GPS Spoofing",
+    "Cryptographic Key Leak Scans", "Darknet Identity Leak Trading"
+];
+
+const ANALYTICS_SAMPLE_EVENTS = [
+    { vector: "Wallet OTP phishing simulation", sector: "Mobile wallet", source: "Synthetic SMS gateway", severity: "high", status: "BLOCKED" },
+    { vector: "Ransomware execution scenario", sector: "Enterprise endpoint", source: "Sandbox payload", severity: "critical", status: "CONTAINED" },
+    { vector: "Government portal login spray", sector: "Public services", source: "Generated test traffic", severity: "medium", status: "INVESTIGATING" },
+    { vector: "GPS spoofing signal scenario", sector: "Transport systems", source: "Synthetic RF telemetry", severity: "high", status: "MONITORING" },
+    { vector: "Relief fund lookalike domain", sector: "Citizen services", source: "Training indicator", severity: "critical", status: "BLOCKED" },
+    { vector: "Telecom edge DDoS pattern", sector: "Telecommunications", source: "Generated packet profile", severity: "medium", status: "MITIGATED" },
+    { vector: "Credential leak correlation", sector: "Identity services", source: "Local simulation engine", severity: "high", status: "INVESTIGATING" },
+    { vector: "Aviation service stress test", sector: "Aviation systems", source: "Synthetic load event", severity: "medium", status: "CONTAINED" }
+];
+
+const analyticsState = {
+    events: [],
+    intervalId: null,
+    isRunning: true,
+    tick: 0
+};
+
+function initLiveAnalytics() {
+    const analyticsSection = document.getElementById("analytics");
+    const eventRows = document.getElementById("analyticsEventRows");
+    if (!analyticsSection || !eventRows || analyticsState.intervalId) return;
+
+    const now = Date.now();
+    analyticsState.events = [
+        { ...ANALYTICS_SAMPLE_EVENTS[1], timestamp: now - 95000 },
+        { ...ANALYTICS_SAMPLE_EVENTS[4], timestamp: now - 47000 },
+        { ...ANALYTICS_SAMPLE_EVENTS[0], timestamp: now - 12000 }
+    ];
+
+    analyticsSection.querySelectorAll(".metric-card").forEach((card, index) => {
+        const heading = card.querySelector("h4");
+        const bar = card.querySelector(".bar-fill");
+        if (!bar) return;
+        const value = Number.parseInt(bar.style.width, 10) || 50;
+        bar.dataset.analyticsValue = String(value);
+        bar.setAttribute("role", "progressbar");
+        bar.setAttribute("aria-valuemin", "0");
+        bar.setAttribute("aria-valuemax", "100");
+        bar.setAttribute("aria-label", heading ? heading.textContent.trim() : ANALYTICS_VECTOR_NAMES[index]);
+        updateAnalyticsBar(bar, value);
+    });
+
+    analyticsState.isRunning = true;
+    renderAnalyticsEvents();
+    updateAnalyticsSummary();
+    updateAnalyticsClock();
+    analyticsState.intervalId = window.setInterval(advanceAnalytics, 4000);
+}
+
+function updateAnalyticsBar(bar, value) {
+    const safeValue = Math.max(8, Math.min(96, Math.round(value)));
+    bar.dataset.analyticsValue = String(safeValue);
+    bar.style.width = `${safeValue}%`;
+    bar.setAttribute("aria-valuenow", String(safeValue));
+
+    const level = safeValue >= 86 ? "CRITICAL" : safeValue >= 70 ? "ELEVATED" : safeValue >= 45 ? "GUARDED" : "NORMAL";
+    bar.textContent = `${safeValue}% ${level}`;
+    bar.classList.toggle("danger", safeValue >= 86);
+    bar.classList.toggle("warning", safeValue >= 70 && safeValue < 86);
+}
+
+function advanceAnalytics() {
+    if (!analyticsState.isRunning) return;
+    analyticsState.tick += 1;
+
+    document.querySelectorAll("#analytics .bar-fill").forEach(bar => {
+        const currentValue = Number(bar.dataset.analyticsValue) || 50;
+        updateAnalyticsBar(bar, currentValue + Math.round(Math.random() * 8 - 4));
+    });
+
+    if (analyticsState.tick % 2 === 0) {
+        const sample = ANALYTICS_SAMPLE_EVENTS[Math.floor(Math.random() * ANALYTICS_SAMPLE_EVENTS.length)];
+        analyticsState.events.unshift({ ...sample, timestamp: Date.now() });
+        analyticsState.events = analyticsState.events.slice(0, 30);
+        renderAnalyticsEvents();
+    }
+
+    updateAnalyticsSummary();
+    updateAnalyticsClock();
+}
+
+function updateAnalyticsSummary() {
+    const bars = Array.from(document.querySelectorAll("#analytics .bar-fill"));
+    const values = bars.map(bar => Number(bar.dataset.analyticsValue) || 0);
+    const contained = analyticsState.events.filter(event => ["BLOCKED", "CONTAINED", "MITIGATED"].includes(event.status)).length;
+    const investigating = analyticsState.events.filter(event => ["INVESTIGATING", "MONITORING"].includes(event.status)).length;
+    const average = values.length ? Math.round(values.reduce((sum, value) => sum + value, 0) / values.length) : 0;
+
+    setAnalyticsText("analyticsEventCount", String(analyticsState.events.length));
+    setAnalyticsText("analyticsContainedCount", String(contained));
+    setAnalyticsText("analyticsInvestigatingCount", String(investigating));
+    setAnalyticsText("analyticsAverageSignal", `${average}%`);
+}
+
+function updateAnalyticsClock() {
+    const now = new Date();
+    const time = new Intl.DateTimeFormat("en-GB", {
+        timeZone: "Asia/Karachi", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false
+    }).format(now);
+    setAnalyticsText("analyticsLastUpdate", `${time} PKT`);
+    setAnalyticsText("analyticsStreamStatus", analyticsState.isRunning ? "SIMULATION LIVE" : "SIMULATION PAUSED");
+
+    const indicator = document.getElementById("analyticsLiveIndicator");
+    const pauseButton = document.getElementById("analyticsPauseBtn");
+    if (indicator) {
+        indicator.classList.toggle("is-live", analyticsState.isRunning);
+        indicator.classList.toggle("is-paused", !analyticsState.isRunning);
+    }
+    if (pauseButton) {
+        pauseButton.setAttribute("aria-pressed", String(!analyticsState.isRunning));
+        pauseButton.innerHTML = analyticsState.isRunning ? "Ⅱ <span>Pause</span>" : "▶ <span>Resume</span>";
+    }
+}
+
+function renderAnalyticsEvents() {
+    const eventRows = document.getElementById("analyticsEventRows");
+    if (!eventRows) return;
+
+    const query = (document.getElementById("analyticsSearch")?.value || "").trim().toLowerCase();
+    const severity = document.getElementById("analyticsSeverityFilter")?.value || "all";
+    const filteredEvents = analyticsState.events.filter(event => {
+        const searchableText = `${event.vector} ${event.sector} ${event.source} ${event.status}`.toLowerCase();
+        return (severity === "all" || event.severity === severity) && searchableText.includes(query);
+    });
+
+    if (!filteredEvents.length) {
+        eventRows.innerHTML = '<tr><td class="analytics-empty-row" colspan="6">No sample events match these filters.</td></tr>';
+        return;
+    }
+
+    eventRows.innerHTML = filteredEvents.map((event, index) => {
+        const time = new Intl.DateTimeFormat("en-GB", {
+            timeZone: "Asia/Karachi", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false
+        }).format(new Date(event.timestamp));
+        const severityClass = event.severity === "critical" || event.severity === "high" ? "danger" : "warning";
+        const statusClass = ["INVESTIGATING", "MONITORING"].includes(event.status) ? "warning" : "success";
+        return `<tr class="${index === 0 ? "analytics-event-new" : ""}">
+            <td>${time} PKT</td><td>${event.vector}</td><td>${event.sector}</td><td>${event.source}</td>
+            <td><span class="tag-badge ${severityClass}">${event.severity.toUpperCase()}</span></td>
+            <td><span class="status-text ${statusClass}">${event.status}</span></td>
+        </tr>`;
+    }).join("");
+}
+
+function filterAnalyticsEvents() {
+    renderAnalyticsEvents();
+}
+
+function analyticsToggleStream() {
+    analyticsState.isRunning = !analyticsState.isRunning;
+    updateAnalyticsClock();
+}
+
+function analyticsRefreshNow() {
+    const sample = ANALYTICS_SAMPLE_EVENTS[Math.floor(Math.random() * ANALYTICS_SAMPLE_EVENTS.length)];
+    analyticsState.events.unshift({ ...sample, timestamp: Date.now() });
+    analyticsState.events = analyticsState.events.slice(0, 30);
+    document.querySelectorAll("#analytics .bar-fill").forEach(bar => {
+        const currentValue = Number(bar.dataset.analyticsValue) || 50;
+        updateAnalyticsBar(bar, currentValue + Math.round(Math.random() * 12 - 6));
+    });
+    renderAnalyticsEvents();
+    updateAnalyticsSummary();
+    updateAnalyticsClock();
+}
+
+function setAnalyticsText(id, value) {
+    const element = document.getElementById(id);
+    if (element) element.textContent = value;
+}
+
 document.addEventListener("DOMContentLoaded", () => {
+    initLiveAnalytics();
     fetchLiveFeedbacks();
     setInterval(fetchLiveFeedbacks, 10000);
 });

@@ -611,6 +611,153 @@ body.rtl .quiz-options button, body.rtl .game-options button {
 .status-text.success { color: #00ffaa; font-weight: 600; }
 .status-text.warning { color: #ffb703; font-weight: 600; }
 
+#analytics .analytics-console {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 16px;
+    margin: 0 0 16px;
+    border: 1px solid rgba(0, 188, 255, 0.24);
+    border-radius: 8px;
+    background: linear-gradient(105deg, rgba(0, 188, 255, 0.09), rgba(8, 17, 32, 0.88) 48%, rgba(0, 255, 170, 0.06));
+}
+
+#analytics .analytics-stream-status,
+#analytics .analytics-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#analytics .analytics-stream-status {
+    color: #9fb4c8;
+    font: 600 0.7rem 'Fira Code', monospace;
+}
+
+#analytics .analytics-stream-status strong { color: #e2e8f0; }
+
+#analytics .analytics-live-indicator {
+    width: 9px;
+    height: 9px;
+    flex: 0 0 9px;
+    border-radius: 50%;
+    background: #ffb703;
+    box-shadow: 0 0 10px currentColor;
+}
+
+#analytics .analytics-live-indicator.is-live {
+    background: #00ffaa;
+    animation: analyticsPulse 1.5s infinite;
+}
+
+#analytics .analytics-live-indicator.is-paused { background: #ffb703; }
+
+#analytics .analytics-console-divider {
+    width: 1px;
+    height: 18px;
+    margin: 0 4px;
+    background: rgba(148, 163, 184, 0.3);
+}
+
+#analytics .analytics-controls { flex-wrap: wrap; }
+
+#analytics .analytics-search-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+}
+
+#analytics .analytics-search,
+#analytics .analytics-severity-filter {
+    min-height: 36px;
+    padding: 7px 10px;
+    border: 1px solid rgba(148, 163, 184, 0.28);
+    border-radius: 5px;
+    outline: none;
+    background: #07111d;
+    color: #e2e8f0;
+    font: 0.75rem 'Fira Code', monospace;
+}
+
+#analytics .analytics-search { width: 170px; }
+#analytics .analytics-search:focus,
+#analytics .analytics-severity-filter:focus { border-color: #00bcff; }
+
+#analytics .analytics-control-btn {
+    min-height: 36px;
+    padding: 6px 11px;
+    border: 1px solid rgba(0, 188, 255, 0.35);
+    border-radius: 5px;
+    background: rgba(0, 188, 255, 0.09);
+    color: #b9eaff;
+    cursor: pointer;
+    font: 600 0.75rem 'Fira Code', monospace;
+}
+
+#analytics .analytics-control-btn:hover { border-color: #00bcff; background: rgba(0, 188, 255, 0.17); }
+#analytics .analytics-control-btn:focus-visible { outline: 2px solid #00ffaa; outline-offset: 2px; }
+
+#analytics .analytics-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+#analytics .analytics-summary-card {
+    display: grid;
+    gap: 5px;
+    min-width: 0;
+    padding: 15px 16px;
+    border-left: 2px solid #00bcff;
+    background: linear-gradient(110deg, rgba(0, 188, 255, 0.1), rgba(8, 17, 32, 0.78));
+}
+
+#analytics .analytics-summary-card:nth-child(2) { border-color: #00ffaa; }
+#analytics .analytics-summary-card:nth-child(3) { border-color: #ffb703; }
+#analytics .analytics-summary-card:nth-child(4) { border-color: #ff6b6b; }
+#analytics .analytics-summary-card > span { color: #91a8bd; font: 600 0.63rem 'Fira Code', monospace; }
+#analytics .analytics-summary-card strong { color: #f1f7fc; font: 700 1.45rem 'Fira Code', monospace; }
+#analytics .analytics-summary-card small { color: #71869a; font-size: 0.68rem; }
+
+#analytics .metric-card { position: relative; overflow: hidden; }
+#analytics .metric-card h4 { min-height: 2.5em; }
+#analytics .bar-chart-wrap { position: relative; }
+#analytics .bar-fill { min-width: 54px; white-space: nowrap; }
+#analytics .cyber-table tbody tr.analytics-event-new { animation: analyticsRowIn 0.35s ease both; }
+#analytics .analytics-empty-row { color: #94a3b8; text-align: center; }
+
+@keyframes analyticsPulse {
+    50% { opacity: 0.45; box-shadow: 0 0 3px currentColor; }
+}
+
+@keyframes analyticsRowIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 760px) {
+    #analytics .analytics-console { align-items: flex-start; flex-direction: column; }
+    #analytics .analytics-controls { width: 100%; }
+    #analytics .analytics-search { flex: 1 1 130px; width: auto; }
+    #analytics .analytics-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 420px) {
+    #analytics .analytics-stream-status { flex-wrap: wrap; }
+    #analytics .analytics-summary-card { padding: 12px; }
+    #analytics .analytics-summary-card strong { font-size: 1.15rem; }
+    #analytics .analytics-control-btn { flex: 1 1 auto; }
+}
+
+/* ==========================================
+   UPGRADED CYBER GAMES HUB STYLES
+   ========================================== */
+
 /* ==========================================
    UPGRADED CYBER GAMES HUB STYLES
    ========================================== */
@@ -5843,6 +5990,11 @@ body, h1, h2, h3, h4, h5, h6, p, span, a, label, li, td, th {
     font-family: 'Fira Code', monospace;
     font-size: 0.68rem;
     font-weight: 700;
+}
+
+.admin-award-label {
+    color: #ffe08a;
+    animation: none;
 }
 
 .awarded-emoji-anim {
