@@ -65,7 +65,7 @@
         const aboutPageOverlay = document.getElementById("aboutPageOverlay");
         const aboutPageFrame = document.getElementById("aboutPageFrame");
 
-        document.querySelectorAll('.side-menu-item[href^="About-us.html"]').forEach(function (link) {
+        document.querySelectorAll('.side-menu-item[target="cyberAboutFrame"]').forEach(function (link) {
             link.addEventListener("click", function () {
                 if (aboutPageOverlay) {
                     aboutPageOverlay.classList.add("is-open");
@@ -76,10 +76,20 @@
         });
 
         window.addEventListener("message", function (event) {
-            if (!aboutPageFrame || event.source !== aboutPageFrame.contentWindow || event.data !== "cyberguard:close-about") return;
+            if (!aboutPageFrame || event.source !== aboutPageFrame.contentWindow || typeof event.data !== "string") return;
+            var gotoPrefix = "cyberguard:goto:";
+            var wantsClose = event.data === "cyberguard:close-about";
+            var gotoId = event.data.indexOf(gotoPrefix) === 0 ? event.data.slice(gotoPrefix.length) : "";
+            if (!wantsClose && !/^[A-Za-z0-9_-]+$/.test(gotoId)) return;
             aboutPageOverlay.classList.remove("is-open");
             aboutPageOverlay.setAttribute("aria-hidden", "true");
             aboutPageFrame.src = "about:blank";
+            if (gotoId) {
+                setTimeout(function () {
+                    var target = document.getElementById(gotoId);
+                    if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+                }, 120);
+            }
         });
 
         /* ESC key se menu close */
@@ -521,56 +531,6 @@
 
                         card.classList.remove(
                             "input-active"
-                        );
-
-                    }
-
-                }
-            );
-
-        });
-
-
-        /* =====================================================
-           9. LANGUAGE BUTTON EFFECT
-           ===================================================== */
-
-        const languageButtons =
-            document.querySelectorAll(
-                ".lang-option"
-            );
-
-
-        languageButtons.forEach(function (button) {
-
-            button.addEventListener(
-                "click",
-                function () {
-
-                    languageButtons.forEach(
-                        function (item) {
-
-                            item.classList.remove(
-                                "active"
-                            );
-
-                        }
-                    );
-
-
-                    button.classList.add(
-                        "active"
-                    );
-
-
-                    if (
-                        typeof showCyberToast ===
-                        "function"
-                    ) {
-
-                        showCyberToast(
-                            "Language interface updated.",
-                            "LANGUAGE SYSTEM"
                         );
 
                     }
@@ -4424,7 +4384,7 @@ function triggerEndGame() {
         if (endScore) endScore.innerText = currentScore + " / 300 PTS";
         
         let rank = "Rookie Defense Analyst";
-        if (currentScore >= 280) rank = "Master Cyber Sentinel (Elite v4.0)";
+        if (currentScore >= 280) rank = "Master Cyber Sentinel (Elite v5.0)";
         else if (currentScore >= 180) rank = "SOC Incident Responder";
         else if (currentScore >= 100) rank = "Cyber Threat Hunter";
         
@@ -5102,115 +5062,6 @@ window.addEventListener('DOMContentLoaded', () => {
     syncCyberAudioUi();
 });
 
-/* ============================================================
-   MULTI-LANGUAGE ENGINE (English / Roman Urdu / Urdu)
-   Reads translation strings from Urdu.js (TRANSLATIONS object).
-   Auto-detects which element to translate by matching its
-   original English text -- so NO manual data-key editing
-   needed anywhere else in index.html.
-   ============================================================ */
-const CG_LANG_STORAGE_KEY = 'cyberguard_lang';
-
-function cgWrapTrailingText(el, key) {
-    if (!el || el.querySelector('[data-key="' + key + '"]')) return;
-    for (let i = el.childNodes.length - 1; i >= 0; i--) {
-        const node = el.childNodes[i];
-        if (node.nodeType === 3 && node.textContent.trim().length > 0) {
-            const span = document.createElement('span');
-            span.setAttribute('data-key', key);
-            span.textContent = node.textContent.trim();
-            el.replaceChild(span, node);
-            return;
-        }
-    }
-}
-
-function cgSetupSpecialHeadings() {
-    cgWrapTrailingText(document.querySelector('h2.scam-main-title'), 'secScamTitle');
-    cgWrapTrailingText(document.querySelector('#analytics h2.section-title'), 'secAnalyticsTitle');
-    const threatSectionTitles = document.querySelectorAll('#threats h2.section-title');
-    if (threatSectionTitles[1]) cgWrapTrailingText(threatSectionTitles[1], 'secSandboxTitle');
-    cgWrapTrailingText(document.querySelector('#quiz h2.section-title'), 'secQuizTitle');
-    const footerH2 = document.querySelector('#creator h2');
-    if (footerH2 && !footerH2.hasAttribute('data-key')) {
-        footerH2.setAttribute('data-key', 'secFooterTitle');
-    }
-}
-
-function cgSetupEncodeButtons() {
-    document.querySelectorAll('button').forEach(btn => {
-        if (btn.hasAttribute('data-key')) return;
-        if (btn.textContent.trim() !== 'Encode') return;
-        const onclick = btn.getAttribute('onclick') || '';
-        if (onclick.includes('handleBase64')) btn.setAttribute('data-key', 't7Btn');
-        else if (onclick.includes('handleURLCodec')) btn.setAttribute('data-key', 't9Btn');
-    });
-}
-
-function cgAutoTagByText() {
-    if (typeof TRANSLATIONS === 'undefined') return;
-    const en = TRANSLATIONS.en;
-    const reverseMap = {};
-    for (const key in en) {
-        const val = en[key];
-        if (typeof val === 'string' && val.indexOf('<') === -1) {
-            reverseMap[val.trim()] = key;
-        }
-    }
-    reverseMap['Wi-Fi Protocol Protocol Inspector'] = 't27Title';
-
-    document.querySelectorAll('h1, h2, h3, p, button').forEach(el => {
-        if (el.hasAttribute('data-key')) return;
-        if (el.children.length > 0) return;
-        const txt = el.textContent.trim();
-        if (txt && reverseMap[txt] !== undefined) {
-            el.setAttribute('data-key', reverseMap[txt]);
-        }
-    });
-}
-
-function applyLanguage(lang) {
-    if (typeof TRANSLATIONS === 'undefined') {
-        console.error('CyberGuard: Urdu.js (TRANSLATIONS) is not loaded.');
-        return;
-    }
-    const dict = TRANSLATIONS[lang] || TRANSLATIONS.en;
-
-    document.querySelectorAll('[data-key]').forEach(el => {
-        const key = el.getAttribute('data-key');
-        if (dict[key] !== undefined) {
-            el.innerHTML = dict[key];
-        } else if (TRANSLATIONS.en[key] !== undefined) {
-            el.innerHTML = TRANSLATIONS.en[key];
-        }
-    });
-
-    document.body.classList.toggle('rtl', lang === 'ur');
-    document.documentElement.setAttribute('lang', lang === 'ur' ? 'ur' : 'en');
-    document.documentElement.setAttribute('dir', lang === 'ur' ? 'rtl' : 'ltr');
-
-    const labelMap = { en: 'English', roman: 'Roman English', ur: 'اردو' };
-    const displayEl = document.getElementById('currentLangDisplay');
-    if (displayEl) displayEl.textContent = labelMap[lang] || 'English';
-
-    document.querySelectorAll('.lang-option').forEach(btn => {
-        btn.classList.toggle('active', btn.getAttribute('onclick') === `switchLanguage('${lang}')`);
-    });
-
-    localStorage.setItem(CG_LANG_STORAGE_KEY, lang);
-}
-
-function switchLanguage(lang) {
-    applyLanguage(lang);
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    cgSetupEncodeButtons();
-    cgAutoTagByText();
-    cgSetupSpecialHeadings();
-    const savedLang = localStorage.getItem(CG_LANG_STORAGE_KEY) || 'en';
-    applyLanguage(savedLang);
-});
 /* ============================================================
    CYBERGUARD // VVIP LIVE COMMUNITY FEEDBACK & ADMIN ENGINE
    ============================================================ */

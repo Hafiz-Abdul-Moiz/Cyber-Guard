@@ -4,16 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CYBER-GUARD // Global Threat Intelligence & Defense Portal</title>
+    <!-- CYBERGUARD: early device-tier (low / medium / high) so slow phones never flash heavy animations -->
+    <script>
+    (function(){try{var d=document.documentElement,q=new URLSearchParams(location.search).get("perf"),t=q||localStorage.getItem("cg_perf"),n=navigator,c=n.connection||{},m=n.deviceMemory,k=n.hardwareConcurrency||4,u=n.userAgent||"",ios=/iPhone|iPad|iPod/.test(u),mob=ios||/Android|Mobi/i.test(u),s;
+    if(["low","medium","high"].indexOf(t)<0){t=null;if((window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches)||c.saveData||/(^|-)2g$/.test(c.effectiveType||"")){t="low";}else{s=ios?2:mob?0:2;if(m)s+=m<=2?-2:m<=4?-1:m>=8?2:1;s+=k>=8?2:k>=6?1:k<=2?-2:k<=4?-1:0;t=s>=3?"high":s>=1?"medium":"low";}}
+    d.setAttribute("data-perf",t);}catch(e){document.documentElement.setAttribute("data-perf","medium");}})();
+    </script>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600;700&family=Poppins:wght@300;400;600;700&family=Noto+Nastaliq+Urdu:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600;700&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="responsive.css">
 </head>
-<body onload="window.name = 'cyber_portal_tab';">
+<body class="cg-main" onload="window.name = 'cyber_portal_tab';">
 
     <!-- BACKGROUND GRID MATRIX EFFECT -->
     <div class="cyber-bg-overlay"></div>
 
     <!-- NAVBAR -->
     <nav class="navbar">
+        <span class="nav-scanline" aria-hidden="true"></span>
+        <span class="nav-progress" aria-hidden="true"></span>
 
         <!-- VVIP CONTROL MENU -->
         <button class="menu-toggle" id="menuToggle" type="button"
@@ -60,6 +69,17 @@
         <span><strong data-key="sideHoneypotTitle">Honeypot Forensics Lab</strong><small data-key="sideHoneypotDesc">Decoy sensor grid & payload analysis</small></span>
         <b>›</b>
     </a>
+    <!-- NAYE BUTTONS: Services + Privacy Policy (same tab, same overlay) -->
+    <a href="Services.html" target="cyberAboutFrame" class="side-menu-item">
+        <span class="side-menu-icon">🛠</span>
+        <span><strong>Services</strong><small>Our tools, safety guide &amp; trusted links</small></span>
+        <b>›</b>
+    </a>
+    <a href="Privacy-Policy.html" target="cyberAboutFrame" class="side-menu-item">
+        <span class="side-menu-icon">🔒</span>
+        <span><strong>Privacy Policy</strong><small>What stays on your device &amp; what doesn't</small></span>
+        <b>›</b>
+    </a>
 </nav>
             <div class="side-panel-footer">
                 <span>THREAT DEFENSE NODE</span>
@@ -67,10 +87,9 @@
             </div>
         </aside>
         <div class="logo">
-            <span class="shield-pulse">🛡️</span> CYBER<span class="highlight">GUARD</span> <span class="badge-v2">SOC v4.0</span>
+            <span class="shield-pulse">🛡️</span> CYBER<span class="highlight">GUARD</span> <span class="badge-v2">SOC v5.0</span>
         </div>
         <ul class="nav-links">
-            <ul class="nav-links">
             <li><a href="#home" class="active" data-key="navHome">Home</a></li>
             <li><a href="#tools" data-key="navTools">Tools</a></li>
             <li><a href="#scam-alerts" data-key="navScams">Scam Shield</a></li>
@@ -85,20 +104,21 @@
        
           
 
-            <!-- AUDIO PLAYER BUTTON -->
+            <!-- NAV ACTIONS: SOUND + EMERGENCY -->
+        <div class="nav-actions">
+            <!-- AUDIO PLAYER (Nav-Pro.js adds the volume/seek mixer here) -->
             <div class="audio-control-wrapper">
-                <audio id="bgAudio" loop preload="auto">
+                <audio id="bgAudio" loop preload="metadata">
                     <source src="Sound.mp3" type="audio/mpeg">
                     Your browser does not support the audio element.
                 </audio>
-                <button id="cyberAudioBtn" class="cyber-audio-btn" onclick="toggleCyberAudio()" title="Play Background Sound">
-                    <span class="audio-waves-anim">
-                        <span class="bar"></span>
-                        <span class="bar"></span>
-                        <span class="bar"></span>
+                <button id="cyberAudioBtn" class="cyber-audio-btn" onclick="toggleCyberAudio()" title="Play Background Sound" aria-pressed="false">
+                    <span class="audio-waves-anim" aria-hidden="true">
+                        <span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span>
                     </span>
-                    <span id="audioBtnIcon" class="audio-icon">🎵</span>
+                    <span id="audioBtnIcon" class="audio-icon" aria-hidden="true">▶</span>
                     <span id="audioBtnText" class="audio-text">Play Sound</span>
+                    <span class="audio-progress" aria-hidden="true"><i></i></span>
                 </button>
                 <button id="cyberAudioRestartBtn" class="cyber-audio-btn cyber-audio-restart-btn" onclick="startCyberAudioFromBeginning()" title="Start Sound from the beginning">
                     <span class="audio-icon" aria-hidden="true">↺</span>
@@ -1601,7 +1621,7 @@
     <!-- SECTION 5: UPGRADED INTERACTIVE CYBER DEFENSE SIMULATOR GAMES -->
 <section id="game" class="page-section game-page">
     <h2 class="section-title"><span class="icon">🎮</span> <span data-key="secGameTitle">Interactive Cyber Defense Simulator Hub</span></h2>
-    <p class="section-desc">Experience 5 specialized live cybersecurity scam games with real-time attack simulation, Start/End protocols, 2-second radar loaders, and max score caps.</p>
+    <p class="section-desc">Experience 6 specialized live cybersecurity scam games with timed levels, shields, hints and explanations - plus the NEW Scam Call Lab, a safe social experiment where a scammer calls YOU.</p>
     
     <!-- GAME SELECTOR TABS -->
     <div class="game-tabs-navigation">
@@ -1649,7 +1669,7 @@
                     <span id="briefingLogo" class="main-game-logo">💸</span>
                     <div>
                         <span id="briefingName" class="main-game-title">Mobile Wallet Defense</span>
-                        <small class="protocol-code">SOC-DEFENSE // v4.0</small>
+                        <small class="protocol-code">SOC-DEFENSE // v5.0</small>
                     </div>
                 </div>
                 <div class="game-score-cap">CAP: <strong id="briefingScoreCap">300 PTS MAX</strong></div>
@@ -2873,7 +2893,7 @@
 
                 <div class="creator-info-row">
                     <span>PROJECT</span>
-                    <strong>CYBER GUARD // SOC v4.0</strong>
+                    <strong>CYBER GUARD // SOC v5.0</strong>
                 </div>
 
                 <div class="creator-info-row">
@@ -3418,5 +3438,9 @@
         <iframe id="aboutPageFrame" name="cyberAboutFrame" title="CyberGuard information pages"></iframe>
     </div>
 <script src="script.js"></script>
+<script src="Nav-Pro.js"></script>
+<script src="Tools-Pro.js"></script>
+<script src="Games-Pro.js"></script>
+<script src="Scam-Live.js"></script>
 </body>
 </html>

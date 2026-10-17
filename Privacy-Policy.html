@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Privacy Policy | CyberGuard</title>
+    <meta name="description" content="What CyberGuard keeps on your device, which third-party services some tools contact, and how to control your data.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="Privacy-Policy.css">
+</head>
+<body>
+
+<header class="topbar">
+    <a class="back-btn" id="backBtn" href="index.html">← Back to Main Site</a>
+    <div class="top-title">🔒 <span class="long">CyberGuard&nbsp;·&nbsp;</span><b>Privacy Policy</b></div>
+</header>
+
+<nav class="subnav" aria-label="Page sections">
+    <a href="#short">Short version</a>
+    <a href="#local">On your device</a>
+    <a href="#third">Third-party services</a>
+    <a href="#feedback">Public feedback</a>
+    <a href="#contact">Contact &amp; forms</a>
+    <a href="#storage">Stored on device</a>
+    <a href="#rights">Your choices</a>
+</nav>
+
+<main>
+
+    <section class="hero">
+        <span class="eyebrow">CyberGuard // Privacy</span>
+        <h1>Your privacy, <em>in plain words</em></h1>
+        <p class="lead">CyberGuard is a free educational security portal. There are no accounts and no ads. This page explains exactly what happens to the information you type or click while using it.</p>
+        <div class="meta">
+            <span class="chip">Last updated: 17 October 2026</span>
+            <span class="chip cy">Applies to this website only</span>
+        </div>
+    </section>
+
+    <!-- ================= SHORT VERSION ================= -->
+    <section id="short">
+        <div class="summary">
+            <h2>The short version</h2>
+            <ul>
+                <li>Most tools run <b>inside your browser</b>. What you type stays on your device.</li>
+                <li>A few tools ask a public service for real data (for example a breach database). That request <b>leaves your device</b>, and the table below lists exactly what is sent.</li>
+                <li>Your <b>password is never sent</b> anywhere. The password checker sends only the first 5 characters of a scrambled (hashed) version.</li>
+                <li>Posts on the <b>Live Feedback wall are public</b>. Do not put private details in them.</li>
+                <li>We do not sell data, show ads, use tracking cookies, or ask for your microphone or camera.</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- ================= LOCAL ================= -->
+    <section id="local" class="prose">
+        <div class="sec-head">
+            <span class="eyebrow">01 · Stays with you</span>
+            <h2>What is processed only on your device</h2>
+        </div>
+        <p>These features work entirely in your browser and send nothing to any server:</p>
+        <ul>
+            <li>Password strength analysis, password generator and the AES text cipher</li>
+            <li>JWT decoder, Base64, URL encoder/decoder and text hash generator</li>
+            <li>CIDR calculator, IBAN validator, Wi-Fi protocol check, file-extension risk check</li>
+            <li>SQL-injection and XSS pattern checkers (your text is analysed locally)</li>
+            <li>File hashing and QR image reading: the file or image is read locally and never uploaded</li>
+            <li>All six games, including the Scam Call Lab. The scammer's voice uses your browser's text-to-speech (only the scripted game lines are spoken, and some browsers use their vendor's online voices). <b>No microphone is used</b>.</li>
+        </ul>
+    </section>
+
+    <!-- ================= THIRD PARTIES ================= -->
+    <section id="third" class="prose">
+        <div class="sec-head">
+            <span class="eyebrow">02 · Leaves your device</span>
+            <h2>Tools that contact other services</h2>
+        </div>
+        <p>To give real results, some tools ask free public services. When you use one of them, the service receives the data in the "What is sent" column, plus the standard details every website request carries (your IP address and browser type). Each service has its own privacy policy.</p>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Tool / feature</th><th>Service contacted</th><th>What is sent</th></tr></thead>
+                <tbody>
+                    <tr><td data-label="Tool">Password analyzer</td><td data-label="Service">Have I Been Pwned (<code>api.pwnedpasswords.com</code>)</td><td data-label="What is sent">Only the first 5 characters of a SHA-1 hash of the password. The password itself never leaves your device.</td></tr>
+                    <tr><td data-label="Tool">Email breach check, Dark-web monitor</td><td data-label="Service">XposedOrNot, Have I Been Pwned breach list, Google DNS (MX check)</td><td data-label="What is sent">The email address or domain you enter.</td></tr>
+                    <tr><td data-label="Tool">Phishing link inspector</td><td data-label="Service"><code>rdap.org</code>, Google DNS; Google Safe Browsing only if the site owner enabled a key</td><td data-label="What is sent">The domain you enter (the full link only for Safe Browsing).</td></tr>
+                    <tr><td data-label="Tool">IP lookup</td><td data-label="Service"><code>ipwho.is</code> or <code>ipapi.co</code>, Shodan InternetDB, Google DNS</td><td data-label="What is sent">The IP you enter. If you leave it blank, the service sees your own public IP.</td></tr>
+                    <tr><td data-label="Tool">DNS, subdomains, SSL, ports, honeypot detector</td><td data-label="Service">Google DNS, <code>crt.sh</code>, CertSpotter, HackerTarget, Shodan InternetDB</td><td data-label="What is sent">The domain or IP you enter.</td></tr>
+                    <tr><td data-label="Tool">Security headers audit</td><td data-label="Service">Mozilla Observatory, HackerTarget</td><td data-label="What is sent">The website address you enter.</td></tr>
+                    <tr><td data-label="Tool">Card BIN inspector</td><td data-label="Service"><code>binlist.net</code></td><td data-label="What is sent">Only the first 6 to 8 digits. The tool refuses longer numbers.</td></tr>
+                    <tr><td data-label="Tool">MAC vendor</td><td data-label="Service"><code>maclookup.app</code>, <code>macvendors.com</code></td><td data-label="What is sent">The first 6 hex digits (the vendor prefix).</td></tr>
+                    <tr><td data-label="Tool">File hash checker</td><td data-label="Service">CIRCL hashlookup</td><td data-label="What is sent">Only the SHA-256 hash. The file stays on your device.</td></tr>
+                    <tr><td data-label="Tool">Scam handle OSINT</td><td data-label="Service">GitHub API</td><td data-label="What is sent">The username you enter.</td></tr>
+                    <tr><td data-label="Tool">Network ping</td><td data-label="Service">The host you type</td><td data-label="What is sent">HTTPS requests from your browser to that host.</td></tr>
+                    <tr><td data-label="Tool">XSS sanitizer, QR image scan</td><td data-label="Service">Cloudflare cdnjs (code libraries)</td><td data-label="What is sent">Only a download of the library. Your text or image is not uploaded.</td></tr>
+                    <tr><td data-label="Tool">Live Global Scam Radar</td><td data-label="Service">Hacker News (Algolia), rss2json, Google News and GDELT via the allorigins and corsproxy relays</td><td data-label="What is sent">No personal input. These services can see your IP and browser type.</td></tr>
+                    <tr><td data-label="Tool">Page fonts and images</td><td data-label="Service">Google Fonts, Unsplash</td><td data-label="What is sent">Standard request data (IP and browser type).</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <p>Because tools query third parties, <b>do not enter secrets that you would not give to those services</b>, such as live production tokens or customer data.</p>
+    </section>
+
+    <!-- ================= FEEDBACK ================= -->
+    <section id="feedback" class="prose">
+        <div class="sec-head">
+            <span class="eyebrow">03 · Public</span>
+            <h2>The Live Feedback wall is public</h2>
+        </div>
+        <p>When you submit feedback, the following is saved in a Google Firebase Realtime Database and shown on the public wall for everyone to read:</p>
+        <ul>
+            <li>the <b>name</b> and <b>role / city</b> you typed, your <b>rating</b>, <b>category</b>, <b>mood</b> and <b>message</b></li>
+            <li>the time of the post and the reaction counts</li>
+        </ul>
+        <p>Use a nickname and keep personal information, phone numbers, CNIC details, passwords and private stories out of your post. To have a post removed, contact us using the details below and tell us the name and message you used.</p>
+    </section>
+
+    <!-- ================= CONTACT ================= -->
+    <section id="contact" class="prose">
+        <div class="sec-head">
+            <span class="eyebrow">04 · Support</span>
+            <h2>WhatsApp support and the incident form</h2>
+        </div>
+        <p>The support buttons open WhatsApp with a prepared message, so you decide whether to send it. After you send it, your message and number are handled by WhatsApp and by our support desk under WhatsApp's own policy.</p>
+        <p>The incident-report form on the Contact page prepares a ticket number and a WhatsApp message on your device. <b>Nothing you type in that form is uploaded to a CyberGuard server.</b> Avoid including passwords, full card numbers or OTPs in any report.</p>
+    </section>
+
+    <!-- ================= STORAGE ================= -->
+    <section id="storage" class="prose">
+        <div class="sec-head">
+            <span class="eyebrow">05 · Your browser</span>
+            <h2>What we save on your device</h2>
+        </div>
+        <p>CyberGuard does not set cookies. It uses your browser's local storage for small preferences. Nothing in this table identifies you.</p>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Item</th><th>Purpose</th></tr></thead>
+                <tbody>
+                    <tr><td data-label="Item"><code>siteTextColor</code>, <code>siteAccentColor</code>, <code>siteBgOpacity</code></td><td data-label="Purpose">Your chosen theme colours.</td></tr>
+                    <tr><td data-label="Item"><code>cyberguard_audio_*</code></td><td data-label="Purpose">Sound on/off, playback position, volume and mute, so music continues across pages.</td></tr>
+                    <tr><td data-label="Item"><code>cg_perf</code></td><td data-label="Purpose">Your animation level (low, medium or high) if you set it manually.</td></tr>
+                    <tr><td data-label="Item"><code>cg_game_best</code>, <code>cg_game_sfx</code>, <code>cg_lab_voice</code></td><td data-label="Purpose">Best game scores and your sound/voice choices.</td></tr>
+                    <tr><td data-label="Item"><code>cg_services_routine</code></td><td data-label="Purpose">Your ticked safety-routine checklist.</td></tr>
+                    <tr><td data-label="Item"><code>cg_scam_live_v1</code> (and a session note about unreachable sources)</td><td data-label="Purpose">The last scam headlines, so the radar loads quickly and works offline.</td></tr>
+                    <tr><td data-label="Item"><code>cyberguard_user_has_submitted_v1</code> and related feedback flags</td><td data-label="Purpose">Remembers that you already posted feedback on this device.</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="tool">
+            <p><b>Clear CyberGuard data on this device.</b> This removes the items above from this browser. It does not delete anything you already posted on the public wall.</p>
+            <div>
+                <button class="btn-danger" id="clearBtn" type="button">Clear my data</button>
+                <span id="clearMsg" role="status"></span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= RIGHTS ================= -->
+    <section id="rights" class="prose">
+        <div class="sec-head">
+            <span class="eyebrow">06 · Control</span>
+            <h2>What we do not do, and your choices</h2>
+        </div>
+        <div class="two">
+            <div class="box bad">
+                <h3>We do not</h3>
+                <ul>
+                    <li>Sell or rent your information.</li>
+                    <li>Show advertising or build advertising profiles.</li>
+                    <li>Require an account, login or email address.</li>
+                    <li>Use your microphone or camera.</li>
+                    <li>Upload your files, images or passwords.</li>
+                </ul>
+            </div>
+            <div class="box good">
+                <h3>You can</h3>
+                <ul>
+                    <li>Clear all local data with the button above, or via your browser settings.</li>
+                    <li>Ask us to remove a post you made on the feedback wall.</li>
+                    <li>Block third-party requests using your browser or a content blocker. Some tools will then show an "unreachable" message instead of live data.</li>
+                    <li>Use the site in a private window so nothing is kept after you close it.</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= MORE ================= -->
+    <section class="prose">
+        <div class="sec-head">
+            <span class="eyebrow">07 · More</span>
+            <h2>Security, children and changes</h2>
+        </div>
+        <p><b>Hosting logs.</b> Like any website, the company that hosts CyberGuard may keep standard server logs (IP address, time and page requested) for security and reliability. We do not use them to identify visitors.</p>
+        <p><b>Children.</b> The site is made for general safety education and is not designed to collect information from children. Young users should use it with a parent or teacher, and should not post on the public wall.</p>
+        <p><b>Changes.</b> If the site starts using new services or storing new information, this page will be updated and the "Last updated" date will change.</p>
+        <p><b>Contact.</b> Questions or removal requests: WhatsApp <code>0326-2116352</code>, or use the Contact Us page from the main menu.</p>
+        <p style="font-size:.78rem;color:#6f859d">This page describes how the site currently behaves. It is an explanation for visitors and not legal advice.</p>
+    </section>
+
+    <footer class="foot">
+        <p>CyberGuard is an educational security project. External services named above operate under their own terms and privacy policies.</p>
+        <a class="back-btn" href="index.html" data-back>← Back to Main Site</a>
+    </footer>
+</main>
+
+<script>
+(function () {
+    "use strict";
+    var inFrame = window.parent !== window;
+
+    /* back to main site (same tab, closes the overlay) */
+    document.querySelectorAll("[data-back], #backBtn").forEach(function (b) {
+        b.addEventListener("click", function (e) {
+            if (inFrame) { e.preventDefault(); window.parent.postMessage("cyberguard:close-about", "*"); }
+        });
+    });
+
+    /* highlight active section chip */
+    var chips = [].slice.call(document.querySelectorAll(".subnav a"));
+    if ("IntersectionObserver" in window) {
+        var io = new IntersectionObserver(function (entries) {
+            entries.forEach(function (en) {
+                if (en.isIntersecting) chips.forEach(function (c) { c.classList.toggle("is-on", c.getAttribute("href") === "#" + en.target.id); });
+            });
+        }, { rootMargin: "-35% 0px -60% 0px" });
+        document.querySelectorAll("main section[id]").forEach(function (s) { io.observe(s); });
+    }
+
+    /* clear CyberGuard data on this device */
+    document.getElementById("clearBtn").addEventListener("click", function () {
+        var removed = 0, theme = ["siteTextColor", "siteAccentColor", "siteBgOpacity"];
+        function sweep(store) {
+            try {
+                Object.keys(store).forEach(function (k) {
+                    if (/^(cyberguard_|cg_)/.test(k) || theme.indexOf(k) > -1) { store.removeItem(k); removed++; }
+                });
+            } catch (e) { }
+        }
+        sweep(window.localStorage); sweep(window.sessionStorage);
+        document.getElementById("clearMsg").textContent = removed ? "Done: " + removed + " item" + (removed > 1 ? "s" : "") + " removed from this browser." : "Nothing to clear. No CyberGuard data was stored here.";
+    });
+})();
+</script>
+</body>
+</html>

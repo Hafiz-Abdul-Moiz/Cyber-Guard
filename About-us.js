@@ -1,9 +1,8 @@
 /* ============================================================
    CYBERGUARD // ABOUT-US & UNIFIED PORTAL HUB SCRIPT
-   Multilingual Support, Counters, Incident Dispatch & Sync
+   Counters, Incident Dispatch & Shared Sound Sync
    ============================================================ */
 
-const CG_LANG_STORAGE_KEY = "cyberguard_lang";
 const CYBER_AUDIO_STATE_KEY = "cyberguard_audio_state";
 const CYBER_AUDIO_POSITION_KEY = "cyberguard_audio_position";
 
@@ -89,49 +88,16 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Switch language button click function
-window.switchLanguage = function (lang) {
-    if (typeof window.applyAboutLanguage === "function") {
-        window.applyAboutLanguage(lang);
-    }
-    const dropdown = document.querySelector(".lang-dropdown");
-    if (dropdown) {
-        dropdown.classList.remove("show");
-    }
-};
-
 function initAll() {
-    initDropdownToggle();
     initVvipCounters();
     initWhatsAppIntegration();
     initIncidentDispatch();
-    initAboutLanguageEngine();
 }
 
 if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initAll);
 } else {
     initAll();
-}
-
-// 0. LANGUAGE DROPDOWN CLICK & HOVER TOGGLE
-function initDropdownToggle() {
-    const langToggleBtn = document.querySelector(".lang-toggle-btn");
-    const langDropdown = document.querySelector(".lang-dropdown");
-    const langWrapper = document.querySelector(".lang-switcher-wrapper");
-
-    if (langToggleBtn && langDropdown) {
-        langToggleBtn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            langDropdown.classList.toggle("show");
-        });
-
-        document.addEventListener("click", (e) => {
-            if (langWrapper && !langWrapper.contains(e.target)) {
-                langDropdown.classList.remove("show");
-            }
-        });
-    }
 }
 
 // 1. ANIMATED COUNTER ENGINE (WITH VISIBILITY FALLBACK)
@@ -211,13 +177,9 @@ function initWhatsAppIntegration() {
     if (copyWaBtn) {
         copyWaBtn.addEventListener("click", () => {
             navigator.clipboard.writeText("03262116352").then(() => {
-                const lang = localStorage.getItem(CG_LANG_STORAGE_KEY) || "en";
-                const copiedText = lang === "ur" ? "✓ نمبر کاپی ہو گیا!" : (lang === "roman" ? "✓ Number Copy Ho Gaya!" : "✓ Number Copied to Clipboard!");
-                copyWaBtn.innerText = copiedText;
+                copyWaBtn.innerText = "✓ Number Copied to Clipboard!";
                 setTimeout(() => {
-                    const allTranslations = window.TRANSLATIONS || (typeof TRANSLATIONS !== "undefined" ? TRANSLATIONS : null);
-                    const dict = allTranslations ? allTranslations[lang] : null;
-                    copyWaBtn.innerText = dict?.contactWaBtnCopy || "📋 Copy Verified Number";
+                    copyWaBtn.innerText = "📋 Copy Verified Number";
                 }, 2500);
             });
         });
@@ -264,73 +226,3 @@ function initIncidentDispatch() {
         }, 1500);
     });
 }
-
-// 4. MULTI-LANGUAGE DUBBING & SYNCHRONIZATION ENGINE
-function initAboutLanguageEngine() {
-    const savedLang = localStorage.getItem(CG_LANG_STORAGE_KEY) || "en";
-    applyAboutLanguage(savedLang);
-
-    window.addEventListener("storage", (e) => {
-        if (e.key === CG_LANG_STORAGE_KEY && e.newValue) {
-            applyAboutLanguage(e.newValue);
-        }
-    });
-}
-
-window.applyAboutLanguage = function (lang) {
-    const allTranslations = window.TRANSLATIONS || (typeof TRANSLATIONS !== "undefined" ? TRANSLATIONS : null);
-    if (!allTranslations) {
-        setTimeout(() => {
-            if (window.TRANSLATIONS || typeof TRANSLATIONS !== "undefined") {
-                window.applyAboutLanguage(lang);
-            }
-        }, 100);
-        return;
-    }
-
-    const dict = allTranslations[lang] || allTranslations.en;
-    if (!dict) return;
-
-    // 1. Replace all elements with data-key
-    document.querySelectorAll("[data-key]").forEach((el) => {
-        const key = el.getAttribute("data-key");
-        if (dict[key] !== undefined) {
-            el.innerHTML = dict[key];
-        } else if (allTranslations.en && allTranslations.en[key] !== undefined) {
-            el.innerHTML = allTranslations.en[key];
-        }
-    });
-
-    // 2. Replace all placeholder texts with data-key-placeholder
-    document.querySelectorAll("[data-key-placeholder]").forEach((input) => {
-        const key = input.getAttribute("data-key-placeholder");
-        if (dict[key] !== undefined) {
-            input.setAttribute("placeholder", dict[key]);
-        } else if (allTranslations.en && allTranslations.en[key] !== undefined) {
-            input.setAttribute("placeholder", allTranslations.en[key]);
-        }
-    });
-
-    // 3. Handle direction & RTL layout
-    const isUrdu = lang === "ur";
-    document.body.classList.toggle("rtl", isUrdu);
-    document.documentElement.setAttribute("lang", isUrdu ? "ur" : (lang === "roman" ? "ur-Latn" : "en"));
-    document.documentElement.setAttribute("dir", isUrdu ? "rtl" : "ltr");
-
-    // 4. Update Dropdown Display
-    const labelMap = { en: "English", roman: "Roman English", ur: "اردو (Urdu)" };
-    const displayEl = document.getElementById("currentLangDisplay");
-    if (displayEl) {
-        displayEl.textContent = labelMap[lang] || "English";
-    }
-
-    // 5. Active state in dropdown
-    document.querySelectorAll(".lang-option").forEach((btn) => {
-        const onclickAttr = btn.getAttribute("onclick") || "";
-        btn.classList.toggle("active", onclickAttr.includes(`'${lang}'`));
-    });
-
-    try {
-        localStorage.setItem(CG_LANG_STORAGE_KEY, lang);
-    } catch (_) {}
-};

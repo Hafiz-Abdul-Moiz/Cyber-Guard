@@ -769,3 +769,179 @@
         overflow-wrap: anywhere;
     }
 }
+
+
+/* ==========================================================================
+   CYBERGUARD // MAIN-SITE RESPONSIVE v5  (index.html)  -  DEVICE-TIER SYSTEM
+   --------------------------------------------------------------------------
+   Upar ka poora purana code jas ka tas hai (About-us.html ke liye).
+   Ye block sirf  body.cg-main  (index.html) par lagta hai.
+
+   Device tiers (Nav-Pro.js decide karta hai, <html data-perf="...">):
+     LOW    -> animations band, blur band, sab text/content waisa hi
+     MEDIUM -> hover/transition + entrance animations, infinite loops band
+     HIGH   -> sab VVIP animations
+   Manual test:  index.html?perf=low | medium | high | auto
+   ========================================================================== */
+
+/* ---------- 0. Safe base for every screen ---------- */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; scroll-padding-top: calc(var(--nav-live, var(--nav-h, 90px)) + 12px) !important; }
+body.cg-main { overflow-x: hidden; }
+body.cg-main img, body.cg-main video, body.cg-main canvas, body.cg-main svg, body.cg-main iframe { max-width: 100%; }
+body.cg-main h1, body.cg-main h2, body.cg-main h3, body.cg-main p, body.cg-main li, body.cg-main td, body.cg-main th, body.cg-main label { overflow-wrap: anywhere; }
+body.cg-main pre, body.cg-main code { max-width: 100%; }
+body.cg-main pre { overflow-x: auto; white-space: pre-wrap; word-break: break-word; }
+body.cg-main section.page-section {
+    padding-top: calc(var(--nav-live, var(--nav-h, 90px)) + 26px) !important;
+    padding-left: clamp(14px, 4vw, 6%) !important;
+    padding-right: clamp(14px, 4vw, 6%) !important;
+    padding-bottom: clamp(40px, 7vw, 70px) !important;
+    min-width: 0;
+}
+body.cg-main .tools-grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)) !important; gap: clamp(14px, 2.2vw, 24px) !important; }
+body.cg-main .scam-grid, body.cg-main .cards-grid, body.cg-main .sandboxes-grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)) !important; }
+body.cg-main .table-container, body.cg-main .table-wrap, body.cg-main .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+body.cg-main .modal-content { max-width: min(94vw, 760px); max-height: 90vh; max-height: 90dvh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+body.cg-main input, body.cg-main select, body.cg-main textarea { max-width: 100%; }
+
+/* ---------- 1. NAVBAR: laptop / tablet  (<= 1680px) -> 2 rows ---------- */
+@media (max-width: 1680px) {
+    body.cg-main .navbar { flex-wrap: wrap !important; align-items: center !important; justify-content: flex-start !important; gap: 8px 12px !important; padding: 9px clamp(12px, 2vw, 28px) !important; }
+    body.cg-main .navbar .menu-toggle { position: relative !important; inset: auto !important; top: auto !important; left: auto !important; order: 1; flex: 0 0 auto; }
+    body.cg-main .navbar .logo { order: 2; margin-right: auto !important; }
+    body.cg-main .navbar .nav-actions { order: 3; margin-left: auto !important; display: flex !important; flex-wrap: nowrap; gap: 10px; }
+    body.cg-main .navbar .nav-links {
+        order: 4; flex: 1 0 100% !important; width: 100% !important; display: flex !important; flex-wrap: nowrap !important; justify-content: center !important;
+        gap: 6px !important; margin: 0 !important; padding: 6px 2px 2px !important; overflow-x: auto !important; overflow-y: hidden !important;
+        border-top: 1px solid rgba(0, 255, 170, .14) !important; scrollbar-width: none !important; -webkit-overflow-scrolling: touch;
+    }
+    body.cg-main .navbar .nav-links::-webkit-scrollbar { display: none !important; }
+    body.cg-main .navbar .nav-links li { flex: 0 0 auto !important; display: inline-flex !important; }
+    body.cg-main .navbar .nav-links a {
+        display: inline-flex !important; align-items: center; white-space: nowrap !important; padding: 7px 14px !important; font-size: .82rem !important;
+        background: rgba(8, 17, 32, .85) !important; border: 1px solid rgba(0, 255, 170, .2) !important; border-radius: 999px !important; color: #b4c4d6 !important;
+    }
+    body.cg-main .navbar .nav-links a:hover { color: #fff !important; background: rgba(0, 240, 255, .12) !important; font-weight: 500 !important; box-shadow: none !important; }
+    body.cg-main .navbar .nav-links a.active {
+        color: #00ffaa !important; font-weight: 600 !important;
+        background: linear-gradient(135deg, rgba(0, 255, 170, .26), rgba(0, 240, 255, .12)) !important;
+        border-color: rgba(0, 255, 170, .55) !important; box-shadow: 0 0 14px rgba(0, 255, 170, .25) !important;
+    }
+    /* button text hamesha visible (purani rules text chhupa deti thin) */
+    body.cg-main .navbar .cyber-audio-btn .audio-text { display: inline !important; }
+    body.cg-main .navbar .badge-v2 { display: inline-block !important; }
+    body.cg-main .navbar .btn-glow-danger { font-size: .82rem !important; width: auto !important; height: 42px !important; padding: 0 18px !important; }
+    body.cg-main .navbar .btn-glow-danger::before { content: "" !important; }
+}
+
+/* ---------- 2. Large tablet / small laptop  (<= 1100px) ---------- */
+@media (max-width: 1100px) {
+    body.cg-main .hero-container { grid-template-columns: 1fr !important; text-align: center; gap: 30px !important; }
+    body.cg-main .hero-content { align-items: center !important; }
+    body.cg-main .hero-buttons { justify-content: center !important; flex-wrap: wrap !important; }
+    body.cg-main .hero-title { font-size: clamp(2rem, 6.4vw, 3rem) !important; }
+    body.cg-main .creator-grid { grid-template-columns: 1fr !important; }
+    body.cg-main .quiz-cards-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)) !important; }
+}
+
+/* ---------- 3. Phones & small tablets  (<= 820px) -> 4 compact rows ---------- */
+@media (max-width: 820px) {
+    body.cg-main .navbar { padding: 8px 12px !important; gap: 7px 8px !important; }
+    body.cg-main .navbar .logo { font-size: 1.02rem !important; min-width: 0; }
+    body.cg-main .navbar .badge-v2 { font-size: .6rem !important; padding: 2px 7px 2px 14px !important; }
+    body.cg-main .navbar .nav-links { justify-content: flex-start !important; }
+    body.cg-main .navbar .nav-actions {
+        order: 5; flex: 1 0 100% !important; width: 100% !important; margin-left: 0 !important;
+        display: grid !important; grid-template-columns: 1fr; gap: 8px;
+    }
+    body.cg-main .navbar .audio-control-wrapper { width: 100%; display: grid; grid-template-columns: 1fr 1fr 42px; gap: 8px; }
+    body.cg-main .navbar .cyber-audio-btn { height: 40px !important; width: 100% !important; padding: 0 8px !important; font-size: .74rem !important; gap: 6px !important; min-width: 0; }
+    body.cg-main .navbar .audio-mix-btn { width: 42px !important; padding: 0 !important; }
+    body.cg-main .navbar .btn-glow-danger { width: 100% !important; height: 40px !important; font-size: .8rem !important; }
+    body.cg-main .audio-mixer { left: 0; right: 0; width: auto; transform-origin: top center; }
+    body.cg-main .navbar .nav-links a { padding: 6px 13px !important; font-size: .78rem !important; }
+
+    body.cg-main .tools-grid, body.cg-main .scam-grid, body.cg-main .cards-grid, body.cg-main .sandboxes-grid { grid-template-columns: 1fr !important; }
+    body.cg-main .tool-card { padding: 18px 16px 42px !important; }
+    body.cg-main .input-group { flex-direction: column; align-items: stretch; gap: 10px; }
+    body.cg-main .input-group input, body.cg-main .input-group select, body.cg-main .input-group textarea,
+    body.cg-main .input-group button, body.cg-main .btn-primary-small { width: 100%; min-height: 44px; font-size: 16px !important; }
+    body.cg-main .btn-primary, body.cg-main .btn-secondary { min-height: 42px; }
+    body.cg-main .hud-circle-container { width: min(270px, 74vw) !important; height: min(270px, 74vw) !important; }
+    body.cg-main .section-title { font-size: clamp(1.5rem, 6.6vw, 2rem) !important; }
+    body.cg-main .quiz-cards-grid, body.cg-main .quiz-tracker-bar { grid-template-columns: 1fr !important; }
+    body.cg-main .table-container table, body.cg-main .table-wrap table, body.cg-main .table-responsive table { min-width: 540px; }
+}
+
+/* ---------- 4. Small phones  (<= 480px) ---------- */
+@media (max-width: 480px) {
+    body.cg-main .navbar .menu-toggle { width: 38px !important; height: 38px !important; }
+    body.cg-main .navbar .logo { font-size: .95rem !important; }
+    body.cg-main .navbar .cyber-audio-btn .audio-waves-anim { display: none; }
+    body.cg-main .hero-title { font-size: clamp(1.7rem, 8.6vw, 2.3rem) !important; }
+    body.cg-main .hero-buttons { flex-direction: column !important; align-items: stretch !important; }
+    body.cg-main .hero-buttons > * { width: 100% !important; }
+    body.cg-main .modal-content { padding: 18px 14px !important; max-width: 96vw; }
+}
+@media (max-width: 360px) {
+    body.cg-main .navbar .cyber-audio-btn { font-size: .7rem !important; padding: 0 6px !important; }
+    body.cg-main .navbar .badge-v2 { display: none !important; }
+}
+
+/* ---------- 5. Landscape phones (low height) ---------- */
+@media (max-height: 480px) and (orientation: landscape) {
+    body.cg-main .navbar { position: absolute !important; }
+    body.cg-main .modal-content { max-height: 94vh; }
+}
+
+/* ---------- 6. Touch devices: bade tap-targets, no sticky hover-lift ---------- */
+@media (hover: none) and (pointer: coarse) {
+    body.cg-main .navbar .nav-links a { min-height: 36px; }
+    body.cg-main .tool-card:hover, body.cg-main .glowing-card:hover { transform: none !important; }
+}
+
+/* ==========================================================================
+   DEVICE TIERS
+   ========================================================================== */
+
+/* ----- LOW: koi animation nahi, koi blur nahi. Text/content poora wapis wahi ----- */
+html[data-perf="low"] *,
+html[data-perf="low"] *::before,
+html[data-perf="low"] *::after {
+    animation-duration: .001ms !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    transition-delay: 0s !important;
+    scroll-behavior: auto !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    text-shadow: none !important;
+}
+html[data-perf="low"] .i-load,
+html[data-perf="low"] .tp-spin { animation-duration: .9s !important; animation-iteration-count: infinite !important; }
+html[data-perf="low"] .tool-card,
+html[data-perf="low"] .glowing-card,
+html[data-perf="low"] .navbar { box-shadow: none !important; }
+html[data-perf="low"] .navbar { background: #060d1a !important; }
+html[data-perf="low"] .cyber-bg-overlay { display: none !important; }
+html[data-perf="low"] .cg-toast.out { display: none !important; }
+html[data-perf="low"] .cg-ripple { display: none !important; }
+html[data-perf="low"] body.cg-main section.page-section { background-attachment: scroll !important; }
+
+/* ----- MEDIUM: hover + entrance animations rahenge, infinite loops band ----- */
+html[data-perf="medium"] *,
+html[data-perf="medium"] *::before,
+html[data-perf="medium"] *::after { animation-iteration-count: 1 !important; }
+html[data-perf="medium"] :is(.tp-spin, .i-load, [class*="spin"], [class*="loader"], [class*="loading"], [class*="ticker"], [class*="marquee"], [class*="typing"], .audio-waves-anim .bar, [class*="wave"], [class*="live-pulse"]),
+html[data-perf="medium"] :is(.tp-spin, .i-load, [class*="spin"], [class*="loader"], [class*="loading"], [class*="ticker"], [class*="marquee"], [class*="typing"], [class*="wave"], [class*="live-pulse"], [class*="slRing"]) * { animation-iteration-count: infinite !important; }
+html[data-perf="medium"] .navbar,
+html[data-perf="medium"] .side-panel,
+html[data-perf="medium"] .modal { backdrop-filter: blur(6px) !important; -webkit-backdrop-filter: blur(6px) !important; }
+
+/* ----- HIGH: kuch override nahi, sab effects chalte hain ----- */
+
+/* reduced-motion user ho to hamesha low jaisa */
+@media (prefers-reduced-motion: reduce) {
+    html:not([data-perf="high"]) .nav-scanline { animation: none !important; }
+}
