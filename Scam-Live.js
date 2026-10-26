@@ -18,7 +18,7 @@
 
 const CACHE_KEY = "cg_scam_live_v1";
 const REFRESH_MS = 5 * 60 * 1000;
-const MAX_CARDS = (navigator.connection && navigator.connection.saveData) ? 6 : 12;
+const MAX_CARDS = (navigator.connection && navigator.connection.saveData) ? 6 : 48;
 const root = document.documentElement;
 
 /* ---------- country detection ---------- */
@@ -182,6 +182,15 @@ const save = () => { try { localStorage.setItem(CACHE_KEY, JSON.stringify({ t: l
 const load = () => { try { const c = JSON.parse(localStorage.getItem(CACHE_KEY) || "null"); if (c && Array.isArray(c.items)) { items = c.items; lastOk = c.t || 0; return true; } } catch (_) { } return false; };
 
 /* ---------- UI ---------- */
+const CATS = [["all", "All"], ["phishing", "🎣 Phishing"], ["payment", "💳 Payment"], ["mobile", "📱 Mobile / App"], ["social", "👥 Social"], ["ai", "🤖 AI / Deepfake"]];
+const WHY = {
+    phishing: "Fake messages and pages copy real brands to steal passwords, OTPs and card data. Always open the official app or type the address yourself.",
+    payment: "Money scams rely on urgency and fake proof. Verify every payment request inside your own banking or wallet app.",
+    mobile: "Malicious apps, SIM tricks and WhatsApp/Telegram bait spread through links and APK files. Install only from official stores.",
+    social: "Fake profiles, jobs, giveaways and romance bait build trust before asking for money or secrets.",
+    ai: "Cloned voices and deepfake video make impostors convincing. Confirm by calling back on a saved number."
+};
+const F = { cat: "all", cc: "", sort: "new", n: Math.min(MAX_CARDS, 12) };
 function build() {
     const sec = $(".recent-scam-section");
     if (!sec || $("#liveRadar")) return !!$("#liveRadar");
@@ -194,15 +203,30 @@ function build() {
             <div class="live-actions"><span id="liveCountdown" class="live-countdown"></span><button type="button" id="liveRefresh" class="live-refresh" title="Refresh now">⟳ Refresh</button></div>
         </div>
         <div class="live-ticker" aria-label="Latest scam headlines"><div class="live-ticker-track" id="liveTicker"></div></div>
-        <div class="live-stats">
-            <span><b id="liveCount">0</b> alerts · last 24h</span><span><b id="liveCountries">0</b> countries</span><span>Top: <b id="liveTop">—</b></span>
-        </div>
+        <div class="live-insights" id="liveInsights"></div>
+        <div class="live-filters" id="liveFilters" role="toolbar" aria-label="Filter alerts"></div>
         <div class="live-scam-grid" id="liveScamGrid"></div>
+        <div class="live-more-wrap"><button type="button" id="liveMore" class="live-refresh" hidden>Show more alerts ↓</button></div>
         <div class="live-empty" id="liveEmpty" hidden></div>
         <small class="live-credit">Sources: Google News · GDELT · Hacker News · BleepingComputer · Krebs · The Record. Headlines open the original publisher. Auto-updates every 5 minutes.</small>
         <div class="live-divider"><span>CURATED KNOWLEDGE</span></div>`;
     anchor ? anchor.before(panel) : sec.appendChild(panel);
     $("#liveRefresh").addEventListener("click", () => refresh(true));
+    $("#liveMore").addEventListener("click", () => { F.n += 12; render(); });
+    $("#liveFilters").addEventListener("click", e => {
+        const b = e.target.closest("button[data-cat],button[data-cc],button[data-sort]"); if (!b) return;
+        if (b.dataset.cat !== undefined) F.cat = b.dataset.cat;
+        if (b.dataset.cc !== undefined) F.cc = F.cc === b.dataset.cc ? "" : b.dataset.cc;
+        if (b.dataset.sort !== undefined) F.sort = b.dataset.sort;
+        F.n = Math.min(MAX_CARDS, 12); render();
+    });
+    $("#liveScamGrid").addEventListener("click", e => {
+        const b = e.target.closest(".live-share"); if (!b) return;
+        const c = b.closest(".live-card"), a = items.find(x => String(x.ts) === c.dataset.ts && x.url === c.querySelector("h4 a").href) || { title: c.querySelector("h4").textContent, url: c.querySelector("h4 a").href };
+        const text = `⚠️ Scam alert: ${a.title}\n${a.url}\n(via CyberGuard Live Scam Radar)`;
+        if (navigator.share) navigator.share({ title: "Scam alert", text: a.title, url: a.url }).catch(() => { });
+        else (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(() => { b.textContent = "✓ Copied"; setTimeout(() => (b.textContent = "↗ Share"), 1600); }).catch(() => { });
+    });
     return true;
 }
 function setStatus(mode) {
@@ -212,41 +236,63 @@ function setStatus(mode) {
     if (up) up.textContent = mode === "live" ? "updated " + t : mode === "cached" ? "offline - showing cached alerts (" + t + ")" : mode === "loading" ? "fetching newest alerts…" : "live sources unavailable - showing curated alerts below";
 }
 function cardHTML(a, isFresh) {
-    const hot = Date.now() - a.ts < 3600e3;
+    const hot = Date.now() - a.ts < 3600e3, c0 = (a.cats || "social").split(" ")[0];
     const country = a.cc ? `${flag(a.cc)} ${(CC2NAME[a.cc] || a.cc).toUpperCase()}` : "🌎 GLOBAL";
-    const tip = TIPS[(a.cats || "social").split(" ")[0]] || TIPS.social;
-    return `<article class="recent-scam-card live-card${isFresh ? " is-fresh" : ""}" data-category="${esc(a.cats)}" data-ts="${a.ts}">
+    return `<article class="recent-scam-card live-card${isFresh ? " is-fresh" : ""}${a.high ? " is-high" : ""}" data-category="${esc(a.cats)}" data-ts="${a.ts}">
         <div class="recent-card-top"><span class="country-chip">${country}</span><span class="risk-chip ${a.high ? "critical" : "warning"}">${a.high ? "HIGH" : "MEDIUM"}</span></div>
         <h4><a href="${esc(a.url)}" target="_blank" rel="noopener noreferrer nofollow">${esc(a.title)}</a></h4>
-        <p class="live-tip">🛡️ ${esc(tip)}</p>
+        <p class="live-tip">🛡️ ${esc(TIPS[c0] || TIPS.social)}</p>
+        <details class="live-why"><summary>Why it matters</summary><p>${esc(WHY[c0] || WHY.social)}</p></details>
         <div class="recent-card-footer"><span>${esc(a.label)}</span><span class="live-src" title="${esc(a.source)}">${esc((a.source || "").replace(/^www\./, "").slice(0, 26))}</span></div>
-        <div class="live-meta"><span class="live-ago" data-ts="${a.ts}">${ago(a.ts)}</span>${hot ? '<span class="live-new">● NEW</span>' : '<span class="live-badge">LIVE</span>'}</div>
+        <div class="live-meta"><span class="live-ago" data-ts="${a.ts}">${ago(a.ts)}</span><span class="live-acts"><button type="button" class="live-share">↗ Share</button>${hot ? '<span class="live-new">● NEW</span>' : '<span class="live-badge">LIVE</span>'}</span></div>
     </article>`;
 }
+function passes(a) {
+    const f = ($(".scam-filter.active") || {}).dataset?.filter || "all", q = (($("#scamSearch") || {}).value || "").trim().toLowerCase();
+    if (f !== "all" && !(a.cats || "").includes(f)) return false;
+    if (F.cat !== "all" && !(a.cats || "").includes(F.cat)) return false;
+    if (F.cc && a.cc !== F.cc) return false;
+    if (q && !(a.title + " " + a.source + " " + a.label + " " + (CC2NAME[a.cc] || "")).toLowerCase().includes(q)) return false;
+    return true;
+}
+function insights() {
+    const box = $("#liveInsights"); if (!box) return;
+    if (!items.length) { box.innerHTML = ""; return; }
+    const now = Date.now(), high = items.filter(a => a.high).length, ccs = {}, cats = {}, buckets = Array(12).fill(0);
+    items.forEach(a => { if (a.cc) ccs[a.cc] = (ccs[a.cc] || 0) + 1; (a.cats || "").split(" ").filter(Boolean).forEach(c => cats[c] = (cats[c] || 0) + 1); const i = Math.floor((now - a.ts) / 7200e3); if (i >= 0 && i < 12) buckets[11 - i]++; });
+    const topC = Object.entries(ccs).sort((x, y) => y[1] - x[1]).slice(0, 6), pk = ccs.PK || 0, maxB = Math.max(1, ...buckets), maxCat = Math.max(1, ...Object.values(cats));
+    const hero = items.filter(a => a.high && now - a.ts < 3 * 3600e3)[0] || items[0];
+    const tile = (i, l, v) => `<div class="li-tile"><span>${i}</span><b>${v}</b><small>${l}</small></div>`;
+    box.innerHTML = `
+        <div class="li-tiles">${tile("📡", "alerts · last 24h", items.length)}${tile("🔥", "high severity", high)}${tile("🌍", "countries", Object.keys(ccs).length)}${tile("🇵🇰", "Pakistan alerts", pk)}</div>
+        ${hero ? `<a class="li-hero" href="${esc(hero.url)}" target="_blank" rel="noopener noreferrer nofollow"><span class="li-hero-tag">🔥 SCAM OF THE MOMENT</span><b>${esc(hero.title)}</b><small>${flag(hero.cc)} ${esc(CC2NAME[hero.cc] || "Global")} · ${esc(hero.label)} · ${ago(hero.ts)}</small></a>` : ""}
+        <div class="li-cols">
+            <div class="li-box"><h5>Scam types</h5>${CATS.slice(1).map(([k, n]) => `<div class="li-bar"><span>${n}</span><i style="--w:${Math.round((cats[k] || 0) / maxCat * 100)}%"></i><em>${cats[k] || 0}</em></div>`).join("")}</div>
+            <div class="li-box"><h5>Top countries</h5>${topC.length ? topC.map(([c, n]) => `<button type="button" class="li-cc${F.cc === c ? " on" : ""}" data-cc="${c}">${flag(c)} ${esc(CC2NAME[c] || c)} <em>${n}</em></button>`).join("") : "<small>No country detected yet</small>"}</div>
+            <div class="li-box"><h5>Alerts per 2 hours (24h)</h5><div class="li-spark">${buckets.map((n, i) => `<i style="--h:${Math.max(6, Math.round(n / maxB * 100))}%" title="${n} alerts, ${(11 - i) * 2}–${(12 - i) * 2} h ago"></i>`).join("")}</div><small>← 24 h ago · now →</small></div>
+        </div>`;
+}
+function filters() {
+    const box = $("#liveFilters"); if (!box) return;
+    box.innerHTML = CATS.map(([k, n]) => `<button type="button" data-cat="${k}" class="${F.cat === k ? "on" : ""}">${n}</button>`).join("") + `<span class="lf-sep"></span><button type="button" data-cc="PK" class="${F.cc === "PK" ? "on" : ""}">🇵🇰 Pakistan only</button><button type="button" data-sort="new" class="${F.sort === "new" ? "on" : ""}">🕒 Newest</button><button type="button" data-sort="risk" class="${F.sort === "risk" ? "on" : ""}">🔥 Highest risk</button>`;
+}
+function view() { let l = items.filter(passes); if (F.sort === "risk") l = [...l].sort((a, b) => (b.high - a.high) || (b.ts - a.ts)); return l; }
 function render() {
-    const grid = $("#liveScamGrid"), empty = $("#liveEmpty"), ticker = $("#liveTicker");
+    const grid = $("#liveScamGrid"), empty = $("#liveEmpty"), ticker = $("#liveTicker"), more = $("#liveMore");
     if (!grid) return;
-    const list = items.slice(0, MAX_CARDS);
-    if (!list.length) { grid.innerHTML = ""; if (empty) { empty.hidden = false; empty.textContent = "Live sources are unreachable right now. The verified curated alerts below are still available."; } ticker && (ticker.innerHTML = ""); return; }
-    if (empty) empty.hidden = true;
+    insights(); filters();
+    if (!items.length) { grid.innerHTML = ""; if (empty) { empty.hidden = false; empty.textContent = "Live sources are unreachable right now. The verified curated alerts below are still available."; } ticker && (ticker.innerHTML = ""); if (more) more.hidden = true; return; }
+    const all = view(), list = all.slice(0, F.n);
+    if (empty) { empty.hidden = list.length > 0; if (!list.length) empty.textContent = "No live alerts match these filters. Try 'All' or clear the search box."; }
     grid.innerHTML = list.map(a => cardHTML(a, !firstLoad && !seen.has(norm(a.title)))).join("");
+    if (more) { more.hidden = all.length <= F.n; more.textContent = `Show more alerts ↓ (${all.length - F.n} more)`; }
     const heads = items.slice(0, 12).map(a => `<a href="${esc(a.url)}" target="_blank" rel="noopener noreferrer nofollow"><i>${flag(a.cc)}</i> ${esc(a.title)}</a>`).join("<span class=\"live-sep\">◆</span>");
     if (ticker) ticker.innerHTML = `<div class="live-ticker-run">${heads}</div><div class="live-ticker-run" aria-hidden="true">${heads}</div>`;
-    const ccs = new Set(items.filter(a => a.cc).map(a => a.cc));
-    const tally = {}; items.forEach(a => tally[a.label] = (tally[a.label] || 0) + 1);
-    const top = Object.entries(tally).sort((x, y) => y[1] - x[1])[0];
-    $("#liveCount").textContent = items.length; $("#liveCountries").textContent = ccs.size; $("#liveTop").textContent = top ? top[0] : "—";
-    applyFilter();
 }
-function applyFilter() {
-    const f = ($(".scam-filter.active") || {}).dataset?.filter || "all", q = (($("#scamSearch") || {}).value || "").trim().toLowerCase();
-    document.querySelectorAll("#liveScamGrid .live-card").forEach(c => {
-        const ok = (f === "all" || (c.dataset.category || "").includes(f)) && (!q || c.textContent.toLowerCase().includes(q));
-        c.classList.toggle("scam-filter-hidden", !ok);
-    });
-}
+function applyFilter() { F.n = Math.min(MAX_CARDS, 12); render(); }
 document.addEventListener("click", e => { if (e.target.closest(".scam-filter")) setTimeout(applyFilter, 0); });
 document.addEventListener("input", e => { if (e.target && e.target.id === "scamSearch") setTimeout(applyFilter, 0); });
+document.addEventListener("click", e => { const b = e.target.closest(".li-cc"); if (b) { F.cc = F.cc === b.dataset.cc ? "" : b.dataset.cc; F.n = Math.min(MAX_CARDS, 12); render(); } });
 
 /* ---------- refresh ---------- */
 async function refresh(manual) {

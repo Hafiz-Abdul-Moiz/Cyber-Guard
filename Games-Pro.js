@@ -214,7 +214,7 @@ function saveBest(id, score, max) {
    3. GAMES 1-5 ENGINE (overrides)
    ============================================================ */
 function stopTimer() { clearInterval(G.timer); G.timer = null; }
-function rankFor(pct) { return pct >= 90 ? "Master Cyber Sentinel (Elite v5.0)" : pct >= 70 ? "SOC Incident Responder" : pct >= 45 ? "Cyber Threat Hunter" : "Rookie Defense Analyst"; }
+function rankFor(pct) { return pct >= 90 ? "Master Cyber Sentinel (Elite v6.0)" : pct >= 70 ? "SOC Incident Responder" : pct >= 45 ? "Cyber Threat Hunter" : "Rookie Defense Analyst"; }
 const stripLevel = t => String(t || "").replace(/^Level\s*\d+\s*:\s*/i, "");
 
 window.switchCyberGame = function (gameId) {
@@ -231,7 +231,7 @@ window.switchCyberGame = function (gameId) {
     if (hint) hint.textContent = g.lab ? "🎭 Safe experiment: nothing is real, nothing is recorded. Answer how you would naturally respond." : "💡 5 timed levels · 3 shields · hints & explanations · beat your best stars.";
     const btn = document.querySelector("#gameBriefingScreen .btn-start-game span");
     if (btn) btn.textContent = g.lab ? "📞 ENTER THE LAB" : "🚀 START GAME (2-SEC SCAN)";
-    const pc = document.querySelector("#gameBriefingScreen .protocol-code"); if (pc) pc.textContent = "SOC-DEFENSE // v5.0";
+    const pc = document.querySelector("#gameBriefingScreen .protocol-code"); if (pc) pc.textContent = "SOC-DEFENSE // v6.0";
     showScreen("gameBriefingScreen");
 };
 window.showScreen = function (id) {
@@ -369,11 +369,11 @@ window.triggerEndGame = function () {
         if (st) st.innerHTML = [["🎯", "Accuracy", acc + "%"], ["🔥", "Best streak", "x" + G.bestStreak], ["🛡️", "Shields left", G.lives + "/" + LIVES], ["💡", "Hints used", G.hints], ["⏱️", "Time", Math.floor(secs / 60) + "m " + (secs % 60) + "s"], ["⭐", "Stars", "★".repeat(starsFor(pct)) + "☆".repeat(3 - starsFor(pct))]].map(([i, l, v]) => `<div class="gp-stat"><span>${i}</span><small>${l}</small><b>${v}</b></div>`).join("");
         saveBest(G.id, G.score, MAX_SCORE);
         (breached ? sfx.lose : sfx.win)(); if (!breached && pct >= 60 && fxOK()) confetti(34);
-        G.cert = `🛡️ CyberGuard SOC v5.0 Certificate\nGame: ${cyberGamesConfig[G.id].name}\nScore: ${G.score}/${MAX_SCORE} · Accuracy ${acc}% · Rank: ${rank}\nCan YOU beat my score? Play at CyberGuard.`;
+        G.cert = `🛡️ CyberGuard SOC v6.0 Certificate\nGame: ${cyberGamesConfig[G.id].name}\nScore: ${G.score}/${MAX_SCORE} · Accuracy ${acc}% · Rank: ${rank}\nCan YOU beat my score? Play at CyberGuard.`;
     });
 };
 function copyCert() {
-    const txt = G.cert || "CyberGuard SOC v5.0 - play the Cyber Defense Simulator!";
+    const txt = G.cert || "CyberGuard SOC v6.0 - play the Cyber Defense Simulator!";
     const done = () => { const b = $("gpCopy"); if (b) { b.textContent = "✓ Copied!"; setTimeout(() => (b.textContent = "📋 Copy my certificate"), 1800); } };
     (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(done).catch(() => { const ta = document.createElement("textarea"); ta.value = txt; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); done(); } catch (_) { } ta.remove(); });
 }

@@ -327,7 +327,7 @@ async function safeBrowsing(url) {
     try {
         const r = await getJson(`https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${encodeURIComponent(KEYS.googleSafeBrowsing)}`, {
             method: "POST", headers: { "Content-Type": "application/json" }, timeout: 9000,
-            body: JSON.stringify({ client: { clientId: "cyberguard", clientVersion: "5.0" }, threatInfo: { threatTypes: ["MALWARE", "SOCIAL_ENGINEERING", "UNWANTED_SOFTWARE", "POTENTIALLY_HARMFUL_APPLICATION"], platformTypes: ["ANY_PLATFORM"], threatEntryTypes: ["URL"], threatEntries: [{ url }] } })
+            body: JSON.stringify({ client: { clientId: "cyberguard", clientVersion: "6.0" }, threatInfo: { threatTypes: ["MALWARE", "SOCIAL_ENGINEERING", "UNWANTED_SOFTWARE", "POTENTIALLY_HARMFUL_APPLICATION"], platformTypes: ["ANY_PLATFORM"], threatEntryTypes: ["URL"], threatEntries: [{ url }] } })
         });
         return (r.matches || []).map(m => m.threatType);
     } catch (_) { return undefined; }
@@ -1367,5 +1367,938 @@ function initToolsPro() {
     });
 }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initToolsPro); else initToolsPro();
-window.CG_TOOLS_PRO = { version: "5.0", analyzePassword, analyzeUrl };
+
+/* ============================================================================
+   ██  v6  -  FULL REPORT ENGINE  +  DEEP INTELLIGENCE TOOLS  ██
+   Email/Gmail, URL, IP, Browser, DNS, Password  ->  bara "Full Report" modal
+   ============================================================================ */
+const REPORTS = {};
+const rSec = (icon, title, html, cls = "") => `<section class="tpr-sec ${cls}"><h4><span>${icon}</span>${esc(title)}</h4>${html}</section>`;
+const rTiles = arr => `<div class="tpr-tiles">${arr.filter(Boolean).map(([l, v, s]) => `<div class="tpr-tile"><small>${esc(l)}</small><b>${v}</b>${s ? `<em>${s}</em>` : ""}</div>`).join("")}</div>`;
+const rTable = (head, rows) => `<div class="tpr-table"><table><thead><tr>${head.map(h => `<th>${esc(h)}</th>`).join("")}</tr></thead><tbody>${rows.map(r => `<tr>${r.map((c, i) => `<td data-label="${esc(head[i])}">${c}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+const rList = (arr, cls = "") => `<ul class="tpr-ul ${cls}">${arr.map(x => `<li>${x}</li>`).join("")}</ul>`;
+const rSteps = arr => `<ol class="tpr-steps">${arr.map(x => `<li>${x}</li>`).join("")}</ol>`;
+const rSignal = s => `<div class="tpr-sig tpr-s-${s.sev}"><span class="tpr-dot"></span><div><b>${esc(s.title)}</b><p>${esc(s.why)}</p></div></div>`;
+const rPara = t => `<p class="tpr-p">${t}</p>`;
+function rGauge(pct, label, kind = "ok") {
+    pct = Math.max(0, Math.min(100, Math.round(pct)));
+    return `<div class="tpr-gauge tpr-g-${kind}"><svg viewBox="0 0 100 100" aria-hidden="true"><circle class="bg" cx="50" cy="50" r="42"/><circle class="fg" cx="50" cy="50" r="42" stroke-dasharray="${(pct * 2.639).toFixed(1)} 264"/></svg><b>${pct}</b><small>${esc(label)}</small></div>`;
+}
+const rHero = (icon, title, sub, kind, gauge) => `<div class="tpr-hero tpr-h-${kind}"><div class="tpr-hero-i">${icon}</div><div class="tpr-hero-t"><h3>${title}</h3><p>${sub}</p></div>${gauge || ""}</div>`;
+const SEV_ORDER = { critical: 0, high: 1, medium: 2, low: 3, info: 4, good: 5 };
+const SEV_LABEL = { critical: "CRITICAL", high: "HIGH", medium: "MEDIUM", low: "LOW", info: "INFO", good: "GOOD" };
+
+function ensureModal() {
+    if ($("tpModal")) return;
+    document.body.insertAdjacentHTML("beforeend", `
+    <div id="tpModal" class="tp-modal" hidden role="dialog" aria-modal="true" aria-labelledby="tpmTitle">
+        <div class="tp-modal-card">
+            <header class="tp-modal-head">
+                <div class="tp-modal-ttl"><h3 id="tpmTitle"></h3><small id="tpmSub"></small></div>
+                <div class="tp-modal-actions"><button type="button" id="tpmCopy" class="tp-copy">⧉ Copy report</button><button type="button" id="tpmClose" class="tp-x" aria-label="Close report">✕</button></div>
+            </header>
+            <div class="tp-modal-body" id="tpmBody"></div>
+        </div>
+    </div>`);
+    $("tpmClose").addEventListener("click", closeReport);
+    $("tpModal").addEventListener("click", e => { if (e.target.id === "tpModal") closeReport(); });
+    document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("tpModal").hidden) closeReport(); });
+    $("tpmCopy").addEventListener("click", () => {
+        const t = $("tpmBody").innerText.trim(), b = $("tpmCopy");
+        (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => { b.textContent = "✓ Copied"; setTimeout(() => (b.textContent = "⧉ Copy report"), 1600); }).catch(() => { });
+    });
+}
+function openReport(key) {
+    const r = REPORTS[key]; if (!r) return;
+    ensureModal();
+    $("tpmTitle").textContent = r.title; $("tpmSub").textContent = r.sub || "";
+    $("tpmBody").innerHTML = r.html; $("tpmBody").scrollTop = 0;
+    $("tpModal").hidden = false; document.body.classList.add("tp-lock");
+    $("tpmClose").focus({ preventScroll: true });
+}
+function closeReport() { const m = $("tpModal"); if (m) m.hidden = true; document.body.classList.remove("tp-lock"); }
+document.addEventListener("click", e => { const b = e.target.closest(".tp-open"); if (b) openReport(b.dataset.report); });
+/* set() + "Open full report" button */
+function setR(id, key, title, sub, summaryHtml, reportHtml, state) {
+    REPORTS[key] = { title, sub, html: reportHtml };
+    set(id, summaryHtml, state);
+    const el = $(id), act = el && el.querySelector(".tp-actions");
+    if (act) act.insertAdjacentHTML("afterbegin", `<button type="button" class="tp-open" data-report="${key}">📄 Open full report</button>`);
+}
+const fmtDate = d => { try { return new Date(d).toISOString().slice(0, 10); } catch (_) { return "—"; } };
+const entropyOf = s => { const m = {}; for (const c of s) m[c] = (m[c] || 0) + 1; return -Object.values(m).reduce((a, n) => a + (n / s.length) * Math.log2(n / s.length), 0); };
+const haversine = (a, b, c, d) => { const R = 6371, t = x => x * Math.PI / 180, dl = t(c - a), dn = t(d - b), h = Math.sin(dl / 2) ** 2 + Math.cos(t(a)) * Math.cos(t(c)) * Math.sin(dn / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(h)); };
+
+/* ============================================================
+   EMAIL / GMAIL DEEP INSPECTOR
+   ============================================================ */
+const POPULAR_MAIL = ["gmail.com", "yahoo.com", "outlook.com", "hotmail.com", "icloud.com", "proton.me", "live.com", "msn.com", "aol.com", "yandex.com", "zoho.com", "mail.com", "gmx.com", "yahoo.co.uk", "googlemail.com", "protonmail.com"];
+const MAIL_PROV = [[/aspmx\.l\.google\.com|googlemail\.com|\.google\.com\.?$/i, "Google (Gmail / Google Workspace)"], [/mail\.protection\.outlook\.com|outlook\.com/i, "Microsoft 365 / Outlook"], [/zoho\.(com|in|eu)/i, "Zoho Mail"], [/yahoodns\.net|yahoo/i, "Yahoo Mail"], [/protonmail|proton\.ch|proton\.me/i, "Proton Mail"], [/icloud|me\.com|apple/i, "iCloud Mail"], [/mimecast/i, "Mimecast (security gateway)"], [/pphosted|proofpoint/i, "Proofpoint (security gateway)"], [/secureserver\.net/i, "GoDaddy mail"], [/yandex/i, "Yandex Mail"], [/mailgun|sendgrid|amazonses/i, "Bulk-mail service"], [/ovh|ionos|1and1|hostinger|namecheap|privateemail|registrar-servers/i, "Hosting-provider mail"]];
+const DATA_EXPLAIN = {
+    "passwords": ["🔑", "Your actual password (or its hash) was leaked. Attackers try it on Gmail, banking, Facebook and shopping accounts (credential stuffing).", "critical"],
+    "password hints": ["💡", "Hints often reveal the password itself. Treat as if the password leaked.", "high"],
+    "email addresses": ["📧", "Your email is now on spam/phishing lists. Expect targeted fake 'account' emails.", "low"],
+    "usernames": ["👤", "Usernames let attackers guess your accounts on other sites.", "low"],
+    "phone numbers": ["📱", "Enables SIM-swap attempts, WhatsApp/SMS phishing and scam calls using your real details.", "high"],
+    "names": ["🪪", "Real names make scam messages and calls far more convincing.", "medium"],
+    "physical addresses": ["🏠", "Home address exposure helps impersonation, parcel scams and stalking.", "high"],
+    "dates of birth": ["🎂", "Date of birth is a common security question and identity-theft ingredient.", "high"],
+    "ip addresses": ["🌐", "Reveals approximate location and ISP at the time of the breach.", "medium"],
+    "credit cards": ["💳", "Card data may be exposed. Call your bank to block/replace the card.", "critical"],
+    "partial credit card data": ["💳", "Partial card data helps fraudsters pass verification checks.", "high"],
+    "financial": ["💰", "Financial details raise the risk of targeted fraud.", "high"],
+    "government issued ids": ["🪪", "ID numbers (like CNIC/SSN) allow identity theft. Monitor and report misuse.", "critical"],
+    "security questions and answers": ["❓", "Answers can unlock account recovery. Change them everywhere you reused them.", "high"],
+    "genders": ["⚧", "Low risk by itself, but adds to your profile.", "low"],
+    "geographic locations": ["📍", "Location history can reveal where you live and work.", "medium"],
+    "social media profiles": ["🔗", "Links your identities across sites. Review privacy settings.", "medium"],
+    "employers": ["🏢", "Enables convincing work-themed phishing.", "medium"],
+    "job titles": ["💼", "Enables convincing work-themed phishing.", "low"],
+    "device information": ["🖥️", "Device details can be used for fingerprinting.", "low"],
+    "purchases": ["🛒", "Purchase history makes fake order/refund scams believable.", "medium"],
+    "ages": ["🎂", "Age adds to your profile for targeted scams.", "low"]
+};
+function analyzeLocalPart(local) {
+    const l = local.toLowerCase(), digits = (l.match(/\d/g) || []).length, letters = (l.match(/[a-z]/g) || []).length;
+    const ent = entropyOf(l.replace(/[._+-]/g, "")), kinds = [];
+    if (/^[a-z]{2,}[._-][a-z]{2,}$/.test(l)) kinds.push(["Looks like first.last (professional style)", "ok"]);
+    else if (/^[a-z]{3,14}$/.test(l)) kinds.push(["Name/word-like (easy to guess)", "info"]);
+    if (/(19[5-9]\d|20[0-2]\d)/.test(l)) kinds.push(["Contains a year (often a birth year)", "warn"]);
+    if (digits >= 5 || (digits / Math.max(1, l.length)) > 0.4) kinds.push(["Heavy digits (throwaway / bulk-created style)", "warn"]);
+    if (l.length > 24) kinds.push(["Very long (typical of auto-generated addresses)", "warn"]);
+    if (ent > 3.5 && letters > 8 && !/[aeiou]{1}/.test(l.slice(0, 3))) kinds.push(["Random-looking characters", "warn"]);
+    if (/^(admin|info|support|sales|contact|root|noreply|no-reply|webmaster|postmaster|billing|hr|office|help)$/.test(l)) kinds.push(["Role account (shared mailbox, not a person)", "warn"]);
+    if (l.includes("+")) kinds.push(["Contains a +tag alias (used to track which site leaked your address)", "info"]);
+    return { len: l.length, digits, ent, kinds };
+}
+const grav = email => new Promise(res => {
+    try {
+        const h = md5(new TextEncoder().encode(email.trim().toLowerCase())), im = new Image(), t = setTimeout(() => res(null), 4500);
+        im.onload = () => { clearTimeout(t); res(true); }; im.onerror = () => { clearTimeout(t); res(false); };
+        im.src = `https://www.gravatar.com/avatar/${h}?d=404&s=1`;
+    } catch (_) { res(null); }
+});
+async function xonAnalytics(email) {
+    try { return await getJson(`https://api.xposedornot.com/v1/breach-analytics?email=${encodeURIComponent(email)}`, { timeout: 14000 }); }
+    catch (e) { if (e.status === 404) return { none: true }; throw e; }
+}
+function parseBreaches(d) {
+    const arr = d?.ExposedBreaches?.breaches_details || d?.breaches_details || [];
+    return arr.map(b => ({ name: b.breach || b.name || "Unknown", domain: b.domain || "", industry: b.industry || "", year: String(b.xposed_date || "").slice(0, 4), records: +b.xposed_records || 0, data: String(b.xposed_data || "").split(/;|,/).map(s => s.trim()).filter(Boolean), pw: String(b.password_risk || "").toLowerCase(), verified: /yes|true/i.test(String(b.verified)), details: b.details || "" }));
+}
+const pwRiskLabel = r => ({ plaintext: ["Stored in PLAIN TEXT", "danger"], easytocrack: ["Weak hash - easy to crack", "danger"], hardtocrack: ["Strong hash - hard to crack", "warn"], unknown: ["Unknown storage", "info"] }[r] || [r ? r : "Unknown", "info"]);
+
+window.simulateBreachCheck = async function () {
+    const email = val("emailInput").toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return fail("breachResult", "Enter a valid email address.");
+    const [local, domain] = [email.slice(0, email.lastIndexOf("@")), email.slice(email.lastIndexOf("@") + 1)];
+    busy("breachResult", "Building deep report: breach databases, mail server, spoofing protection, Gmail analysis…");
+    const isGmail = /^(gmail|googlemail)\.com$/.test(domain);
+    const [an, mx, spf, dmarc, age, gv] = await Promise.allSettled([xonAnalytics(email), dnsQuery(domain, "MX"), dnsQuery(domain, "TXT"), dnsQuery("_dmarc." + domain, "TXT"), isGmail ? Promise.resolve(null) : domainAge(domain), grav(email)]);
+    let breaches = [], serviceDown = false, clean = false, names = [];
+    if (an.status === "fulfilled") { if (an.value.none) clean = true; else breaches = parseBreaches(an.value); if (!clean && !breaches.length) { try { const r = await xonEmail(email); names = r.list; if (!r.found) clean = true; } catch (_) { serviceDown = true; } } }
+    else { try { const r = await xonEmail(email); names = r.list; clean = !r.found; } catch (_) { serviceDown = true; } }
+    if (!breaches.length && names.length) breaches = names.map(n => ({ name: n, domain: "", industry: "", year: "", records: 0, data: [], pw: "", verified: false, details: "" }));
+    const mxs = mx.status === "fulfilled" ? (mx.value.Answer || []).filter(a => a.type === 15).map(a => a.data.replace(/\.$/, "")) : [];
+    const txts = spf.status === "fulfilled" ? (spf.value.Answer || []).map(a => String(a.data)) : [];
+    const spfRec = txts.find(t => /v=spf1/i.test(t)), dmRec = dmarc.status === "fulfilled" ? (dmarc.value.Answer || []).map(a => String(a.data)).find(t => /v=DMARC1/i.test(t)) : "";
+    const dmPol = (dmRec || "").match(/\bp=(\w+)/i)?.[1]?.toLowerCase() || "";
+    const provider = isGmail ? "Google Gmail (consumer account)" : (MAIL_PROV.find(([re]) => mxs.some(m => re.test(m)))?.[1] || (mxs.length ? "Custom / self-hosted mail server" : "No mail server found"));
+    const la = analyzeLocalPart(local), canon = isGmail ? local.replace(/\./g, "").replace(/\+.*$/, "") + "@gmail.com" : "";
+    const variants = isGmail ? Math.pow(2, Math.max(0, canon.split("@")[0].length - 1)) : 0;
+    const typo = !POPULAR_MAIL.includes(domain) ? POPULAR_MAIL.map(d => [d, lev(domain, d)]).filter(x => x[1] > 0 && x[1] <= 2).sort((a, b) => a[1] - b[1])[0] : null;
+    const gravatar = gv.status === "fulfilled" ? gv.value : null, ageInfo = age.status === "fulfilled" ? age.value : null;
+
+    /* ---------- risk model ---------- */
+    const allData = new Set(breaches.flatMap(b => b.data.map(d => d.toLowerCase())));
+    const hasPw = [...allData].some(d => /^passwords?$/.test(d)), recent = breaches.some(b => +b.year >= new Date().getFullYear() - 3);
+    const weakPw = breaches.some(b => /plaintext|easytocrack/.test(b.pw));
+    const sensitive = ["phone numbers", "physical addresses", "dates of birth", "credit cards", "financial", "government issued ids", "partial credit card data", "security questions and answers"].filter(k => allData.has(k));
+    let risk = Math.min(40, breaches.length * 7) + (hasPw ? 22 : 0) + (weakPw ? 14 : 0) + (recent ? 8 : 0) + Math.min(16, sensitive.length * 8);
+    risk = Math.min(100, risk);
+    const rk = risk >= 60 ? "danger" : risk >= 25 ? "warning" : "success", rkName = risk >= 60 ? "HIGH RISK" : risk >= 25 ? "MODERATE RISK" : breaches.length ? "LOW RISK" : "NO EXPOSURE FOUND";
+
+    /* ---------- spoofing posture ---------- */
+    let spoof = "—", spoofK = "info";
+    if (!isGmail && mxs.length) { const g = (spfRec ? 1 : 0) + (dmRec ? 1 : 0) + (["reject", "quarantine"].includes(dmPol) ? 1 : 0); spoof = ["F (spoofable)", "D", "B", "A (protected)"][g]; spoofK = g >= 3 ? "ok" : g === 2 ? "warn" : "danger"; }
+
+    /* ---------- summary card ---------- */
+    const flags = [];
+    if (DISPOSABLE.includes(domain)) flags.push(badge("Disposable domain", "warn"));
+    if (mxs.length === 0 && !isGmail) flags.push(badge("No mail server (MX)", "danger"));
+    if (typo) flags.push(badge("Looks like a typo of " + typo[0], "warn"));
+    if (isGmail) flags.push(badge("Gmail: dots & +tags ignored", "info"));
+    if (gravatar) flags.push(badge("Public Gravatar profile exists", "info"));
+    const summary = serviceDown && !breaches.length
+        ? verdict("⚠️", "Breach service unreachable", "warning", "Rate-limited or offline. Local analysis is still available below.")
+        : verdict(breaches.length ? (risk >= 60 ? "🚨" : "⚠️") : "✅", breaches.length ? `${breaches.length} breach${breaches.length > 1 ? "es" : ""} • ${rkName}` : "No breach found", rk, esc(email)) +
+        meter(risk, rk === "danger" ? "bad" : rk === "warning" ? "warn" : "ok") +
+        kv([["Provider", esc(provider)], isGmail ? ["Canonical Gmail", code(canon)] : ["Mail servers", mxs.length ? mxs.slice(0, 2).map(code).join(" ") : badge("none", "danger")], breaches.length ? ["Data exposed", chips([...allData].slice(0, 6).map(x => x.replace(/\b\w/g, c => c.toUpperCase())), "danger")] : null, ["Spoofing protection", isGmail ? badge("Google-managed", "ok") : badge(spoof, spoofK === "ok" ? "ok" : spoofK === "warn" ? "warn" : "danger")]]) +
+        `<div class="tp-chips">${flags.join("")}</div>`;
+
+    /* ---------- full report ---------- */
+    let h = rHero(breaches.length ? (risk >= 60 ? "🚨" : "⚠️") : "🛡️", esc(email), `${rkName} · ${breaches.length} known breach${breaches.length === 1 ? "" : "es"} · ${esc(provider)}`, rk === "danger" ? "bad" : rk === "warning" ? "warn" : "ok", rGauge(risk, "exposure risk", rk === "danger" ? "bad" : rk === "warning" ? "warn" : "ok"));
+    h += rSec("🧬", "Address anatomy", rTiles([["Local part", code(local)], ["Domain", code(domain)], ["Length", `${la.len} chars`], ["Randomness (entropy)", la.ent.toFixed(2) + " bits/char"], ["Digits", String(la.digits)], isGmail ? ["Canonical Gmail", code(canon)] : null, isGmail ? ["Dot-variants of this address", num(variants), "all deliver to the same inbox"] : null]) + (la.kinds.length ? chips(la.kinds.map(k => k[0]), "info") : "") +
+        (isGmail ? rPara("<b>Gmail ignores dots and +tags.</b> <code>j.o.h.n@gmail.com</code> and <code>john+shop@gmail.com</code> reach the same inbox as <code>john@gmail.com</code>. Scammers use this to register look-alike accounts, and you can use +tags to find out which site leaks your address.") : "") +
+        (typo ? rPara(`⚠️ <b>Possible typo:</b> did you mean <code>${esc(local)}@${esc(typo[0])}</code>? Mistyped domains are a common way emails reach strangers.`) : ""));
+    h += rSec("📬", "Mail provider & domain health", rTiles([["Provider", esc(provider)], ["MX records", mxs.length ? esc(mxs.slice(0, 3).join(", ")) : "none"], isGmail ? null : ["Domain age", ageInfo ? `${Math.floor(ageInfo.days / 365 * 10) / 10} years (${fmtDate(ageInfo.created)})` : "unavailable"], isGmail ? null : ["SPF", spfRec ? badge("present", "ok") : badge("missing", "danger")], isGmail ? null : ["DMARC", dmRec ? badge("p=" + (dmPol || "?"), dmPol === "none" ? "warn" : "ok") : badge("missing", "danger")], ["Spoofing grade", isGmail ? "Google-managed" : spoof], ["Gravatar profile", gravatar === null ? "unknown" : gravatar ? badge("exists (public photo/name possible)", "warn") : badge("none", "ok")]]) +
+        (isGmail ? "" : rPara(spoofK === "ok" ? "Strong anti-spoofing: attackers cannot easily send fake emails that appear to come from this domain." : "Weak anti-spoofing: criminals may be able to send emails that look like they come from this domain. Treat unexpected messages from it with caution.")));
+    if (breaches.length) {
+        const byYear = {}; breaches.forEach(b => { const y = b.year || "?"; (byYear[y] = byYear[y] || []).push(b.name); });
+        h += rSec("🕰️", "Breach timeline", `<div class="tpr-timeline">${Object.keys(byYear).sort().map(y => `<div class="tpr-tl"><b>${esc(y)}</b><span>${byYear[y].map(esc).join(", ")}</span></div>`).join("")}</div>`);
+        h += rSec("🗂️", "Every breach in detail", rTable(["Breach", "Year", "Records", "Data exposed", "Password storage"], breaches.map(b => { const pr = pwRiskLabel(b.pw); return [`<b>${esc(b.name)}</b>${b.domain ? `<br><small>${esc(b.domain)}</small>` : ""}${b.industry ? `<br><small>${esc(b.industry)}</small>` : ""}`, esc(b.year || "—"), b.records ? num(b.records) : "—", b.data.length ? chips(b.data.slice(0, 8), "info") : "—", b.pw ? badge(pr[0], pr[1]) : "—"]; })));
+        const rows = [...allData].map(d => { const e = DATA_EXPLAIN[d] || ["•", "This information type was exposed and can help attackers target you.", "low"]; return { sev: e[2], title: `${e[0]} ${d.replace(/\b\w/g, c => c.toUpperCase())}`, why: e[1] }; }).sort((a, b) => SEV_ORDER[a.sev] - SEV_ORDER[b.sev]);
+        h += rSec("🎯", "What attackers can do with this data", rows.map(rSignal).join(""));
+        const pwSites = breaches.filter(b => b.data.some(d => /^passwords?$/i.test(d))).map(b => b.name);
+        h += rSec("🛠️", "Your action plan (in priority order)", rSteps([
+            pwSites.length ? `<b>Change your password</b> on: ${pwSites.slice(0, 8).map(esc).join(", ")} — and on every site where you reused that password.` : "<b>Check password reuse:</b> change any password you reused across sites.",
+            "<b>Use a unique password for every site</b> with a password manager (see our Services page for a free recommendation).",
+            "<b>Turn on 2-Step Verification</b> with an authenticator app or passkey (not SMS).",
+            isGmail ? "<b>Check Gmail for back doors:</b> Settings → Forwarding and POP/IMAP, and Filters. Remove anything you did not create." : "<b>Check your mailbox settings</b> for unknown forwarding rules and filters.",
+            isGmail ? `<b>Run the Google Security Checkup:</b> ${link("https://myaccount.google.com/security-checkup", "myaccount.google.com/security-checkup")} and review <a class="cg-result-link" href="https://myaccount.google.com/device-activity" target="_blank" rel="noopener noreferrer">your devices</a> and <a class="cg-result-link" href="https://myaccount.google.com/connections" target="_blank" rel="noopener noreferrer">third-party access</a>.` : "<b>Review sign-in activity</b> on your email provider's security page.",
+            sensitive.length ? "<b>Call your bank / watch your accounts:</b> financial or ID details were exposed. Set alerts and report misuse immediately." : "<b>Watch for phishing</b> that mentions the affected sites by name.",
+            `<b>Get alerts for future leaks:</b> ${link("https://haveibeenpwned.com/NotifyMe", "haveibeenpwned.com/NotifyMe")}`
+        ]));
+    } else if (clean) {
+        h += rSec("✅", "Breach check", rPara("This address was <b>not found</b> in the XposedOrNot breach database. That is good news, but databases are never complete. Keep a unique password and 2-Step Verification enabled.") + rPara(link("https://haveibeenpwned.com", "Cross-check on Have I Been Pwned")));
+    } else h += rSec("⚠️", "Breach check", rPara("The breach database could not be reached (rate limit or offline). Try again in a minute."));
+    h += rSec("🔐", isGmail ? "Check your own Gmail & Google account" : "Protect this mailbox", `<div class="tpr-links">${[["My Google Activity", "https://myactivity.google.com"], ["Security Checkup", "https://myaccount.google.com/security-checkup"], ["Your devices", "https://myaccount.google.com/device-activity"], ["Third-party access", "https://myaccount.google.com/connections"], ["Gmail forwarding settings", "https://mail.google.com/mail/u/0/#settings/fwdandpop"], ["Google Takeout", "https://takeout.google.com"]].map(([t, u]) => `<a href="${u}" target="_blank" rel="noopener noreferrer">${t} ↗</a>`).join("")}</div>` + rPara("We cannot see inside any Gmail account. These official pages show you everything Google holds about <b>your own</b> account."));
+    h += rPara(`<small>Privacy: this check sends the address to XposedOrNot and Google DNS. It is not stored by CyberGuard.</small>`);
+    setR("breachResult", "email", "Email & Gmail deep report", email, summary, h, serviceDown && !breaches.length ? "warning" : rk);
+};
+
+/* ============================================================
+   SHARED LOOKUPS (used by URL / IP / DNS reports)
+   ============================================================ */
+async function ipwho(ip) {
+    try { const g = await getJson(`https://ipwho.is/${ip ? encodeURIComponent(ip) : ""}`, { timeout: 9000 }); if (g.success === false) throw new Error(g.message); return g; }
+    catch (_) {
+        const o = await getJson(`https://ipapi.co/${ip ? encodeURIComponent(ip) + "/" : ""}json/`, { timeout: 9000 });
+        if (o.error) throw new Error(o.reason);
+        return { ip: o.ip, type: o.version === "IPv6" ? "IPv6" : "IPv4", continent: o.continent_code, country: o.country_name, country_code: o.country_code, region: o.region, city: o.city, postal: o.postal, latitude: o.latitude, longitude: o.longitude, capital: o.country_capital, calling_code: String(o.country_calling_code || "").replace("+", ""), is_eu: !!o.in_eu, connection: { asn: String(o.asn || "").replace("AS", ""), org: o.org, isp: o.org, domain: "" }, timezone: { id: o.timezone, utc: o.utc_offset }, currency: o.currency ? { code: o.currency, name: o.currency_name } : null, flag: {} };
+    }
+}
+async function rdapDomain(host) {
+    try {
+        const d = await getJson(`https://rdap.org/domain/${encodeURIComponent(regDomain(host))}`, { timeout: 10000 });
+        const ev = a => (d.events || []).find(e => new RegExp(a, "i").test(e.eventAction))?.eventDate;
+        const reg = (d.entities || []).find(e => (e.roles || []).includes("registrar"));
+        return { created: ev("registration"), updated: ev("last changed"), expires: ev("expiration"), registrar: reg?.vcardArray?.[1]?.find(v => v[0] === "fn")?.[3] || "", status: d.status || [], ns: (d.nameservers || []).map(n => (n.ldhName || "").toLowerCase()).filter(Boolean), dnssec: d.secureDNS?.delegationSigned };
+    } catch (_) { return null; }
+}
+const raceT = (p, ms) => Promise.race([p, sleep(ms).then(() => null)]);
+const HOSTING_RE = /(amazon|aws|google cloud|google llc|microsoft|azure|digitalocean|ovh|hetzner|linode|akamai|vultr|contabo|leaseweb|choopa|m247|datacamp|cloudflare|fastly|oracle|alibaba|tencent|ionos|godaddy|namecheap|hostinger|hostwinds|scaleway|colocrossing|quadranet|psychz|serverius|tzulo|packet|zenlayer|internap|rackspace|kamatera|upcloud|frantech|buyvm|path\.net|clouvider|hosting|datacenter|data center|server|vps|cloud)/i;
+const VPN_RE = /(vpn|proxy|mullvad|nord|express|proton|surfshark|cyberghost|private internet|m247|datacamp|tor |tor-|anonymizer|hide)/i;
+
+/* ============================================================
+   URL DEEP INSPECTOR
+   ============================================================ */
+const OFFICIAL = { easypaisa: ["easypaisa.com.pk"], jazzcash: ["jazzcash.com.pk"], hbl: ["hbl.com"], ubl: ["ubl.com.pk"], mcb: ["mcb.com.pk"], meezan: ["meezanbank.com"], alfalah: ["bankalfalah.com"], paypal: ["paypal.com"], google: ["google.com", "google.com.pk", "gmail.com", "youtube.com", "goo.gl"], facebook: ["facebook.com", "fb.com", "fb.me"], whatsapp: ["whatsapp.com", "wa.me"], instagram: ["instagram.com"], binance: ["binance.com"], amazon: ["amazon.com", "amazon.co.uk", "amazon.in"], microsoft: ["microsoft.com", "live.com", "office.com", "outlook.com"], apple: ["apple.com", "icloud.com"], netflix: ["netflix.com"], nadra: ["nadra.gov.pk"], fbr: ["fbr.gov.pk"], daraz: ["daraz.pk"], telenor: ["telenor.com.pk"], zong: ["zong.com.pk"], ufone: ["ufone.com"], jazz: ["jazz.com.pk"], sadapay: ["sadapay.pk"], nayapay: ["nayapay.com"], raast: ["sbp.org.pk"], tiktok: ["tiktok.com"], telegram: ["telegram.org", "t.me"], youtube: ["youtube.com", "youtu.be"], linkedin: ["linkedin.com"], standardchartered: ["sc.com"], bisp: ["bisp.gov.pk"], pta: ["pta.gov.pk"], dhl: ["dhl.com"], fedex: ["fedex.com"], tcs: ["tcsexpress.com"], foodpanda: ["foodpanda.pk"], bykea: ["bykea.com"] };
+const FREE_HOSTS = ["blogspot.com", "weebly.com", "wixsite.com", "github.io", "pages.dev", "workers.dev", "web.app", "firebaseapp.com", "vercel.app", "netlify.app", "herokuapp.com", "000webhostapp.com", "ngrok.io", "ngrok-free.app", "trycloudflare.com", "duckdns.org", "ddns.net", "glitch.me", "repl.co", "replit.app", "r2.dev", "framer.website", "carrd.co", "godaddysites.com", "myshopify.com", "square.site", "notion.site", "webflow.io", "azurewebsites.net", "appspot.com", "forms.gle", "linktr.ee", "sites.google.com"];
+const BAD_TLDS = ["zip", "mov", "top", "xyz", "click", "work", "download", "tk", "ml", "ga", "cf", "gq", "icu", "buzz", "rest", "cyou", "monster", "loan", "win", "bid", "men", "review", "country", "kim", "science", "stream", "gdn", "racing", "party", "trade", "webcam", "date", "faith", "accountant", "cricket", "link", "support", "help", "cam", "sbs", "quest", "bond"];
+const PATH_KW = /(login|log-in|signin|sign-in|verify|verification|secure|account|update|wallet|bank|bonus|reward|claim|free|prize|gift|otp|kyc|suspend|confirm|password|recover|unlock|refund|parcel|delivery|tracking|invoice|payment|billing|support|helpline|ehsaas|bisp|benazir|loan|apply|lottery|winner|cashback|airdrop|giveaway)/i;
+const SCAM_TYPES = [
+    [/ehsaas|bisp|benazir|relief|grant|nadra|fbr|tax|refund|subsidy/i, "Government benefit / tax scam", "Pretends to be a government relief or tax portal to collect CNIC, phone numbers and 'processing fees'."],
+    [/prize|lottery|winner|reward|bonus|free|gift|claim|giveaway|cashback|airdrop/i, "Prize / reward scam", "Promises a prize so you enter personal or card details or pay a small 'fee'."],
+    [/parcel|delivery|tracking|courier|dhl|fedex|tcs|leopards|postex|shipment|customs/i, "Delivery / courier smishing", "Fake 'failed delivery' page that asks for a small fee or your card/OTP."],
+    [/job|earn|task|salary|income|invest|profit|forex|crypto|trading|usdt|bitcoin|binance|mining/i, "Job / investment / crypto scam", "Lures you with easy income, then demands deposits that can never be withdrawn."],
+    [/apk|install|crack|mod|download/i, "Malware / fake app distribution", "Tries to make you download an app or file that steals SMS, OTPs and passwords."],
+    [/support|helpline|antivirus|virus|technical/i, "Tech-support scam", "Fake support page that pushes you to call a number or install remote-access software."],
+    [/login|signin|verify|otp|kyc|account|suspend|password|wallet|bank|confirm|unlock|secure/i, "Credential / OTP phishing", "A look-alike login or 'verification' page that steals your username, password, PIN or OTP."]
+];
+function punyDecode(input) {
+    const base = 36, tMin = 1, tMax = 26, skew = 38, damp = 700; let n = 128, i = 0, bias = 72; const out = [];
+    let basic = input.lastIndexOf("-"); if (basic < 0) basic = 0;
+    for (let j = 0; j < basic; j++) out.push(input.charCodeAt(j));
+    for (let idx = basic > 0 ? basic + 1 : 0; idx < input.length;) {
+        const oldi = i;
+        for (let w = 1, k = base; ; k += base) {
+            if (idx >= input.length) return null;
+            const c = input.charCodeAt(idx++), digit = c - 48 < 10 ? c - 22 : c - 65 < 26 ? c - 65 : c - 97 < 26 ? c - 97 : base;
+            if (digit >= base) return null;
+            i += digit * w; const t = k <= bias ? tMin : k >= bias + tMax ? tMax : k - bias;
+            if (digit < t) break; w *= base - t;
+        }
+        const len = out.length + 1; let delta = i - oldi; delta = oldi === 0 ? Math.floor(delta / damp) : delta >> 1; delta += Math.floor(delta / len);
+        let k2 = 0; while (delta > ((base - tMin) * tMax) >> 1) { delta = Math.floor(delta / (base - tMin)); k2 += base; }
+        bias = k2 + Math.floor((base - tMin + 1) * delta / (delta + skew)); n += Math.floor(i / len); i %= len; out.splice(i++, 0, n);
+    }
+    try { return String.fromCodePoint(...out); } catch (_) { return null; }
+}
+const toUnicodeHost = h => h.split(".").map(l => /^xn--/i.test(l) ? (punyDecode(l.slice(4)) || l) : l).join(".");
+const scriptsIn = s => { const set = new Set(); for (const ch of s) { const c = ch.codePointAt(0); if (c < 128) { if (/[a-z]/i.test(ch)) set.add("Latin"); } else if (c >= 0x400 && c <= 0x52f) set.add("Cyrillic"); else if (c >= 0x370 && c <= 0x3ff) set.add("Greek"); else if (c >= 0x530 && c <= 0x58f) set.add("Armenian"); else if (c >= 0x600 && c <= 0x6ff) set.add("Arabic"); else if (c >= 0xc0 && c <= 0x24f) set.add("Latin-ext"); else set.add("Other"); } return [...set]; };
+const CONFUSE = s => s.toLowerCase().replace(/rn/g, "m").replace(/vv/g, "w").replace(/cl/g, "d").replace(/[0]/g, "o").replace(/[1|!]/g, "l").replace(/3/g, "e").replace(/4/g, "a").replace(/[5$]/g, "s").replace(/6/g, "g").replace(/7/g, "t").replace(/8/g, "b").replace(/@/g, "a").replace(/[^a-z]/g, "");
+const colorUrl = (u, reg, host) => {
+    const sub = host.slice(0, Math.max(0, host.length - reg.length)), tldI = reg.indexOf("."), name = tldI > 0 ? reg.slice(0, tldI) : reg, tld = tldI > 0 ? reg.slice(tldI) : "";
+    return `<code class="tpr-url"><span class="u-sch">${esc(u.protocol)}//</span>${u.username ? `<span class="u-bad">${esc(u.username + (u.password ? ":" + u.password : ""))}@</span>` : ""}<span class="u-sub">${esc(sub)}</span><span class="u-reg">${esc(name)}</span><span class="u-tld">${esc(tld)}</span>${u.port ? `<span class="u-port">:${esc(u.port)}</span>` : ""}<span class="u-path">${esc(u.pathname)}</span><span class="u-q">${esc(u.search)}</span><span class="u-q">${esc(u.hash)}</span></code>`;
+};
+function lexicalSignals(raw) {
+    const u = new URL(/^[a-z][a-z0-9+.-]*:\/\//i.test(raw) ? raw : "https://" + raw);
+    const host = u.hostname.toLowerCase(), uni = toUnicodeHost(host), reg = regDomain(host), tld = host.split(".").pop(), sub = host.slice(0, Math.max(0, host.length - reg.length)).replace(/\.$/, "");
+    const label = reg.split(".")[0], S = [], add = (sev, title, why, w) => S.push({ sev, title, why, w: w || 0 });
+    const brands = [];
+    if (u.protocol !== "https:") add("high", "Connection is not encrypted (HTTP)", "Anything you type can be read or changed on the way. Real banks and wallets always use HTTPS. Phishing kits are often (but not always) HTTPS too, so a padlock alone proves nothing.", 14);
+    else add("good", "Uses HTTPS", "The connection is encrypted. This only protects the connection, it does NOT prove the site is honest.", 0);
+    if (isIPv4(host) || /^(0x[0-9a-f]+|\d{8,10})$/i.test(host)) add("critical", "Website address is a bare IP number", "Legitimate brands use names, not numbers. Scammers use raw IPs to avoid registering a domain that can be reported and taken down.", 28);
+    if (u.username || u.password) add("critical", "Contains a hidden login part (the @ trick)", "In http://trusted.com@evil.com the real site is the part AFTER the @. Criminals put a trusted name first to fool a quick glance.", 32);
+    if (/^xn--|\.xn--/.test(host)) add("critical", "Uses international characters (punycode)", `The real host is "${uni}". Look-alike letters from other alphabets can make a fake address appear identical to a real one.`, 26);
+    const sc = scriptsIn(uni).filter(x => x !== "Latin"); if (sc.length && scriptsIn(uni).includes("Latin") || sc.includes("Cyrillic") || sc.includes("Greek")) add("critical", "Mixes alphabets (homograph attack)", `Letters from ${sc.join(", ") || "another"} script appear in the address. Cyrillic 'а' looks exactly like Latin 'a' but is a different character.`, 30);
+    if (SHORTENERS.includes(host)) add("high", "Link shortener hides the real destination", "You cannot see where this goes. Shorteners are used to bypass filters and hide look-alike domains.", 20);
+    if (FREE_HOSTS.some(f => host === f || host.endsWith("." + f))) add("medium", "Hosted on a free/shared website platform", "Anyone can publish a page here in minutes. Scam pages often live on free platforms. A real bank or wallet would use its own domain.", 14);
+    if (BAD_TLDS.includes(tld)) add("high", `High-abuse domain ending .${tld}`, "Some endings are very cheap and heavily abused by scammers and malware distributors. Not every site with this ending is bad, but most real brands do not use them.", 16);
+    const depth = sub ? sub.split(".").length : 0; if (depth >= 3) add("medium", `Very deep subdomain chain (${depth} levels)`, "Criminals stack words like login.secure.account.bank-name.evil.com so the brand name appears at the start while the real domain is the end part.", 12);
+    if ((host.match(/-/g) || []).length >= 3) add("medium", "Many hyphens in the domain", "Hyphen-heavy names such as easypaisa-secure-login-verify.com are typical of throwaway phishing domains.", 10);
+    const ent = entropyOf(label); if (label.length >= 10 && ent > 3.35 && !/[aeiou]{2}/.test(label)) add("medium", "Domain name looks randomly generated", `The name "${label}" has high randomness (${ent.toFixed(2)} bits/char). Auto-generated domains are used for disposable phishing and malware infrastructure.`, 12);
+    const dig = (label.match(/\d/g) || []).length; if (dig >= 4) add("low", "Lots of digits in the domain name", "Numbers in the name are common for bulk-registered scam domains.", 6);
+    if (u.port && !["80", "443", ""].includes(u.port)) add("medium", `Unusual port :${u.port}`, "Normal sites use the default web ports. A custom port suggests a temporary server or tunnel.", 10);
+    if (/\.(apk|exe|scr|bat|msi|jar|vbs|ps1|dmg|cmd|com|lnk|js)(\?|$)/i.test(u.pathname)) add("critical", "Link downloads a program or app", "Clicking may start a download of an installer or APK. Never install files from unknown links: they can steal OTPs, SMS and passwords.", 28);
+    if (/(^|[?&])(url|redirect|redirect_uri|next|return|returnurl|goto|dest|destination|continue|link|target)=https?(:|%3a)/i.test(u.search)) add("high", "Contains a hidden redirect to another site", "The page may bounce you to a different address. Open-redirect links are used to make a bad link look like it belongs to a good site.", 18);
+    if (/%2f%2f|\/\/.*https?:\/\//i.test(u.pathname + u.search)) add("medium", "Another web address is embedded inside the link", "A second URL inside the first is often used to disguise the real destination.", 8);
+    if (/[A-Za-z0-9+/]{40,}={0,2}/.test(u.search)) add("low", "Long encoded value in the link", "Long random-looking data may hide tracking, a victim ID or an encoded redirect.", 6);
+    const kw = (u.pathname + " " + u.search + " " + sub).match(PATH_KW); if (kw) add("medium", `Pressure/lure keywords: "${kw[0]}"`, "Words like login, verify, bonus, claim or refund in the link are classic social-engineering bait, especially on a domain you do not recognise.", 12);
+    if (u.href.length > 160) add("low", `Very long URL (${u.href.length} characters)`, "Long links can hide the real destination at the end of the visible part.", 6);
+    /* brand impersonation */
+    const tokens = host.split(/[.\-_]/).filter(Boolean), normLabel = CONFUSE(label);
+    Object.keys(OFFICIAL).forEach(b => {
+        const official = OFFICIAL[b].some(d => reg === d || reg.endsWith("." + d));
+        const hit = tokens.some(t => t === b) || (b.length >= 5 && host.includes(b)), typo = b.length >= 5 && !tokens.includes(b) && (lev(normLabel, b) <= 1 || lev(label, b) === 1) && label !== b;
+        const confu = b.length >= 4 && normLabel.includes(b) && !label.includes(b);
+        if (official) { if (hit) brands.push({ b, ok: true }); return; }
+        if (hit) { brands.push({ b, ok: false, how: "uses the brand name" }); }
+        else if (typo || confu) brands.push({ b, ok: false, how: typo ? "is a misspelling of the brand" : "swaps look-alike characters (0↔o, rn↔m, 1↔l)" });
+    });
+    const fake = brands.find(x => !x.ok), real = brands.find(x => x.ok);
+    if (fake) add("critical", `Pretends to be "${fake.b}" but is NOT its official domain`, `This address ${fake.how}, yet the real ${fake.b} only uses: ${OFFICIAL[fake.b].join(", ")}. The domain you are on is "${reg}". This is the strongest sign of a phishing page.`, 38);
+    else if (real) add("good", `Domain matches the official ${real.b} domain`, `${reg} is one of ${real.b}'s official domains. Still check the exact spelling before entering anything.`, 0);
+    const official = !!real && !fake;
+    return { u, host, uni, reg, tld, sub, label, S, brands, fake, real, official, ent };
+}
+async function deepUrl(raw) {
+    const L = lexicalSignals(raw), { u, host, reg } = L, S = L.S;
+    const isIPh = isIP(host);
+    const [age, ips, ct, hs, sb] = await Promise.all([
+        isIPh ? null : raceT(rdapDomain(host), 11000),
+        isIPh ? Promise.resolve([host]) : resolveIPs(host).catch(() => null),
+        isIPh ? null : raceT(ctCerts(host).catch(() => null), 12000),
+        raceT(new Promise(res => { const t0 = performance.now(); fetch(u.protocol === "http:" ? u.href : `https://${host}/`, { mode: "no-cors", cache: "no-store" }).then(() => res({ ok: true, ms: Math.round(performance.now() - t0) })).catch(() => res({ ok: false })); }), 9000),
+        safeBrowsing(u.href)
+    ]);
+    const ip0 = (ips || []).find(isIPv4) || (ips || [])[0];
+    const [geo, idb, ptr, rdapIp] = ip0 && !privateKind(ip0) ? await Promise.all([raceT(ipwho(ip0).catch(() => null), 9000), raceT(internetDb(ip0).catch(() => null), 9000), isIPv4(ip0) ? raceT(dnsQuery(ip0.split(".").reverse().join(".") + ".in-addr.arpa", "PTR").catch(() => null), 7000) : null, null]) : [null, null, null, null];
+    /* online signals */
+    const add = (sev, title, why, w) => S.push({ sev, title, why, w: w || 0 });
+    if (age && age.created) {
+        const days = Math.floor((Date.now() - new Date(age.created)) / 864e5);
+        if (days < 30) add("critical", `Domain registered only ${days} day${days === 1 ? "" : "s"} ago`, "Brand-new domains are the #1 sign of phishing. Real banks and wallets have been online for years. Scam sites are usually reported and shut down within days, so criminals keep registering fresh ones.", 36);
+        else if (days < 180) add("high", `Domain is young (${days} days old)`, "Young domains deserve extra suspicion, especially if the page asks for money, passwords or OTPs.", 18);
+        else if (days < 365) add("low", `Domain is under a year old (${days} days)`, "Not alarming by itself, but combine this with other signals.", 6);
+        else add("good", `Domain has existed for ${(days / 365).toFixed(1)} years`, "Long-lived domains are less likely to be throwaway scam sites (though hacked sites exist).", 0);
+        if (age.expires) { const left = Math.floor((new Date(age.expires) - Date.now()) / 864e5); if (left >= 0 && left < 100 && days < 400) add("low", `Registration expires in ${left} days`, "Short registrations (1 year, not renewed for long) are typical of disposable domains.", 4); }
+    } else if (!isIPh) add("info", "Domain age unavailable", "This ending has no public registration (RDAP) data, so age could not be checked. Be extra careful.", 0);
+    if (ips === null || (Array.isArray(ips) && !ips.length)) add("high", "Domain does not resolve to any server", "The name currently points nowhere. It may be offline (already taken down), mistyped or not yet activated by the attacker.", 10);
+    if (geo) {
+        const org = (geo.connection && (geo.connection.org || geo.connection.isp)) || "";
+        if (HOSTING_RE.test(org)) add("info", `Hosted on a cloud/hosting provider (${org})`, "Most websites (good and bad) use hosting companies. This is normal on its own.", 0);
+        const ccGov = /\.gov\.pk$|\.edu\.pk$|\.com\.pk$|\.pk$/.test(host);
+        if (ccGov && geo.country_code && geo.country_code !== "PK") add("medium", `.pk website hosted outside Pakistan (${geo.country})`, "Many genuine Pakistani sites are hosted abroad, but a .pk look-alike hosted in an unrelated country is worth checking.", 6);
+    }
+    if (idb && !idb.notFound) { if ((idb.vulns || []).length) add("medium", `Server has ${idb.vulns.length} known vulnerabilities`, "The server software is outdated or unpatched. Attackers often hack such servers to host phishing pages.", 8); if ((idb.tags || []).some(t => /malware|c2|compromised|scanner|botnet/i.test(t))) add("critical", "Server flagged in threat intelligence", `Shodan tags: ${idb.tags.join(", ")}`, 30); }
+    if (ct && ct.length) {
+        const sorted = [...ct].sort((a, b) => a.from - b.from), first = sorted[0], latest = [...ct].sort((a, b) => b.from - a.from)[0], dAge = Math.floor((Date.now() - first.from) / 864e5);
+        if (dAge < 14) add("high", `First HTTPS certificate was issued only ${dAge} days ago`, "Certificate Transparency logs show this name got its first certificate very recently, which fits a freshly built phishing site.", 14);
+        if (/let'?s encrypt|zerossl|r3|e1|google trust services.*(we|wr)/i.test(latest.issuer) && !L.official) add("info", `Certificate from ${latest.issuer} (free, automatic)`, "Free certificates prove only that someone controls the domain, not that the business is real. Banks usually use organisation-validated certificates.", 0);
+    }
+    if (!hs.ok && u.protocol === "https:" && ips && ips.length) add("high", "Browser could not complete a secure connection", "The HTTPS handshake failed. The site may have an invalid or expired certificate, block your region, or be offline. Do not bypass certificate warnings.", 12);
+    if (Array.isArray(sb)) { if (sb.length) add("critical", `Listed by Google Safe Browsing: ${sb.join(", ")}`, "Google has flagged this address as dangerous. Do not open it.", 100); else add("good", "Not listed by Google Safe Browsing", "No match in Google's current blocklist. New scam pages often appear before they are listed.", 0); }
+    /* verdict */
+    let score = S.reduce((a, s) => a + (s.w || 0), 0); if (L.official && score < 40) score = Math.min(score, 8); score = Math.min(100, score);
+    if (Array.isArray(sb) && sb.length) score = 100;
+    const vt = score >= 80 ? ["DANGEROUS - DO NOT OPEN", "danger", "🚨", "bad"] : score >= 60 ? ["LIKELY A SCAM", "danger", "🚨", "bad"] : score >= 35 ? ["SUSPICIOUS - VERIFY FIRST", "warning", "⚠️", "warn"] : score >= 15 ? ["SLIGHTLY SUSPICIOUS", "warning", "🤔", "warn"] : ["NO WARNING SIGNS FOUND", "success", "🛡️", "ok"];
+    const text = decodeURIComponent((u.pathname + " " + u.search + " " + host).replace(/\+/g, " ")).toLowerCase();
+    const type = SCAM_TYPES.find(([re]) => re.test(text)) || null;
+    return { L, S: S.sort((a, b) => SEV_ORDER[a.sev] - SEV_ORDER[b.sev]), score, vt, type, age, ips, geo, idb, ptr, ct, hs, sb, ip0 };
+}
+window.inspectURL = async function () {
+    const raw = val("urlInput"); if (!raw) return fail("urlResult", "Enter a URL to inspect.");
+    try { new URL(/^[a-z][a-z0-9+.-]*:\/\//i.test(raw) ? raw : "https://" + raw); } catch (_) { return fail("urlResult", "Invalid URL format."); }
+    busy("urlResult", "Deep scan: URL anatomy, brand check, domain age, DNS, server location, certificate, Safe Browsing…");
+    let R; try { R = await deepUrl(raw); } catch (e) { return fail("urlResult", "Could not analyse this link.", "warning"); }
+    const { L, S, score, vt, type, age, ips, geo, idb, ptr, ct, hs, ip0 } = R, { u, host, reg } = L;
+    const bad = S.filter(s => ["critical", "high", "medium"].includes(s.sev));
+    const summary = verdict(vt[2], vt[0], vt[1], `Risk score ${score}/100 · ${esc(reg)}`) + meter(score, vt[3]) +
+        kv([type ? ["Looks like", `<b>${esc(type[1])}</b>`] : null, L.fake ? ["Pretends to be", badge(L.fake.b.toUpperCase() + " (fake)", "danger")] : (L.real ? ["Brand", badge(L.real.b + " (official domain)", "ok")] : null), ["Domain age", age && age.created ? badge(Math.floor((Date.now() - new Date(age.created)) / 864e5) + " days", Math.floor((Date.now() - new Date(age.created)) / 864e5) < 180 ? "danger" : "ok") : "unknown"], ["Server", geo ? `${esc(geo.flag?.emoji || "")} ${esc(geo.country || "?")} · ${esc(geo.connection?.org || "")}` : "unknown"]]) +
+        (bad.length ? `<div class="tp-sub">Top reasons</div>` + rList(bad.slice(0, 4).map(s => `<b>${esc(s.title)}</b>`), "tpr-mini") : note("No obvious red flags. This is not proof the site is safe."));
+    /* full report */
+    let h = rHero(vt[2], vt[0], `${esc(host)} · ${S.filter(s => ["critical", "high"].includes(s.sev)).length} serious warning(s) · ${S.length} checks`, vt[3], rGauge(score, "risk score", vt[3]));
+    h += rSec("🧾", "The verdict, explained", rPara(score >= 60 ? "<b>This link shows several strong scam indicators.</b> Do not enter passwords, PINs, OTPs, card details or CNIC numbers, and do not install anything from it." : score >= 35 ? "<b>This link is suspicious.</b> There are warning signs. Verify through an official channel before doing anything." : score >= 15 ? "A few minor warning signs were found. Compare the address carefully with the real brand's address." : "We found no strong warning signs, but <b>no tool can prove a link is safe</b>. Stay alert if the page asks for money or secrets.") +
+        rTiles([["Risk score", `<b>${score}</b>/100`], type ? ["Most likely scam type", esc(type[1])] : null, L.fake ? ["Impersonated brand", esc(L.fake.b)] : null, L.fake ? ["Brand's REAL website", esc(OFFICIAL[L.fake.b][0])] : null, ["Checks performed", String(S.length + 6)]]) + (type ? rPara(`<b>What this scam tries to do:</b> ${esc(type[2])}`) : ""));
+    h += rSec("🔬", "URL anatomy (what each part means)", rPara("Colour guide: " + `<span class="u-sub">subdomain</span> · <span class="u-reg">registered name (who really owns it)</span> · <span class="u-tld">ending</span> · <span class="u-path">path</span> · <span class="u-q">query</span>`) + colorUrl(u, reg, host) +
+        rTiles([["Protocol", esc(u.protocol.replace(":", "")), u.protocol === "https:" ? "encrypted" : "NOT encrypted"], ["Real domain", code(reg), "this is who owns the site"], ["Subdomain", L.sub ? code(L.sub) : "none"], ["Ending (TLD)", "." + esc(L.tld), BAD_TLDS.includes(L.tld) ? "often abused" : ""], L.uni !== host ? ["Unicode form", code(L.uni)] : null, ["Port", esc(u.port || "default")], ["Path", code(u.pathname.slice(0, 60) || "/")], ["Name randomness", L.ent.toFixed(2) + " bits"]]) +
+        ([...u.searchParams.entries()].length ? rTable(["Parameter", "Value"], [...u.searchParams.entries()].slice(0, 15).map(([k, v]) => [code(k), code(v.slice(0, 90))])) : ""));
+    h += rSec("🚦", "Every check, with the reason", S.map(rSignal).join(""), "tpr-signals");
+    h += rSec("📅", "Domain registration (RDAP)", age ? rTiles([["Registered", fmtDate(age.created), age.created ? Math.floor((Date.now() - new Date(age.created)) / 864e5) + " days ago" : ""], ["Last changed", fmtDate(age.updated)], ["Expires", fmtDate(age.expires)], ["Registrar", esc(age.registrar || "—")], ["Status", esc((age.status || []).slice(0, 3).join(", ") || "—")], ["Name servers", esc((age.ns || []).slice(0, 3).join(", ") || "—")], ["DNSSEC", age.dnssec ? badge("signed", "ok") : badge("not signed", "info")]]) : rPara("Registration data is not publicly available for this ending, or the lookup timed out."));
+    h += rSec("🖥️", "Where the server is", geo ? rTiles([["IP address", code(ip0)], ["Country", `${esc(geo.flag?.emoji || "")} ${esc(geo.country || "—")}`], ["City / region", esc((geo.city || "—") + " / " + (geo.region || "—"))], ["Network (ASN)", geo.connection?.asn ? code("AS" + geo.connection.asn) : "—"], ["Hosting company", esc(geo.connection?.org || geo.connection?.isp || "—")], ["Reverse DNS", ptr && ptr.Answer ? code(ptr.Answer[0].data.replace(/\.$/, "")) : "—"], idb && !idb.notFound ? ["Open ports seen", (idb.ports || []).slice(0, 8).map(p => badge(p, RISKY_PORTS.has(p) ? "danger" : "info")).join("") || "—"] : null, idb && (idb.vulns || []).length ? ["Known CVEs", chips(idb.vulns.slice(0, 6), "danger")] : null]) + ((ips || []).length > 1 ? rPara("All addresses: " + (ips || []).map(code).join(" ")) : "") : rPara("Server location could not be determined (the name does not resolve or the lookup service was unreachable)."));
+    h += rSec("🔒", "Security certificate history", ct && ct.length ? rTable(["Issued", "Expires", "Issuer", "Names covered"], [...ct].sort((a, b) => b.from - a.from).slice(0, 6).map(c => [fmtDate(c.from), fmtDate(c.to), esc(c.issuer), String(c.names.length)])) + rPara("Certificate Transparency logs are public. A brand-new certificate for a name that pretends to be an old brand is a warning sign.") : rPara("No certificate history was found, or the log service was slow." + (hs.ok ? "" : " The browser's own HTTPS test also failed.")));
+    const enc = encodeURIComponent(u.href);
+    h += rSec("🧰", "Double-check it yourself (safe links)", `<div class="tpr-links">${[["VirusTotal URL scan", "https://www.virustotal.com/gui/search/" + enc], ["Google Safe Browsing status", "https://transparencyreport.google.com/safe-browsing/search?url=" + enc], ["urlscan.io search", "https://urlscan.io/search/#" + encodeURIComponent(host)], ["WHOIS for " + reg, "https://who.is/whois/" + encodeURIComponent(reg)], ["Report phishing to Google", "https://safebrowsing.google.com/safebrowsing/report_phish/"]].map(([t, x]) => `<a href="${x}" target="_blank" rel="noopener noreferrer">${t} ↗</a>`).join("")}</div>` + rPara("Do not paste the link into the browser address bar to \"test\" it. Use the safe links above."));
+    h += rSec("✅", "What to do now", rSteps(score >= 35 ? ["<b>Do not open or share the link.</b> If it came by SMS/WhatsApp, block the sender.", L.fake ? `<b>Go to ${esc(L.fake.b)} yourself:</b> type <code>${esc(OFFICIAL[L.fake.b][0])}</code> in the browser or open its official app.` : "<b>Open the real service yourself</b> by typing its official address or using its app, never through this link.", "<b>Never enter</b> passwords, PINs, OTPs, card or CNIC details on a page you reached from a message.", "<b>Report it:</b> forward to your bank/wallet's official helpline and report to FIA NR3C (helpline 1991).", "<b>Warn others</b> who received the same message."] : ["Open the service by typing its address yourself if you can.", "Check the padlock and the exact spelling of the domain.", "Do not enter secrets unless you started the visit yourself.", "Keep your browser and phone updated."]));
+    h += rSec("🆘", "If you already clicked or entered data", rSteps(["<b>Entered a password?</b> Change it now on the real site and anywhere you reused it. Turn on 2-Step Verification.", "<b>Entered card/PIN/OTP?</b> Call your bank on the number printed on your card and block the card/account immediately.", "<b>Installed an app/APK?</b> Turn on airplane mode, uninstall it, run Play Protect scan, then change passwords from another device.", "<b>Shared CNIC photo?</b> Report to FIA NR3C and watch for new SIM/accounts in your name."]));
+    h += rPara("<small>Method: lexical analysis, brand comparison, RDAP registration data, DNS (Google), IP intelligence (ipwho.is / Shodan InternetDB), Certificate Transparency logs and optional Google Safe Browsing. Results show risk indicators, not a legal verdict.</small>");
+    setR("urlResult", "url", "Link & domain deep report", u.href.slice(0, 90), summary, h, vt[1]);
+};
+
+/* ============================================================
+   PORT / SERVICE KNOWLEDGE BASE  (used by IP, Port, Honeypot reports)
+   ============================================================ */
+const PORT_INFO = {
+    21: ["FTP", "File transfer. Sends usernames and passwords as readable text.", "high", "Replace with SFTP/FTPS or close the port. Restrict by IP."],
+    22: ["SSH", "Secure remote login. Constantly brute-forced by bots.", "medium", "Use key-based login only, disable root login, add fail2ban, change nothing else."],
+    23: ["Telnet", "Old remote login with no encryption. Mirai-style botnets hunt for it.", "critical", "Disable Telnet completely and use SSH."],
+    25: ["SMTP", "Mail delivery. An open relay can be abused to send spam.", "medium", "Require authentication and restrict relaying."],
+    53: ["DNS", "Domain name service. Open resolvers are used in DDoS amplification.", "medium", "Disable recursion for outsiders."],
+    80: ["HTTP", "Normal website traffic without encryption.", "low", "Redirect everything to HTTPS and add HSTS."],
+    110: ["POP3", "Email download in plain text.", "medium", "Use POP3S (995) only."],
+    111: ["RPC", "Remote procedure service that leaks internal details.", "high", "Block from the internet."],
+    123: ["NTP", "Time service. Old versions are abused for DDoS amplification.", "low", "Patch and restrict queries."],
+    135: ["MS-RPC", "Windows remote procedure calls. A classic worm and ransomware path.", "critical", "Never expose to the internet."],
+    139: ["NetBIOS", "Windows file sharing (legacy). Leaks names and shares.", "critical", "Block at the firewall."],
+    143: ["IMAP", "Email access in plain text.", "medium", "Use IMAPS (993) only."],
+    161: ["SNMP", "Device monitoring. Default community strings leak everything.", "high", "Use SNMPv3 and restrict to your network."],
+    389: ["LDAP", "Directory service holding user accounts.", "high", "Never expose; use LDAPS inside a VPN."],
+    443: ["HTTPS", "Encrypted website traffic.", "low", "Keep TLS modern and certificates valid."],
+    445: ["SMB", "Windows file sharing. EternalBlue/WannaCry used this port.", "critical", "Never expose to the internet. Patch and block."],
+    465: ["SMTPS", "Encrypted mail submission.", "low", "Require authentication."],
+    500: ["IPsec/IKE", "VPN negotiation.", "low", "Use strong pre-shared keys / certificates."],
+    587: ["SMTP submit", "Authenticated mail submission.", "low", "Require TLS and authentication."],
+    631: ["IPP", "Printer sharing.", "medium", "Keep printers off the internet."],
+    993: ["IMAPS", "Encrypted email access.", "low", "Use strong passwords and 2FA."],
+    995: ["POP3S", "Encrypted email download.", "low", "Use strong passwords."],
+    1080: ["SOCKS", "Proxy service. Open proxies are abused by criminals.", "high", "Require authentication or close."],
+    1433: ["MS SQL", "Microsoft database. Exposed databases get hijacked or ransomed.", "critical", "Never expose; allow only app servers."],
+    1521: ["Oracle DB", "Oracle database listener.", "critical", "Never expose to the internet."],
+    1723: ["PPTP VPN", "Old VPN protocol with known weaknesses.", "high", "Replace with WireGuard/OpenVPN/IPsec."],
+    1883: ["MQTT", "IoT messaging. Often runs without a password.", "high", "Enable authentication and TLS."],
+    2049: ["NFS", "Network file shares.", "high", "Block from the internet."],
+    2375: ["Docker API", "Unauthenticated control of containers = full server takeover.", "critical", "Never expose; use TLS-protected socket."],
+    3000: ["Dev server", "Developer web server (Node/Grafana) left open.", "medium", "Put behind a reverse proxy with authentication."],
+    3306: ["MySQL", "Database. Exposed instances get dumped and ransomed.", "critical", "Bind to localhost / private network only."],
+    3389: ["RDP", "Windows remote desktop. The #1 entry point for ransomware.", "critical", "Never expose. Use a VPN + MFA."],
+    5000: ["UPnP / dev", "Device or dev web service.", "medium", "Restrict access."],
+    5060: ["SIP", "VoIP signalling. Toll-fraud and spam-call abuse.", "medium", "Restrict to trusted carriers."],
+    5432: ["PostgreSQL", "Database server.", "critical", "Bind to private network only."],
+    5555: ["ADB", "Android Debug Bridge: full device control with no password.", "critical", "Disable ADB over network."],
+    5900: ["VNC", "Remote screen control, often with weak passwords.", "high", "Tunnel through VPN/SSH."],
+    5985: ["WinRM", "Windows remote management.", "high", "Restrict to admin networks."],
+    6379: ["Redis", "In-memory database, often with no password. Easily hijacked.", "critical", "Bind to localhost and set a password."],
+    7547: ["TR-069", "ISP router management. Exploited by Mirai variants.", "high", "ISP should restrict to their servers."],
+    8000: ["HTTP-alt", "Alternative web server / dev tool.", "medium", "Check what is running there."],
+    8008: ["HTTP-alt", "Alternative web server.", "medium", "Check what is running there."],
+    8080: ["HTTP proxy/alt", "Alternative web port, admin panels and proxies.", "medium", "Protect admin panels with authentication."],
+    8081: ["HTTP-alt", "Alternative web server or admin panel.", "medium", "Check what is running there."],
+    8443: ["HTTPS-alt", "Alternative HTTPS port, often admin consoles.", "medium", "Restrict admin access."],
+    8888: ["HTTP-alt", "Notebook / dev tools / admin panels.", "medium", "Require authentication."],
+    9000: ["Service", "Application or admin service (PHP-FPM, SonarQube).", "medium", "Do not expose backend services."],
+    9100: ["JetDirect", "Printer raw printing.", "medium", "Keep printers off the internet."],
+    9200: ["Elasticsearch", "Search database with no login by default. Huge data leaks.", "critical", "Never expose; enable security."],
+    11211: ["Memcached", "Cache server abused for massive DDoS amplification.", "critical", "Bind to localhost."],
+    27017: ["MongoDB", "Database frequently found open with no password.", "critical", "Enable auth and bind to private network."],
+    50000: ["SAP/Service", "Enterprise application port.", "medium", "Restrict access."]
+};
+const portRows = ports => ports.map(p => { const i = PORT_INFO[p] || [PORT_NAMES[p] || "Unknown", "Service not in our knowledge base.", "info", "Identify what is running and close it if not needed."]; return { p, name: i[0], what: i[1], sev: i[2], fix: i[3] }; }).sort((a, b) => SEV_ORDER[a.sev] - SEV_ORDER[b.sev] || a.p - b.p);
+const portTable = ports => rTable(["Port", "Service", "What it is / why it matters", "Risk", "How to fix"], portRows(ports).map(r => [code(r.p), `<b>${esc(r.name)}</b>`, esc(r.what), badge(SEV_LABEL[r.sev] || r.sev, r.sev === "critical" || r.sev === "high" ? "danger" : r.sev === "medium" ? "warn" : r.sev === "low" ? "ok" : "info"), esc(r.fix)]));
+
+/* ============================================================
+   IP DEEP INTELLIGENCE
+   ============================================================ */
+function flattenEntities(arr, out = []) { (arr || []).forEach(e => { out.push(e); flattenEntities(e.entities, out); }); return out; }
+async function rdapIp(ip) {
+    try {
+        const d = await getJson(`https://rdap.org/ip/${encodeURIComponent(ip)}`, { timeout: 10000 });
+        const ents = flattenEntities(d.entities), abuse = ents.find(e => (e.roles || []).includes("abuse")), org = ents.find(e => (e.roles || []).some(r => /registrant|administrative|technical/.test(r)));
+        const em = x => x?.vcardArray?.[1]?.find(v => v[0] === "email")?.[3], fn = x => x?.vcardArray?.[1]?.find(v => v[0] === "fn")?.[3];
+        return { name: d.name, handle: d.handle, range: d.startAddress && d.endAddress ? `${d.startAddress} – ${d.endAddress}` : "", cidr: (d.cidr0_cidrs || []).map(c => `${c.v4prefix || c.v6prefix}/${c.length}`).join(", "), country: d.country, type: d.type, abuse: em(abuse), org: fn(org) || fn(abuse), updated: (d.events || []).find(e => /last changed/i.test(e.eventAction))?.eventDate };
+    } catch (_) { return null; }
+}
+window.lookupIP = async function () {
+    let q = val("ipInput"), host = "";
+    busy("ipResult", "Deep scan: location, network owner, abuse contact, open ports, reputation, distance…");
+    try {
+        let ips = [];
+        if (q) { host = parseHost(q); if (!isIP(host)) { ips = await resolveIPs(host); if (!ips.length) return fail("ipResult", "Domain does not resolve to an IP.", "warning"); q = ips.find(isIPv4) || ips[0]; } else q = host; }
+        const pk = q && privateKind(q);
+        if (pk) {
+            const rows = [["Private (10.", "10.0.0.0/8: large organisations and home routers"], ["Private (172.", "172.16.0.0/12: company and cloud internal networks"], ["Private (192.", "192.168.0.0/16: typical home Wi-Fi networks"], ["Loopback", "127.0.0.0/8: your own computer talking to itself"], ["Link-local", "169.254.0.0/16: no DHCP answered, device assigned itself an address"], ["Carrier", "100.64.0.0/10: your mobile/ISP shares one public IP among many users (CGNAT)"]];
+            const exp = (rows.find(r => pk.startsWith(r[0])) || ["", "Reserved range, not routed on the public internet."])[1];
+            return set("ipResult", verdict("🏠", "Private / non-public address", "info", esc(q)) + kv([["Range type", badge(pk, "info")], ["What it means", esc(exp)]]) + note("Private addresses cannot be located. Only your router's public IP is visible to websites. Leave the box empty to see your own public IP."), "info");
+        }
+        const [meR, gR] = await Promise.allSettled([q ? raceT(ipwho("").catch(() => null), 8000) : Promise.resolve(null), ipwho(q)]);
+        if (gR.status !== "fulfilled") throw new Error("ipwho");
+        const g = gR.value, me = meR.status === "fulfilled" ? meR.value : null, ip = g.ip;
+        const [dbR, ptrR, rdR] = await Promise.allSettled([internetDb(ip), isIPv4(ip) ? dnsQuery(ip.split(".").reverse().join(".") + ".in-addr.arpa", "PTR") : Promise.resolve({}), rdapIp(ip)]);
+        const d = dbR.status === "fulfilled" ? dbR.value : null, rev = ptrR.status === "fulfilled" ? (ptrR.value.Answer || []).map(a => a.data.replace(/\.$/, "")) : [], rd = rdR.status === "fulfilled" ? rdR.value : null;
+        const org = g.connection?.org || g.connection?.isp || "", isHost = HOSTING_RE.test(org), isVpn = VPN_RE.test(org + " " + (g.connection?.domain || ""));
+        const ports = d && !d.notFound ? d.ports : [], risky = ports.filter(p => RISKY_PORTS.has(p)), cves = d && d.vulns ? d.vulns : [], tags = d && d.tags ? d.tags : [];
+        const badTag = tags.some(t => /malware|c2|scanner|tor|compromised|botnet|vpn|proxy/i.test(t));
+        let risk = Math.min(30, cves.length * 4) + Math.min(24, risky.length * 8) + (badTag ? 30 : 0) + (isVpn ? 8 : 0) + (isHost ? 4 : 0); risk = Math.min(100, risk);
+        const k = risk >= 55 ? "danger" : risk >= 20 ? "warning" : "success", kk = k === "danger" ? "bad" : k === "warning" ? "warn" : "ok";
+        const km = me && me.latitude != null && g.latitude != null ? Math.round(haversine(me.latitude, me.longitude, g.latitude, g.longitude)) : null;
+        let local = ""; try { local = new Date().toLocaleString("en-GB", { timeZone: g.timezone?.id, weekday: "short", hour: "2-digit", minute: "2-digit", day: "2-digit", month: "short" }); } catch (_) { }
+        const kind = isVpn ? "VPN / proxy / anonymiser network" : isHost ? "Data-centre / cloud hosting (servers, not a home user)" : "Likely residential or business ISP";
+        /* summary */
+        const summary = verdict(g.flag?.emoji || "📍", `${esc(ip)} · ${esc(g.city || g.country || "")}`, k, host ? `from ${esc(host)}` : q ? "" : "your public IP") +
+            kv([["Location", esc(`${g.city || "—"}, ${g.region || "—"}, ${g.country || "—"}`)], ["Network owner", esc(org || "—") + (g.connection?.asn ? ` <small>(AS${esc(g.connection.asn)})</small>` : "")], ["Type", badge(kind.split("(")[0].trim(), isVpn ? "warn" : isHost ? "info" : "ok")], km != null ? ["Distance from you", num(km) + " km"] : null, local ? ["Local time there", esc(local)] : null, ports.length ? ["Open ports", ports.slice(0, 6).map(p => badge(p, RISKY_PORTS.has(p) ? "danger" : "info")).join("")] : null, cves.length ? ["Known CVEs", chips(cves.slice(0, 4), "danger")] : null]);
+        /* report */
+        let h = rHero(g.flag?.emoji || "📍", `${esc(ip)}`, `${esc(g.city || "")}${g.city ? ", " : ""}${esc(g.country || "")} · ${esc(org || "unknown network")}`, kk, rGauge(risk, "exposure risk", kk));
+        h += rSec("📍", "Where is this IP?", rTiles([["Country", `${esc(g.flag?.emoji || "")} ${esc(g.country || "—")}`, esc(g.continent || "")], ["Region / city", esc((g.region || "—") + " / " + (g.city || "—"))], ["Postal code", esc(g.postal || "—")], ["Capital of country", esc(g.capital || "—")], ["Coordinates", g.latitude != null ? code(g.latitude + ", " + g.longitude) : "—"], ["Time zone", esc(g.timezone?.id || "—"), esc(g.timezone?.utc || "")], ["Local time now", esc(local || "—")], ["Calling code", g.calling_code ? "+" + esc(g.calling_code) : "—"], g.currency ? ["Currency", esc((g.currency.code || "") + " " + (g.currency.name || ""))] : null, ["EU country", g.is_eu ? "Yes" : "No"], km != null ? ["Distance from you", num(km) + " km", `minimum possible ping ≈ ${Math.max(1, Math.round(km / 100))} ms`] : null]) +
+            (g.latitude != null ? `<iframe class="tpr-map" loading="lazy" title="Map" src="https://www.openstreetmap.org/export/embed.html?bbox=${g.longitude - 0.6}%2C${g.latitude - 0.4}%2C${+g.longitude + 0.6}%2C${+g.latitude + 0.4}&layer=mapnik&marker=${g.latitude}%2C${g.longitude}"></iframe>` + rPara(link(`https://www.openstreetmap.org/?mlat=${g.latitude}&mlon=${g.longitude}#map=10/${g.latitude}/${g.longitude}`, "Open full map")) : "") + rPara("<small>IP geolocation is approximate (usually city level) and shows where the network is registered/served, not an exact address.</small>"));
+        h += rSec("🏢", "Who owns this IP?", rTiles([["Network (ISP / org)", esc(org || "—")], ["ASN", g.connection?.asn ? code("AS" + g.connection.asn) : "—"], ["Domain", esc(g.connection?.domain || "—")], ["Network name", esc(rd?.name || "—")], ["IP block", esc(rd?.cidr || rd?.range || "—")], ["Registered in", esc(rd?.country || "—")], ["Registrant", esc(rd?.org || "—")], ["Abuse contact", rd?.abuse ? code(rd.abuse) : "—"], ["Reverse DNS", rev.length ? code(rev[0]) : "none"], ["Classification", esc(kind)]]) + rPara(rd?.abuse ? `To report abuse from this IP, email <code>${esc(rd.abuse)}</code> with logs and timestamps.` : "Abuse contact not published via RDAP. Search the network name in WHOIS."));
+        const sigs = [];
+        if (isVpn) sigs.push({ sev: "medium", title: "VPN / proxy / anonymiser network", why: "Traffic from this IP is often hidden behind a privacy service. Banks may flag logins from such addresses." });
+        if (isHost) sigs.push({ sev: "info", title: "Data-centre / cloud hosting address", why: "This IP belongs to a hosting company. Websites, bots and scanners live here. Ordinary people browsing from home do not." });
+        if (!isHost && !isVpn) sigs.push({ sev: "good", title: "Looks like a normal ISP address", why: "No hosting, VPN or proxy signals were found." });
+        if (cves.length) sigs.push({ sev: cves.length > 4 ? "high" : "medium", title: `${cves.length} known vulnerabilities on this host`, why: "Shodan sees software with public CVEs. Attackers actively scan for such hosts." });
+        if (risky.length) sigs.push({ sev: "high", title: `${risky.length} high-risk service(s) exposed`, why: `Ports ${risky.join(", ")} should rarely be open to the whole internet.` });
+        if (tags.length) sigs.push({ sev: badTag ? "critical" : "info", title: "Intelligence tags: " + tags.join(", "), why: "Tags come from internet-wide scanning (Shodan InternetDB)." });
+        if (!sigs.some(s => s.sev === "high" || s.sev === "critical")) sigs.push({ sev: "good", title: "No serious exposure indicators", why: "No dangerous services or tags were seen. This is not a guarantee." });
+        h += rSec("🛡️", "Reputation & risk signals", sigs.sort((a, b) => SEV_ORDER[a.sev] - SEV_ORDER[b.sev]).map(rSignal).join(""));
+        h += rSec("🔌", "Open ports & services seen on the internet", ports.length ? portTable(ports) + (d.cpes && d.cpes.length ? rPara("Software detected: " + d.cpes.slice(0, 8).map(code).join(" ")) : "") : rPara(d && d.notFound ? "This IP is not in Shodan's index, meaning no open services were observed. That does not prove every port is closed." : "Port data unavailable right now."));
+        if (cves.length) h += rSec("🐞", "Known vulnerabilities (CVE)", `<div class="tpr-links">${cves.slice(0, 24).map(c => `<a href="https://nvd.nist.gov/vuln/detail/${esc(c)}" target="_blank" rel="noopener noreferrer">${esc(c)} ↗</a>`).join("")}</div>` + rPara("Open a CVE to read what it allows and which patch fixes it."));
+        h += rSec("🧭", "What to do with this information", rSteps(["<b>Suspicious login or message from this IP?</b> Note the time, then report it to the abuse contact above and to your bank/service.", "<b>Your own server?</b> Close every high-risk port listed and patch the CVEs.", "<b>Do not attack or scan IPs you do not own.</b> This report uses public intelligence only.", "<b>Cross-check:</b> " + link("https://www.abuseipdb.com/check/" + encodeURIComponent(ip), "AbuseIPDB") + " and " + link("https://www.shodan.io/host/" + encodeURIComponent(ip), "Shodan")]));
+        setR("ipResult", "ip", "IP deep intelligence report", ip, summary, h, k);
+    } catch (e) { fail("ipResult", "IP providers unavailable or rate-limited. No fake data shown.", "warning"); }
+};
+
+/* ============================================================
+   BROWSER & DEVICE DEEP REPORT
+   ============================================================ */
+function webglDetails() {
+    try {
+        const c = document.createElement("canvas"), gl = c.getContext("webgl") || c.getContext("experimental-webgl"); if (!gl) return null;
+        const e = gl.getExtension("WEBGL_debug_renderer_info");
+        return { vendor: e ? gl.getParameter(e.UNMASKED_VENDOR_WEBGL) : gl.getParameter(gl.VENDOR), renderer: e ? gl.getParameter(e.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER), version: gl.getParameter(gl.VERSION), glsl: gl.getParameter(gl.SHADING_LANGUAGE_VERSION), maxTex: gl.getParameter(gl.MAX_TEXTURE_SIZE), ext: (gl.getSupportedExtensions() || []).length, hidden: !e };
+    } catch (_) { return null; }
+}
+async function audioFp() {
+    try {
+        const C = window.OfflineAudioContext || window.webkitOfflineAudioContext; if (!C) return "unsupported";
+        const ctx = new C(1, 44100, 44100), osc = ctx.createOscillator(), comp = ctx.createDynamicsCompressor();
+        osc.type = "triangle"; osc.frequency.value = 10000; osc.connect(comp); comp.connect(ctx.destination); osc.start(0);
+        const buf = await Promise.race([ctx.startRendering(), sleep(2500).then(() => null)]); if (!buf) return "timeout";
+        let sum = 0; const ch = buf.getChannelData(0); for (let i = 4500; i < 5000; i++) sum += Math.abs(ch[i]);
+        return (await sha1Hex(String(sum))).slice(0, 16);
+    } catch (_) { return "blocked"; }
+}
+const FONT_LIST = ["Arial", "Verdana", "Times New Roman", "Courier New", "Georgia", "Tahoma", "Trebuchet MS", "Comic Sans MS", "Impact", "Segoe UI", "Calibri", "Cambria", "Consolas", "Helvetica", "Palatino", "Garamond", "Roboto", "Open Sans", "Noto Sans", "Ubuntu", "San Francisco", "Menlo", "Monaco", "Lucida Console", "Candara", "Gill Sans", "Futura", "Optima", "Noto Nastaliq Urdu", "Jameel Noori Nastaleeq", "Arabic Typesetting", "Mangal", "Nirmala UI", "Gadugi", "Bahnschrift", "Droid Sans", "Poppins"];
+function detectFonts() {
+    try {
+        const c = document.createElement("canvas").getContext("2d"), base = ["monospace", "serif", "sans-serif"], txt = "mmmmmmmmmmlli@#Wq", w = {};
+        base.forEach(b => { c.font = `72px ${b}`; w[b] = c.measureText(txt).width; });
+        return FONT_LIST.filter(f => base.some(b => { c.font = `72px "${f}", ${b}`; return c.measureText(txt).width !== w[b]; }));
+    } catch (_) { return []; }
+}
+async function permStates() {
+    const out = {}; if (!navigator.permissions) return out;
+    for (const n of ["geolocation", "notifications", "camera", "microphone", "clipboard-read", "persistent-storage"]) { try { out[n] = (await navigator.permissions.query({ name: n })).state; } catch (_) { } }
+    return out;
+}
+async function adblockDetected() {
+    try { const b = document.createElement("div"); b.className = "adsbox ad-banner ads advert pub_300x250"; b.style.cssText = "position:absolute;left:-999px;top:-999px;width:10px;height:10px"; document.body.appendChild(b); await sleep(120); const hid = b.offsetHeight === 0 || getComputedStyle(b).display === "none"; b.remove(); return hid; } catch (_) { return false; }
+}
+async function collectEnv() {
+    const nav = navigator, d = {};
+    d.ua = nav.userAgent; d.p = parseUA(d.ua); d.platform = nav.platform || "—"; d.langs = (nav.languages && nav.languages.length ? [...nav.languages] : [nav.language]).filter(Boolean);
+    d.tz = Intl.DateTimeFormat().resolvedOptions().timeZone; d.tzOff = -new Date().getTimezoneOffset() / 60;
+    d.scr = { w: screen.width, h: screen.height, aw: screen.availWidth, ah: screen.availHeight, cd: screen.colorDepth, dpr: window.devicePixelRatio, iw: innerWidth, ih: innerHeight };
+    d.cores = nav.hardwareConcurrency; d.mem = nav.deviceMemory; d.touch = nav.maxTouchPoints || 0;
+    d.dnt = nav.doNotTrack === "1" || window.doNotTrack === "1"; d.gpc = !!nav.globalPrivacyControl; d.cookies = nav.cookieEnabled; d.webdriver = !!nav.webdriver; d.pdf = nav.pdfViewerEnabled; d.plugins = nav.plugins ? nav.plugins.length : 0;
+    d.secure = !!window.isSecureContext; d.https = location.protocol === "https:"; d.online = nav.onLine;
+    const c = nav.connection; d.conn = c ? { type: c.effectiveType, down: c.downlink, rtt: c.rtt, save: c.saveData } : null;
+    const mq = q => { try { return matchMedia(q).matches; } catch (_) { return false; } };
+    d.dark = mq("(prefers-color-scheme: dark)"); d.reduce = mq("(prefers-reduced-motion: reduce)"); d.hover = mq("(hover: hover)"); d.coarse = mq("(pointer: coarse)"); d.hdr = mq("(dynamic-range: high)"); d.p3 = mq("(color-gamut: p3)");
+    d.webgl = webglDetails(); d.canvas = await canvasFp(); d.fonts = detectFonts();
+    const rest = await Promise.allSettled([audioFp(), nav.userAgentData && nav.userAgentData.getHighEntropyValues ? nav.userAgentData.getHighEntropyValues(["platformVersion", "model", "architecture", "bitness", "fullVersionList"]) : Promise.resolve(null), permStates(), nav.getBattery ? nav.getBattery() : Promise.resolve(null), nav.storage && nav.storage.estimate ? nav.storage.estimate() : Promise.resolve(null), nav.mediaDevices && nav.mediaDevices.enumerateDevices ? nav.mediaDevices.enumerateDevices() : Promise.resolve([]), webrtcIPs(), adblockDetected(), raceT(ipwho("").catch(() => null), 8000)]);
+    const v = i => rest[i].status === "fulfilled" ? rest[i].value : null;
+    d.audio = v(0) || "blocked"; d.hints = v(1); d.perm = v(2) || {}; const bt = v(3); d.battery = bt ? { level: Math.round(bt.level * 100), charging: bt.charging } : null; d.storage = v(4); d.devices = (v(5) || []).reduce((a, x) => { a[x.kind] = (a[x.kind] || 0) + 1; return a; }, {}); d.rtc = v(6); d.adblock = !!v(7); d.ip = v(8);
+    d.voices = window.speechSynthesis ? (speechSynthesis.getVoices() || []).length : 0;
+    d.privateMode = d.storage && d.storage.quota ? d.storage.quota < 135 * 1024 * 1024 : false;
+    return d;
+}
+const bitsOf = d => { let b = 0; const add = (v, n) => { if (v && v !== "blocked" && v !== "unsupported" && v !== "timeout") b += n; }; add(d.ua, 9); add(d.langs.join(), 3.5); add(d.tz, 3); add(d.scr.w, 5); add(d.cores, 2); add(d.mem, 1.5); add(d.touch >= 0, 1.5); add(d.platform, 2); add(d.webgl && d.webgl.renderer, 7); add(d.canvas, 7); add(d.audio, 5); add(d.fonts.length, Math.min(10, d.fonts.length * 0.45)); add(d.plugins, 1); return Math.min(33, b); };
+window.analyzeUserAgent = async function () {
+    busy("uaResult", "Collecting ~40 browser signals: hardware, graphics, fonts, audio, WebRTC, permissions, privacy flags…");
+    const d = await collectEnv();
+    const pubLeak = (d.rtc || []).filter(x => isIPv4(x) && !privateKind(x)), localIP = (d.rtc || []).filter(x => (isIPv4(x) && privateKind(x)) || /\.local$/.test(x));
+    const bits = bitsOf(d), S = [], add = (sev, title, why, w) => S.push({ sev, title, why, w: w || 0 });
+    let score = 100;
+    if (pubLeak.length) { add("high", "WebRTC reveals your real public IP", "Websites can ask your browser for network addresses through WebRTC, even behind a VPN. Here it exposed: " + pubLeak.join(", "), 22); score -= 22; }
+    else add("good", "No public IP leaked through WebRTC", "Websites cannot learn a second IP address through WebRTC.", 0);
+    if (localIP.length) { add("medium", "Local network address visible", "Your private address (" + localIP.join(", ") + ") is visible to scripts. This helps trackers recognise your network.", 6); score -= 6; }
+    if (!d.https) { add("medium", "This page is not on HTTPS", "On a non-secure page a network attacker could read or modify what you do. Some features also turn off.", 8); score -= 8; }
+    if (d.webdriver) { add("medium", "Automation flag is ON", "The browser says it is being controlled by software (Selenium/Puppeteer). Many sites treat this as a bot.", 5); score -= 5; }
+    if (!d.dnt) { add("low", "'Do Not Track' is off", "A weak signal that most sites ignore, but it costs nothing to turn on.", 2); score -= 2; }
+    if (!d.gpc) { add("low", "Global Privacy Control is off", "GPC is the legally recognised successor to Do Not Track in some regions. Browsers like Firefox/Brave can enable it.", 3); score -= 3; }
+    if (d.canvas && d.canvas !== "blocked") { add("low", "Canvas fingerprint is readable", "Sites can draw hidden graphics and read the result to recognise your device even without cookies.", 4); score -= 4; } else add("good", "Canvas fingerprinting blocked or randomised", "Your browser protects against this tracking method.", 0);
+    if (d.audio && !["blocked", "unsupported", "timeout"].includes(d.audio)) { add("low", "Audio fingerprint is readable", "Tiny differences in how your device processes sound can identify it.", 3); score -= 3; }
+    if (bits >= 26) { add("medium", `Your browser fingerprint is highly unique (~${bits.toFixed(0)} bits)`, "Many small details combine into a signature that could single you out among millions. Trackers use this when cookies are deleted.", 8); score -= 8; }
+    if (d.adblock) { add("good", "Ad / tracker blocker detected", "Blocking trackers reduces cross-site profiling.", 0); score += 4; } else { add("low", "No ad/tracker blocker detected", "Without protection, ad networks can follow you across sites. Consider uBlock Origin or a privacy browser.", 3); score -= 3; }
+    Object.entries(d.perm).forEach(([k, s]) => { if (s === "granted" && /geolocation|camera|microphone|clipboard/.test(k)) { add("medium", `Permission already granted: ${k}`, "A site on this browser can use this without asking again. Review in browser settings → Site settings.", 4); score -= 4; } });
+    if (d.privateMode) add("info", "Private / incognito mode likely", "Storage quota is unusually small, which is typical of private browsing. Good for privacy; sites cannot keep long-term data.", 0);
+    if (d.ip && d.ip.timezone && d.ip.timezone.id && d.tz && d.ip.timezone.id !== d.tz) add("info", "Browser time zone differs from your IP location", `Browser says ${d.tz}, your IP appears in ${d.ip.timezone.id}. This is normal with a VPN or while travelling, but some sites treat it as suspicious.`, 0);
+    else if (d.ip && d.ip.timezone) add("good", "Browser time zone matches your IP location", "Your settings look consistent with your network location.", 0);
+    if (d.conn && d.conn.save) add("info", "Data-saver mode is on", "The browser limits data use; some sites send lighter pages.", 0);
+    score = Math.max(5, Math.min(100, Math.round(score)));
+    const k = score >= 80 ? "success" : score >= 55 ? "warning" : "danger", kk = k === "success" ? "ok" : k === "warning" ? "warn" : "bad";
+    const device = d.hints && d.hints.model ? d.hints.model : (d.coarse ? "Phone / tablet" : "Desktop / laptop");
+    const summary = verdict("🖥️", `${esc(d.p.browser)} on ${esc(d.p.os)}`, k, `Privacy score ${score}/100`) + meter(score, kk) +
+        kv([["Device", esc(device) + (d.touch ? " · touch" : "")], ["Screen", `${d.scr.w}×${d.scr.h} @${d.scr.dpr}x`], ["Your IP", d.ip ? code(d.ip.ip) + " " + esc(d.ip.flag?.emoji || "") : "—"], ["Fingerprint", `≈${bits.toFixed(0)} bits (1 in ${num(Math.round(Math.pow(2, bits)))})`]]) +
+        `<div class="tp-chips">${pubLeak.length ? badge("WebRTC leak", "danger") : badge("No WebRTC leak", "ok")}${d.adblock ? badge("Tracker blocker on", "ok") : badge("No tracker blocker", "warn")}${d.gpc ? badge("GPC on", "ok") : badge("GPC off", "info")}${d.privateMode ? badge("Private mode", "info") : ""}</div>`;
+    /* report */
+    const T = (l, v, s) => [l, v, s];
+    let h = rHero("🖥️", `${esc(d.p.browser)} on ${esc(d.p.os)}`, `${esc(device)} · ${esc(d.tz)} · ${S.filter(s => ["high", "critical"].includes(s.sev)).length} serious finding(s)`, kk, rGauge(score, "privacy score", kk));
+    h += rSec("🧾", "Findings explained", S.sort((a, b) => SEV_ORDER[a.sev] - SEV_ORDER[b.sev]).map(rSignal).join(""));
+    h += rSec("🧬", "Browser fingerprint uniqueness", rTiles([T("Estimated entropy", `<b>${bits.toFixed(1)}</b> bits`, "estimate"), T("Could single you out among", `1 in ${num(Math.round(Math.pow(2, bits)))}`), T("Canvas hash", code(d.canvas)), T("Audio hash", code(d.audio)), T("GPU renderer hash", d.webgl ? code((await sha1Hex(d.webgl.renderer || "")).slice(0, 12)) : "—"), T("Fonts detected", `${d.fonts.length} of ${FONT_LIST.length}`)]) + rPara("Trackers combine dozens of small details (browser, screen, fonts, graphics, audio) into one signature. <b>The more unusual your setup, the easier you are to recognise.</b> This number is an estimate for education, not a measured value.") + (d.fonts.length ? chips(d.fonts.slice(0, 24), "info") : ""));
+    h += rSec("📱", "Device & operating system", rTiles([T("Browser", esc(d.p.browser)), T("Operating system", esc(d.p.os), d.hints && d.hints.platformVersion ? "version " + esc(d.hints.platformVersion) : ""), T("Platform string", esc(d.platform)), d.hints && d.hints.model ? T("Device model", esc(d.hints.model)) : null, d.hints && d.hints.architecture ? T("CPU architecture", esc(d.hints.architecture + (d.hints.bitness ? "-" + d.hints.bitness : ""))) : null, T("CPU threads", String(d.cores || "hidden")), T("Memory (approx.)", d.mem ? d.mem + " GB+" : "hidden"), T("Touch points", String(d.touch)), T("Input", d.coarse ? "Touch (coarse pointer)" : "Mouse / trackpad"), d.battery ? T("Battery", `${d.battery.level}% ${d.battery.charging ? "⚡ charging" : ""}`) : null]) + `<details class="tpr-det"><summary>Raw user-agent string</summary><code>${esc(d.ua)}</code></details>`);
+    h += rSec("🖼️", "Display & graphics", rTiles([T("Screen", `${d.scr.w}×${d.scr.h}`), T("Available area", `${d.scr.aw}×${d.scr.ah}`), T("Window now", `${d.scr.iw}×${d.scr.ih}`), T("Pixel ratio", d.scr.dpr + "x"), T("Colour depth", d.scr.cd + "-bit"), T("HDR / wide gamut", (d.hdr ? "HDR " : "") + (d.p3 ? "P3" : "sRGB")), T("Dark mode", d.dark ? "On" : "Off"), T("Reduced motion", d.reduce ? "Requested" : "No")]) + (d.webgl ? rTiles([T("GPU vendor", esc(d.webgl.vendor)), T("GPU renderer", esc(d.webgl.renderer)), T("WebGL version", esc(d.webgl.version)), T("Max texture", esc(d.webgl.maxTex)), T("Extensions", String(d.webgl.ext))]) : rPara("WebGL is unavailable or blocked.")));
+    h += rSec("🌐", "Network & location", rTiles([T("Public IP", d.ip ? code(d.ip.ip) : "—"), T("Location (IP)", d.ip ? esc(`${d.ip.city || ""}, ${d.ip.country || ""}`) : "—"), T("ISP / network", d.ip ? esc(d.ip.connection?.org || d.ip.connection?.isp || "—") : "—"), T("Browser time zone", esc(d.tz), "UTC" + (d.tzOff >= 0 ? "+" : "") + d.tzOff), T("Languages", esc(d.langs.slice(0, 4).join(", "))), d.conn ? T("Connection", `${esc(d.conn.type || "?")} · ${d.conn.down || "?"} Mbps · RTT ${d.conn.rtt || "?"} ms`) : null, T("WebRTC addresses", d.rtc === null ? "unsupported" : (d.rtc.length ? d.rtc.map(code).join(" ") : "none exposed")), T("Online", d.online ? "Yes" : "No")]));
+    h += rSec("🔒", "Privacy & security switches", rTiles([T("HTTPS page", d.https ? badge("yes", "ok") : badge("no", "danger")), T("Secure context", d.secure ? badge("yes", "ok") : badge("no", "warn")), T("Cookies", d.cookies ? "enabled" : "disabled"), T("Do Not Track", d.dnt ? badge("on", "ok") : badge("off", "info")), T("Global Privacy Control", d.gpc ? badge("on", "ok") : badge("off", "info")), T("Automation flag", d.webdriver ? badge("ON", "warn") : badge("off", "ok")), T("Tracker blocker", d.adblock ? badge("detected", "ok") : badge("none", "warn")), T("Private mode", d.privateMode ? "likely" : "no"), d.storage && d.storage.quota ? T("Storage quota", (d.storage.quota / 1073741824).toFixed(1) + " GB") : null]));
+    const pe = Object.entries(d.perm); h += rSec("🔑", "Site permissions in this browser", pe.length ? rTable(["Permission", "State", "Meaning"], pe.map(([n, s]) => [esc(n), badge(s, s === "granted" ? "danger" : s === "denied" ? "ok" : "info"), s === "granted" ? "Sites may use it without asking" : s === "denied" ? "Blocked" : "Will ask before use"])) : rPara("The permissions API is not available in this browser."));
+    h += rSec("🎧", "Media devices (counts only)", rTiles([T("Microphones", String(d.devices.audioinput || 0)), T("Cameras", String(d.devices.videoinput || 0)), T("Speakers", String(d.devices.audiooutput || 0)), T("Speech voices", String(d.voices))]) + rPara("Only the number of devices is read. No camera or microphone is ever turned on by this tool."));
+    h += rSec("🛠️", "How to improve your privacy", rSteps(["Use a browser with built-in tracker protection (Firefox, Brave) or add uBlock Origin.", "Turn on <b>Global Privacy Control / Do Not Track</b> in browser settings.", pubLeak.length ? "<b>Disable WebRTC IP leaks</b> (Firefox: media.peerconnection.enabled = false, or use a WebRTC-blocking extension)." : "Keep WebRTC protection enabled.", "Review <b>Site settings → Permissions</b> and remove location/camera/microphone from sites you do not trust.", "Clear cookies regularly and avoid logging into many services in the same browser profile.", "Keep your browser and OS updated, and avoid sites that are not HTTPS."]));
+    h += rPara("<small>Everything on this page is read locally in your browser. Only your public IP lookup contacts ipwho.is. Nothing is stored by CyberGuard.</small>");
+    setR("uaResult", "ua", "Browser & device deep report", `${d.p.browser} · ${d.p.os}`, summary, h, k);
+};
+
+/* ============================================================
+   DNS DEEP REPORT
+   ============================================================ */
+const DNS_NUM = { A: 1, AAAA: 28, CNAME: 5, MX: 15, NS: 2, TXT: 16, SOA: 6, CAA: 257, DS: 43, DNSKEY: 48, PTR: 12 };
+const NS_PROV = [[/cloudflare/i, "Cloudflare"], [/awsdns/i, "Amazon Route 53"], [/googledomains|google\.com|ns-cloud/i, "Google Cloud DNS"], [/azure-dns/i, "Microsoft Azure DNS"], [/domaincontrol/i, "GoDaddy"], [/registrar-servers/i, "Namecheap"], [/nsone/i, "NS1"], [/dnsmadeeasy/i, "DNS Made Easy"], [/ultradns/i, "UltraDNS"], [/akam/i, "Akamai"], [/digitalocean/i, "DigitalOcean"], [/hetzner/i, "Hetzner"], [/ovh/i, "OVH"], [/wixdns/i, "Wix"], [/squarespace|sqsp/i, "Squarespace"], [/dnspod|alidns|hichina/i, "Alibaba / Tencent"], [/vercel-dns/i, "Vercel"], [/netlify/i, "Netlify"]];
+const TXT_SERVICES = [[/google-site-verification/i, "Google Search Console / Workspace"], [/^"?MS=/i, "Microsoft 365"], [/facebook-domain-verification/i, "Meta (Facebook)"], [/apple-domain-verification/i, "Apple"], [/atlassian-domain-verification/i, "Atlassian"], [/docusign/i, "DocuSign"], [/stripe-verification/i, "Stripe"], [/zoho-verification/i, "Zoho"], [/adobe-idp-site-verification/i, "Adobe"], [/shopify/i, "Shopify"], [/hubspot|hs-site-verification/i, "HubSpot"], [/amazonses/i, "Amazon SES"], [/sendgrid/i, "SendGrid"], [/mailchimp|mandrill/i, "Mailchimp"], [/slack-domain-verification/i, "Slack"], [/zoom/i, "Zoom"], [/cloudflare-verify/i, "Cloudflare"]];
+const DKIM_SEL = ["google", "selector1", "selector2", "default", "k1", "s1", "dkim", "mail", "smtp", "zoho"];
+const REC_INFO = { A: "Maps a name to an IPv4 address (where the website lives).", AAAA: "Maps a name to an IPv6 address.", CNAME: "An alias that points one name to another name.", MX: "Mail servers that receive email for the domain (lower number = higher priority).", NS: "The authoritative name servers that answer for this domain.", TXT: "Free text used for SPF, DMARC, ownership verification and more.", SOA: "Start-of-authority record: the zone's primary server, admin contact and refresh timers.", CAA: "Lists which certificate authorities are allowed to issue HTTPS certificates for the domain." };
+const pool = async (tasks, n = 6) => { const out = []; let i = 0; await Promise.all(Array.from({ length: n }, async () => { while (i < tasks.length) { const k = i++; out[k] = await tasks[k]().catch(() => null); } })); return out; };
+function parseSpf(txt) {
+    const t = txt.replace(/^"|"$/g, "").replace(/"\s*"/g, ""), parts = t.split(/\s+/).slice(1); let lookups = 0, all = ""; const mech = [];
+    parts.forEach(p => { const m = /^([+\-~?]?)(all|include|a|mx|ptr|exists|ip4|ip6|redirect|exp)(?:[:=](.*))?$/i.exec(p); if (!m) return; const k = m[2].toLowerCase(); if (["include", "a", "mx", "ptr", "exists", "redirect"].includes(k)) lookups++; if (k === "all") all = (m[1] || "+") + "all"; mech.push({ q: m[1] || "+", k, v: m[3] || "" }); });
+    return { mech, lookups, all, raw: t };
+}
+const parseDmarc = txt => { const o = {}; txt.replace(/^"|"$/g, "").split(";").forEach(p => { const i = p.indexOf("="); if (i > 0) o[p.slice(0, i).trim().toLowerCase()] = p.slice(i + 1).trim(); }); return o; };
+const txtVal = a => String(a.data).replace(/^"|"$/g, "").replace(/"\s*"/g, "");
+const ttlHuman = s => s >= 86400 ? Math.round(s / 86400) + " d" : s >= 3600 ? Math.round(s / 3600) + " h" : s >= 60 ? Math.round(s / 60) + " min" : s + " s";
+
+window.lookupDNS = async function () {
+    let domain; try { domain = parseHost(val("dnsInput")); } catch (_) { return fail("dnsResult", "Enter a domain."); }
+    if (!isDomain(domain)) return fail("dnsResult", "Enter a valid domain, e.g. google.com");
+    busy("dnsResult", "Deep DNS audit: records, DNSSEC, SPF/DKIM/DMARC, providers, hosting, registration (about 30 lookups)…");
+    try {
+        const rnd = "cg-" + Math.random().toString(36).slice(2, 9);
+        const specs = [["A", domain, "A"], ["AAAA", domain, "AAAA"], ["CNAME", domain, "CNAME"], ["MX", domain, "MX"], ["NS", domain, "NS"], ["TXT", domain, "TXT"], ["SOA", domain, "SOA"], ["CAA", domain, "CAA"], ["DS", domain, "DS"], ["DNSKEY", domain, "DNSKEY"], ["wwwA", "www." + domain, "A"], ["wwwCNAME", "www." + domain, "CNAME"], ["dmarc", "_dmarc." + domain, "TXT"], ["mtasts", "_mta-sts." + domain, "TXT"], ["bimi", "default._bimi." + domain, "TXT"], ["wild", rnd + "." + domain, "A"], ...DKIM_SEL.map(s => ["dkim:" + s, s + "._domainkey." + domain, "TXT"])];
+        const res = await pool(specs.map(([k, n, t]) => () => dnsQuery(n, t).then(d => ({ k, t, d }))), 7);
+        const R = {}; res.forEach(r => { if (r) R[r.k] = r; });
+        if (!R.A && !R.NS) throw new Error("dns");
+        const first = R.A || R.NS || R.TXT; if (first && first.d.Status === 3) return set("dnsResult", verdict("❓", "Domain does not exist (NXDOMAIN)", "warning", esc(domain)) + note("No DNS records were found. Check the spelling or whether the domain is registered."), "warning");
+        const ans = (k, type) => (R[k] && R[k].d.Answer ? R[k].d.Answer.filter(a => a.type === (DNS_NUM[type || R[k].t])) : []);
+        const A = ans("A"), AAAA = ans("AAAA"), CN = ans("CNAME"), MX = ans("MX"), NS = ans("NS"), TXT = ans("TXT"), SOA = ans("SOA"), CAA = ans("CAA"), DS = ans("DS"), DNSKEY = ans("DNSKEY");
+        const dnssec = R.A && R.A.d.AD === true, hasMail = MX.length > 0 && !MX.some(m => /^0?\s*\.?$/.test(String(m.data).replace(/^\d+\s+/, "")));
+        const spfTxt = TXT.map(txtVal).find(t => /^v=spf1/i.test(t)), dmTxt = ans("dmarc", "TXT").map(txtVal).find(t => /^v=DMARC1/i.test(t)), mtaTxt = ans("mtasts", "TXT").map(txtVal).find(t => /v=STSv1/i.test(t)), bimi = ans("bimi", "TXT").map(txtVal).find(t => /v=BIMI1/i.test(t));
+        const spf = spfTxt ? parseSpf(spfTxt) : null, dm = dmTxt ? parseDmarc(dmTxt) : null, dkim = DKIM_SEL.filter(s => ans("dkim:" + s, "TXT").some(a => /v=DKIM1|p=/.test(txtVal(a))));
+        const mxHosts = MX.map(m => String(m.data).replace(/^\d+\s+/, "").replace(/\.$/, "").toLowerCase()), nsHosts = NS.map(n => String(n.data).replace(/\.$/, "").toLowerCase());
+        const mailProv = MAIL_PROV.find(([re]) => mxHosts.some(m => re.test(m)))?.[1] || (hasMail ? "Custom mail server" : "No email service"), nsProv = NS_PROV.find(([re]) => nsHosts.some(n => re.test(n)))?.[1] || "Independent / other";
+        const wildcard = ans("wild", "A").length > 0, soa = SOA[0] ? String(SOA[0].data).split(/\s+/) : [];
+        const ip0 = A[0] && A[0].data;
+        const [geo, rd] = await Promise.all([ip0 ? raceT(ipwho(ip0).catch(() => null), 9000) : null, raceT(rdapDomain(domain), 10000)]);
+        const svc = [...new Set(TXT.map(txtVal).flatMap(t => TXT_SERVICES.filter(([re]) => re.test(t)).map(x => x[1])))];
+        const cdn = geo && /cloudflare|akamai|fastly|cloudfront|incapsula|imperva|sucuri|stackpath|bunny/i.test(geo.connection?.org || "") ? geo.connection.org : "";
+        /* grading */
+        let health = 100; const P = [], add = (sev, title, why, d) => { P.push({ sev, title, why }); health -= d; };
+        if (NS.length < 2) add("high", "Fewer than 2 name servers", "If the single name server fails, the whole domain disappears. Standards require at least two, ideally on different networks.", 15); else add("good", `${NS.length} name servers (${nsProv})`, "Redundant name servers keep the domain reachable if one fails.", 0);
+        if (!dnssec) add("low", "DNSSEC is not validated", "Without DNSSEC, attackers who poison DNS caches can send visitors to fake servers. Enabling it signs your records cryptographically.", 5); else add("good", "DNSSEC validated (AD flag)", "Resolvers can verify that answers were not tampered with.", 0);
+        if (!CAA.length) add("low", "No CAA record", "A CAA record restricts which certificate authorities may issue certificates for your domain, reducing mis-issuance risk.", 4); else add("good", "CAA record present", "Certificate issuance is restricted to listed authorities.", 0);
+        if (wildcard) add("info", "Wildcard DNS is enabled", "Any random subdomain resolves. Useful for apps, but it can hide typos and help phishers abuse your domain.", 2);
+        let grade = "N/A", gk = "info";
+        if (hasMail) {
+            let g = 0;
+            if (!spf) add("high", "No SPF record", "SPF lists which servers may send email for your domain. Without it anyone can more easily forge messages from you.", 20); else { g += 1; if (spf.all === "-all") { g += 1; add("good", "SPF with strict policy (-all)", "Servers not listed are told to reject the mail.", 0); } else if (spf.all === "~all") { g += 0.6; add("low", "SPF uses soft-fail (~all)", "Unlisted senders are only marked suspicious. Move to -all once you are sure all senders are listed.", 3); } else add("high", `SPF policy is weak (${spf.all || "none"})`, "+all or ?all effectively allows anyone to send as your domain.", 18); if (spf.lookups > 10) add("medium", `SPF needs ${spf.lookups} DNS lookups (limit is 10)`, "Receivers may treat SPF as broken (permerror) and ignore it.", 8); }
+            if (!dm) add("high", "No DMARC record", "DMARC tells receivers what to do with forged mail and sends you reports. It is the key defence against spoofed emails.", 20); else { g += 1; const p = (dm.p || "").toLowerCase(); if (p === "reject") { g += 1.5; add("good", "DMARC policy: reject", "Forged emails are refused. This is the strongest setting.", 0); } else if (p === "quarantine") { g += 1; add("low", "DMARC policy: quarantine", "Forged emails go to spam. Consider moving to reject.", 3); } else add("medium", "DMARC policy: none (monitor only)", "DMARC is present but does not block anything yet.", 8); if (dm.rua) g += 0.5; else add("low", "DMARC has no reporting address (rua)", "Without reports you cannot see who is sending as your domain.", 2); }
+            if (dkim.length) { g += 1; add("good", `DKIM signing found (${dkim.join(", ")})`, "Messages can be cryptographically verified.", 0); } else add("low", "No common DKIM selector found", "Selectors vary by provider, so this check is not conclusive. DKIM proves mail was not altered in transit.", 2);
+            if (mtaTxt) g += 0.5; else add("info", "MTA-STS not configured", "MTA-STS forces encrypted delivery of incoming mail and prevents downgrade attacks.", 1);
+            grade = g >= 5.5 ? "A" : g >= 4.5 ? "B" : g >= 3 ? "C" : g >= 1.5 ? "D" : "F"; gk = g >= 4.5 ? "ok" : g >= 3 ? "warn" : "danger";
+        } else add("info", "Domain does not receive email", spf && /-all/.test(spf.all) ? "A null/strict SPF on a non-mail domain correctly stops spoofing." : "Domains that send no email should publish v=spf1 -all and DMARC p=reject so criminals cannot spoof them.", 0);
+        health = Math.max(5, Math.min(100, Math.round(health))); const k = health >= 80 ? "success" : health >= 55 ? "warning" : "danger", kk = k === "success" ? "ok" : k === "warning" ? "warn" : "bad";
+        const ageDays = rd && rd.created ? Math.floor((Date.now() - new Date(rd.created)) / 864e5) : null;
+        /* summary */
+        const summary = verdict("🌐", esc(domain), k, `DNS health ${health}/100`) + meter(health, kk) +
+            kv([["Website IP", A.length ? A.slice(0, 2).map(a => code(a.data)).join(" ") : (CN.length ? "alias → " + code(String(CN[0].data).replace(/\.$/, "")) : badge("none", "warn"))], ["Hosting", geo ? `${esc(geo.flag?.emoji || "")} ${esc(geo.country || "")} · ${esc(cdn || geo.connection?.org || "")}` : "—"], ["Name servers", esc(nsProv)], ["Mail", esc(mailProv)], ["Email security", hasMail ? badge("Grade " + grade, gk) : badge("no email", "info")], ["DNSSEC", dnssec ? badge("validated", "ok") : badge("not validated", "warn")], ageDays != null ? ["Domain age", badge((ageDays / 365).toFixed(1) + " years", ageDays < 180 ? "danger" : "ok")] : null]);
+        /* report */
+        const recTable = (type, list, fmt) => list.length ? rTable(["Value", "TTL"], list.slice(0, 12).map(a => [fmt ? fmt(a) : code(String(a.data).slice(0, 240)), ttlHuman(a.TTL)])) : "";
+        let h = rHero("🌐", esc(domain), `${esc(nsProv)} · ${esc(mailProv)} · ${hasMail ? "email grade " + grade : "no email"} · ${P.filter(p => ["high", "critical"].includes(p.sev)).length} serious issue(s)`, kk, rGauge(health, "DNS health", kk));
+        h += rSec("🧾", "Findings & recommendations", P.sort((a, b) => SEV_ORDER[a.sev] - SEV_ORDER[b.sev]).map(rSignal).join(""));
+        h += rSec("📚", "All records found (and what they mean)", ["A", "AAAA", "CNAME", "MX", "NS", "SOA", "CAA"].map(t => { const L = { A, AAAA, CNAME: CN, MX, NS, SOA, CAA }[t]; return `<div class="tpr-rec"><h5>${t} <small>${esc(REC_INFO[t])}</small></h5>${L.length ? recTable(t, L) : `<p class="tpr-none">none</p>`}</div>`; }).join("") + `<div class="tpr-rec"><h5>TXT <small>${esc(REC_INFO.TXT)}</small></h5>${TXT.length ? recTable("TXT", TXT) : `<p class="tpr-none">none</p>`}</div>`);
+        if (hasMail || spf || dm) {
+            h += rSec("✉️", "Email security (SPF · DKIM · DMARC)", rTiles([["Overall grade", `<b>${hasMail ? grade : "N/A"}</b>`], ["SPF", spf ? badge("present", "ok") : badge("missing", "danger")], ["SPF policy", spf ? code(spf.all || "none") : "—"], ["SPF lookups", spf ? `${spf.lookups} / 10` : "—"], ["DMARC", dm ? badge("p=" + (dm.p || "?"), /reject|quarantine/.test(dm.p || "") ? "ok" : "warn") : badge("missing", "danger")], ["DKIM selectors", dkim.length ? esc(dkim.join(", ")) : "none found"], ["MTA-STS", mtaTxt ? badge("on", "ok") : badge("off", "info")], ["BIMI logo", bimi ? badge("set", "ok") : "—"]]) +
+                (spf ? rTable(["SPF part", "Meaning"], spf.mech.slice(0, 16).map(m => [code((m.q === "+" ? "" : m.q) + m.k + (m.v ? ":" + m.v : "")), esc({ include: "Also trust this other domain's senders", a: "Trust the server in the domain's A record", mx: "Trust this domain's mail servers", ip4: "Trust this IPv4 range", ip6: "Trust this IPv6 range", all: m.q === "-" ? "Reject everyone else (strict)" : m.q === "~" ? "Mark everyone else suspicious (soft)" : "Allow everyone else (dangerous)", redirect: "Use another domain's SPF", exists: "Advanced check", ptr: "Deprecated, avoid", exp: "Explanation text" }[m.k] || "")])) : "") +
+                (dm ? rTable(["DMARC tag", "Value", "Meaning"], Object.entries(dm).map(([k2, v]) => [code(k2), code(v.slice(0, 80)), esc({ v: "Version", p: "Action for failing mail", sp: "Action for subdomains", pct: "Percent of mail the policy applies to", rua: "Where aggregate reports are sent", ruf: "Where forensic reports are sent", adkim: "DKIM alignment mode", aspf: "SPF alignment mode", fo: "Failure reporting options" }[k2] || "")])) : "") +
+                rPara(hasMail && (!spf || !dm) ? "<b>Example fix:</b> add TXT records <code>v=spf1 include:YOUR_MAIL_PROVIDER -all</code> and <code>_dmarc</code> → <code>v=DMARC1; p=quarantine; rua=mailto:you@" + esc(domain) + "</code>." : "Keep monitoring DMARC reports to catch misuse."));
+        }
+        h += rSec("🛡️", "DNSSEC", rTiles([["Validated by resolver", dnssec ? badge("yes (AD flag)", "ok") : badge("no", "warn")], ["DS record at parent", DS.length ? badge("present", "ok") : badge("none", "info")], ["DNSKEY at domain", DNSKEY.length ? badge("present", "ok") : badge("none", "info")], ["Registry says signed", rd ? (rd.dnssec ? badge("yes", "ok") : badge("no", "info")) : "—"]]) + rPara("DNSSEC signs your DNS answers so tampering can be detected. It is optional but recommended for banks, government and high-value sites."));
+        h += rSec("🏗️", "Providers & hosting", rTiles([["Name servers", esc(nsHosts.slice(0, 4).join(", ") || "—")], ["DNS provider", esc(nsProv)], ["Mail servers", esc(mxHosts.slice(0, 3).join(", ") || "—")], ["Mail provider", esc(mailProv)], ["Website IP", A.length ? A.slice(0, 3).map(a => code(a.data)).join(" ") : "—"], ["Hosting / network", geo ? esc(geo.connection?.org || "—") : "—"], ["Server country", geo ? `${esc(geo.flag?.emoji || "")} ${esc(geo.country || "")}` : "—"], ["CDN / protection", cdn ? badge(cdn, "ok") : "none detected"], ["IPv6", AAAA.length ? badge("enabled", "ok") : badge("not enabled", "info")], ["www record", ans("wwwA", "A").length || ans("wwwCNAME", "CNAME").length ? badge("exists", "ok") : badge("none", "info")], ["Wildcard DNS", wildcard ? badge("yes", "warn") : badge("no", "ok")]]) + (svc.length ? `<div class="tp-sub">Services detected from TXT records</div>` + chips(svc, "info") : ""));
+        if (soa.length >= 7) h += rSec("🧮", "Zone details (SOA)", rTiles([["Primary server", code(soa[0].replace(/\.$/, ""))], ["Admin contact", code(soa[1].replace(/\.$/, "").replace(".", "@"))], ["Serial", code(soa[2])], ["Refresh", ttlHuman(+soa[3])], ["Retry", ttlHuman(+soa[4])], ["Expire", ttlHuman(+soa[5])], ["Negative TTL", ttlHuman(+soa[6])]]));
+        h += rSec("📅", "Registration (RDAP)", rd ? rTiles([["Registered", fmtDate(rd.created), ageDays != null ? (ageDays / 365).toFixed(1) + " years ago" : ""], ["Last changed", fmtDate(rd.updated)], ["Expires", fmtDate(rd.expires)], ["Registrar", esc(rd.registrar || "—")], ["Status", esc((rd.status || []).slice(0, 3).join(", ") || "—")]]) : rPara("Registration data is not available for this ending, or the lookup timed out."));
+        h += rPara("<small>Data source: Google Public DNS (DNS-over-HTTPS), RDAP and ipwho.is. DKIM selectors are guessed from common names, so absence is not proof.</small>");
+        setR("dnsResult", "dns", "DNS & email-security deep report", domain, summary, h, k);
+    } catch (e) { fail("dnsResult", "DNS-over-HTTPS provider unavailable.", "warning"); }
+};
+
+/* ============================================================
+   PASSWORD  (deep local analysis + real breach check)
+   ============================================================ */
+function pwStructure(p) {
+    const segs = []; let cur = null;
+    for (const ch of p) { const t = /[a-z]/.test(ch) ? "l" : /[A-Z]/.test(ch) ? "U" : /\d/.test(ch) ? "d" : "s"; if (cur && cur.t === t) cur.n++; else { cur = { t, n: 1 }; segs.push(cur); } }
+    const name = { l: "lowercase", U: "UPPERCASE", d: "digits", s: "symbols" };
+    return segs.map(s => `<span class="pw-seg pw-${s.t}" title="${s.n} ${name[s.t]}">${s.t === "l" ? "a" : s.t === "U" ? "A" : s.t === "d" ? "1" : "#"}${s.n > 1 ? "×" + s.n : ""}</span>`).join("");
+}
+let pwTok2 = 0, pwTimer2 = null;
+window.checkPasswordStrength = function () {
+    const p = $("passInput")?.value || "", bar = $("strengthBar"), text = $("strengthText"); if (!bar || !text) return;
+    const card = text.closest(".tool-card");
+    if (!p) { bar.style.width = "0%"; text.textContent = "Awaiting Input..."; if (card) card.dataset.state = "info"; return; }
+    const a = analyzePassword(p), col = a.score < 30 ? "#ff3366" : a.score < 55 ? "#ffbb00" : a.score < 75 ? "#00bcff" : "#00ffaa";
+    bar.style.width = Math.max(4, a.score) + "%"; bar.style.backgroundColor = col;
+    const label = a.score < 30 ? "Very Weak" : a.score < 45 ? "Weak" : a.score < 65 ? "Fair" : a.score < 82 ? "Strong" : "Excellent", g = Math.pow(2, Math.max(a.bits - 1, 0));
+    const sc = [["Online, throttled (100 guesses/s)", 100], ["Online, no limit (10,000/s)", 1e4], ["Stolen database, fast hash (10 billion/s)", 1e10], ["Stolen database, GPU farm (1 trillion/s)", 1e12]];
+    const checks = [["8+ characters", p.length >= 8], ["12+ characters (recommended minimum)", p.length >= 12], ["16+ characters (strong)", p.length >= 16], ["Mixed upper & lower case", /[a-z]/.test(p) && /[A-Z]/.test(p)], ["Contains numbers", /\d/.test(p)], ["Contains symbols", /[^A-Za-z0-9]/.test(p)], ["Not a common password", !COMMON_PW.includes(p.toLowerCase()) && !COMMON_PW.includes(deLeet(p))], ["No obvious pattern (123, qwerty, aaa)", !a.issues.some(i => /sequence|Repeated/.test(i))]];
+    const need = a.bits < 60 ? Math.ceil((60 - a.bits) / Math.log2(Math.max(a.pool, 26))) : 0;
+    text.innerHTML = `
+        <div class="tp-verdict tp-${a.score < 45 ? "danger" : a.score < 65 ? "warning" : "success"}"><span class="tp-vi">${a.score < 45 ? "🔓" : a.score < 65 ? "🔐" : "🛡️"}</span>
+        <div><b>${label} • ${a.score}/100</b><small>${p.length} chars • ${a.bits.toFixed(1)} bits • character pool ${a.pool}</small></div></div>
+        <div class="pw-structure"><small>Structure</small>${pwStructure(p)}</div>
+        ${kv(sc.map(([n, r]) => [n, fmtDuration(g / r)]))}
+        ${a.issues.length ? chips(a.issues, "danger") : ""}${a.good.length ? chips(a.good, "ok") : ""}
+        <div id="pwBreachLine" class="tp-note">🔎 Checking real breach database (HIBP)…</div>
+        <details class="tp-det"><summary>🔬 Deep analysis & how to improve</summary><div>
+          <div class="tp-sub">Policy checks</div>${rList(checks.map(([t, ok]) => `${ok ? "✅" : "❌"} ${esc(t)}`), "tpr-mini")}
+          <div class="tp-sub">What the numbers mean</div>
+          <p class="tp-note"><b>Entropy ${a.bits.toFixed(1)} bits</b> = about ${num(Math.round(g))} guesses on average. Each extra bit doubles the work for an attacker. 60+ bits is decent for online accounts, 80+ is strong against stolen databases.</p>
+          <div class="tp-sub">Improve it</div>
+          ${rList([need ? `Add about <b>${need} more random characters</b> to reach 60 bits.` : "Length is good. Make sure it is unique for this account.", "A passphrase of <b>4–5 unrelated random words</b> (e.g. from a dice list) gives 50–65 bits and is easy to remember.", "Never reuse this password on another site. Use a password manager.", "Add <b>2-Step Verification</b>: even a perfect password can be phished."], "tpr-mini")}
+          <p class="tp-note">Your password is analysed only in your browser. Only the first 5 characters of its SHA-1 hash are sent for the breach check.</p></div></details>`;
+    if (card) card.dataset.state = a.score < 45 ? "danger" : a.score < 65 ? "warning" : "success";
+    clearTimeout(pwTimer2); const my = ++pwTok2;
+    pwTimer2 = setTimeout(async () => {
+        const line = () => document.getElementById("pwBreachLine");
+        try {
+            if (!crypto?.subtle) throw new Error("no-subtle");
+            const hh = await sha1Hex(p), body = await getText(`https://api.pwnedpasswords.com/range/${hh.slice(0, 5)}`, { timeout: 9000 });
+            if (my !== pwTok2 || !line()) return;
+            const hit = body.split(/\r?\n/).map(l => l.split(":")).find(([s]) => s === hh.slice(5));
+            if (hit) { line().className = "tp-note tp-bad"; line().innerHTML = `☠️ <b>Found ${num(parseInt(hit[1], 10))} times</b> in real data breaches (HIBP). Never use this password anywhere.`; if (card) card.dataset.state = "danger"; }
+            else { line().className = "tp-note tp-good"; line().innerHTML = "✅ Not found in 800M+ breached passwords (HIBP). Only the first 5 hash characters were sent (k-anonymity)."; }
+        } catch (_) { if (my === pwTok2 && line()) line().textContent = "ℹ️ Breach database unreachable right now (needs HTTPS + internet). Local analysis above is still valid."; }
+    }, 700);
+};
+
+/* ============================================================
+   PORT / EXPOSURE SCANNER  (deep)
+   ============================================================ */
+window.scanPorts = async function () {
+    let host; try { host = parseHost(val("portScanInput")); } catch (_) { return fail("portScanResult", "Enter a hostname or public IP."); }
+    if (!isIP(host) && !isDomain(host)) return fail("portScanResult", "Invalid hostname / IP.");
+    busy("portScanResult", "Resolving target & querying exposure database…");
+    try {
+        const ips = await resolveIPs(host); if (!ips.length) return fail("portScanResult", "Target does not resolve.", "warning");
+        const ip = ips.find(isIPv4) || ips[0], pk = privateKind(ip);
+        if (pk) return set("portScanResult", verdict("🏠", "Private address", "info", esc(ip)) + note(esc(pk) + " - not reachable from the internet, so no public exposure data exists."), "info");
+        const [d, geo] = await Promise.all([internetDb(ip), raceT(ipwho(ip).catch(() => null), 9000)]);
+        if (d.notFound) return set("portScanResult", verdict("🔍", "No exposure data", "success", esc(ip)) + note("This IP is not in Shodan's index (no known open services). That is NOT proof that all ports are closed."), "success");
+        const rows = portRows(d.ports), crit = rows.filter(r => r.sev === "critical").length, high = rows.filter(r => r.sev === "high").length;
+        let risk = Math.min(100, crit * 25 + high * 14 + Math.min(30, d.vulns.length * 4) + (d.tags.some(t => /malware|c2|compromised|botnet/i.test(t)) ? 30 : 0));
+        const k = risk >= 55 ? "danger" : risk >= 20 ? "warning" : "success", kk = k === "danger" ? "bad" : k === "warning" ? "warn" : "ok";
+        const summary = verdict(risk >= 55 ? "🚨" : risk >= 20 ? "⚠️" : "🛡️", `${d.ports.length} open port${d.ports.length === 1 ? "" : "s"} · ${crit} critical`, k, `${esc(host)} → ${esc(ip)}`) + meter(risk, kk) +
+            kv([["Open ports", d.ports.slice(0, 10).map(p => badge(`${p} ${(PORT_INFO[p] || [PORT_NAMES[p] || ""])[0]}`.trim(), RISKY_PORTS.has(p) ? "danger" : "info")).join("")], d.vulns.length ? ["Known CVEs", chips(d.vulns.slice(0, 5), "danger")] : null, geo ? ["Location", `${esc(geo.flag?.emoji || "")} ${esc(geo.country || "")} · ${esc(geo.connection?.org || "")}`] : null, d.tags.length ? ["Tags", chips(d.tags, "warn")] : null]);
+        let h = rHero(risk >= 55 ? "🚨" : "🔌", `${d.ports.length} open services on ${esc(ip)}`, `${esc(host)} · ${crit} critical · ${high} high · ${d.vulns.length} known CVEs`, kk, rGauge(risk, "exposure risk", kk));
+        h += rSec("🔌", "Every open port, explained", portTable(d.ports));
+        if (d.vulns.length) h += rSec("🐞", `Known vulnerabilities (${d.vulns.length})`, `<div class="tpr-links">${d.vulns.slice(0, 40).map(c => `<a href="https://nvd.nist.gov/vuln/detail/${esc(c)}" target="_blank" rel="noopener noreferrer">${esc(c)} ↗</a>`).join("")}</div>` + rPara("These CVEs are matched from detected software versions. Some may not apply if the vendor back-ported fixes, but each deserves a check."));
+        h += rSec("🧩", "Identity of the host", rTiles([["IP", code(ip)], ["Hostnames", d.hostnames.length ? esc(d.hostnames.slice(0, 4).join(", ")) : "none"], ["Software (CPE)", d.cpes.length ? d.cpes.slice(0, 5).map(code).join(" ") : "unknown"], ["Tags", d.tags.length ? chips(d.tags, "warn") : "none"], geo ? ["Network", esc(geo.connection?.org || "—")] : null, geo ? ["Country", `${esc(geo.flag?.emoji || "")} ${esc(geo.country || "")}`] : null]));
+        h += rSec("🛠️", "Hardening checklist", rSteps(["Close every <b>critical</b> and <b>high</b> port unless it is truly needed. Put admin services behind a VPN.", "Restrict databases (3306, 5432, 6379, 27017, 9200) to private networks only.", "Patch the software behind the CVEs above and remove outdated services.", "Add a firewall allow-list and fail2ban/rate limiting for SSH and web logins.", "Re-check after changes: Shodan data refreshes every few days."]));
+        h += rPara("<small>Passive data from Shodan InternetDB. It is not a live scan. Scan only systems you own or are authorised to test.</small>");
+        setR("portScanResult", "ports", "Exposure & port report", host, summary, h, k);
+    } catch (e) { fail("portScanResult", "Exposure database unreachable right now.", "warning"); }
+};
+
+/* ============================================================
+   SECURITY HEADERS (deep)
+   ============================================================ */
+const HDR_INFO = {
+    "strict-transport-security": ["HSTS", "Forces browsers to always use HTTPS, blocking SSL-stripping attacks.", "Strict-Transport-Security: max-age=31536000; includeSubDomains; preload", "add_header Strict-Transport-Security \"max-age=31536000; includeSubDomains\" always;"],
+    "content-security-policy": ["Content-Security-Policy", "Stops injected scripts (XSS) by allow-listing where code may load from.", "Content-Security-Policy: default-src 'self'; script-src 'self'; object-src 'none'", "add_header Content-Security-Policy \"default-src 'self'; object-src 'none'\" always;"],
+    "x-frame-options": ["X-Frame-Options", "Prevents your page being embedded in another site (clickjacking).", "X-Frame-Options: DENY", "add_header X-Frame-Options \"DENY\" always;"],
+    "x-content-type-options": ["X-Content-Type-Options", "Stops browsers guessing file types, blocking some drive-by attacks.", "X-Content-Type-Options: nosniff", "add_header X-Content-Type-Options \"nosniff\" always;"],
+    "referrer-policy": ["Referrer-Policy", "Controls how much of your URL is leaked to other sites.", "Referrer-Policy: strict-origin-when-cross-origin", "add_header Referrer-Policy \"strict-origin-when-cross-origin\" always;"],
+    "permissions-policy": ["Permissions-Policy", "Disables powerful browser features (camera, mic, location) you do not use.", "Permissions-Policy: camera=(), microphone=(), geolocation=()", "add_header Permissions-Policy \"camera=(), microphone=(), geolocation=()\" always;"],
+    "cross-origin-opener-policy": ["COOP", "Isolates your window from cross-site pop-ups (Spectre-style attacks).", "Cross-Origin-Opener-Policy: same-origin", "add_header Cross-Origin-Opener-Policy \"same-origin\" always;"],
+    "cross-origin-resource-policy": ["CORP", "Stops other sites from loading your resources.", "Cross-Origin-Resource-Policy: same-origin", "add_header Cross-Origin-Resource-Policy \"same-origin\" always;"]
+};
+window.auditSecurityHeaders = async function () {
+    let host; try { host = parseHost(val("headerInput")); } catch (_) { return fail("headerResult", "Enter a website, e.g. https://example.com"); }
+    if (!isDomain(host)) return fail("headerResult", "Enter a valid public domain.");
+    busy("headerResult", "Scanning with Mozilla Observatory + live header fetch…");
+    const [obs, ht] = await Promise.allSettled([getJson(`https://observatory-api.mdn.mozilla.net/api/v2/scan?host=${encodeURIComponent(host)}`, { method: "POST", timeout: 25000 }), getText(`https://api.hackertarget.com/httpheaders/?q=${encodeURIComponent("https://" + host)}`, { timeout: 15000 })]);
+    const headers = {}; if (ht.status === "fulfilled" && !/^error|API count exceeded|invalid/i.test(ht.value.trim())) ht.value.split(/\r?\n/).forEach(l => { const i = l.indexOf(":"); if (i > 0) headers[l.slice(0, i).trim().toLowerCase()] = l.slice(i + 1).trim(); });
+    const have = Object.keys(headers).length, o = obs.status === "fulfilled" && obs.value && obs.value.grade ? obs.value : null;
+    if (!have && !o) return fail("headerResult", "Could not fetch headers (site unreachable, blocked, or free quota used). Try again later.", "warning");
+    const keys = Object.keys(HDR_INFO), passed = keys.filter(k => headers[k]).length, pct = have ? Math.round(passed / keys.length * 100) : (o ? Math.min(100, o.score) : 0);
+    const k = pct >= 75 ? "success" : pct >= 40 ? "warning" : "danger", kk = k === "success" ? "ok" : k === "warning" ? "warn" : "bad";
+    const leaks = ["server", "x-powered-by", "x-aspnet-version", "x-generator", "x-aspnetmvc-version"].filter(x => headers[x]).map(x => `${x}: ${headers[x]}`);
+    const g = o ? String(o.grade) : "", gk = /^A/.test(g) ? "ok" : /^[BC]/.test(g) ? "warn" : "danger";
+    const summary = verdict(pct >= 75 ? "🛡️" : pct >= 40 ? "⚠️" : "🚨", have ? `${passed}/${keys.length} security headers` : `Observatory grade ${esc(g)}`, k, esc(host)) + meter(pct, kk) + kv([have ? ["Missing", keys.filter(x => !headers[x]).length ? chips(keys.filter(x => !headers[x]).map(x => HDR_INFO[x][0]), "danger") : badge("none", "ok")] : null, o ? ["Mozilla grade", badge(g + " · " + o.score + "/100", gk)] : null, leaks.length ? ["Leaks", chips(leaks.slice(0, 3), "warn")] : null]);
+    let h = rHero("🛡️", esc(host), `${have ? passed + "/" + keys.length + " headers present" : "headers unavailable"}${o ? " · Observatory " + esc(g) : ""}`, kk, rGauge(pct, "header score", kk));
+    if (have) h += rSec("🧾", "Header-by-header audit", rTable(["Header", "Status", "What it protects", "Current value"], keys.map(x => { const i = HDR_INFO[x]; return [`<b>${esc(i[0])}</b>`, headers[x] ? badge("present", "ok") : badge("missing", "danger"), esc(i[1]), headers[x] ? code(headers[x].slice(0, 120)) : "—"]; })));
+    const miss = keys.filter(x => have && !headers[x]);
+    if (miss.length) h += rSec("🔧", "How to add the missing headers", `<div class="tpr-code">${miss.map(x => `<div><small>${esc(HDR_INFO[x][0])}</small><code>${esc(HDR_INFO[x][2])}</code></div>`).join("")}</div>` + rPara("<b>Nginx example:</b>") + `<pre class="tpr-pre">${esc(miss.map(x => HDR_INFO[x][3]).join("\n"))}</pre>`);
+    if (leaks.length) h += rSec("🔓", "Information leakage", rList(leaks.map(esc).map(x => x + " — reveals server software; hide or genericise it."), "tpr-mini") + rPara("Version banners help attackers pick exploits. Remove or minimise them."));
+    if (o) h += rSec("🦊", "Mozilla HTTP Observatory", rTiles([["Grade", badge(g, gk)], ["Score", o.score + "/100"], ["Tests passed", `${o.tests_passed}/${o.tests_quantity}`], ["Tests failed", String(o.tests_failed)]]) + (o.details_url ? rPara(link(o.details_url, "Open the full Observatory report")) : ""));
+    setR("headerResult", "headers", "Security headers report", host, summary, h, k);
+};
+
+/* ============================================================
+   SSL / TLS CERTIFICATE (deep)
+   ============================================================ */
+window.checkSSL = async function () {
+    let host; try { host = parseHost(val("sslInput")); } catch (_) { return fail("sslResult", "Enter a domain, e.g. https://bank.com"); }
+    if (!isDomain(host)) return fail("sslResult", "Enter a valid public domain.");
+    busy("sslResult", "Testing TLS handshake & reading certificate transparency logs…");
+    const t0 = performance.now();
+    const hs = fetch(`https://${host}/`, { mode: "no-cors", cache: "no-store" }).then(() => ({ ok: true, ms: Math.round(performance.now() - t0) })).catch(() => ({ ok: false }));
+    const [h0, ct] = await Promise.all([Promise.race([hs, sleep(9000).then(() => ({ ok: false, timeout: true }))]), ctCerts(host).catch(() => null)]);
+    const now = Date.now(), list = ct ? [...ct].sort((a, b) => b.from - a.from) : [], match = list.filter(c => c.names.some(n => n === host || (n.startsWith("*.") && host.endsWith(n.slice(1)))));
+    const latest = (match.length ? match : list)[0] || null;
+    let state = h0.ok ? "success" : "danger"; const P = [];
+    const add = (sev, title, why) => P.push({ sev, title, why });
+    add(h0.ok ? "good" : "critical", h0.ok ? `Browser trusts this certificate (handshake ${h0.ms} ms)` : "Secure connection FAILED", h0.ok ? "Your browser completed a TLS handshake and accepted the certificate chain." : h0.timeout ? "The connection timed out." : "The certificate may be expired, self-signed, for the wrong name, or the site has no HTTPS. Do not click through browser warnings.");
+    let days = null, life = null;
+    if (latest) {
+        days = Math.floor((latest.to - now) / 864e5); life = Math.round((latest.to - latest.from) / 864e5);
+        if (days < 0) { state = "danger"; add("critical", `Latest logged certificate EXPIRED ${-days} days ago`, "Expired certificates trigger browser warnings and can indicate neglected or abandoned sites."); }
+        else if (days < 14) { if (state === "success") state = "warning"; add("high", `Expires in ${days} days`, "Renew soon. Automatic renewal (ACME) avoids outages."); }
+        else if (days < 30) { if (state === "success") state = "warning"; add("medium", `Expires in ${days} days`, "Plan renewal. Most automated systems renew about 30 days before."); }
+        else add("good", `${days} days of validity left`, "Certificate is comfortably within its validity period.");
+        if (/let'?s encrypt|r3|r10|r11|e5|e6|zerossl/i.test(latest.issuer)) add("info", `Issued by ${latest.issuer} (free, automated)`, "Domain-validated certificates prove control of the domain, not the identity or honesty of the owner. Phishing sites use them too.");
+        if (latest.names.some(n => n.startsWith("*."))) add("info", "Wildcard certificate", "Covers every subdomain. Convenient, but one stolen key exposes all of them.");
+        if (life > 400) add("medium", `Long certificate lifetime (${life} days)`, "Browsers now limit lifetimes; very long certificates are legacy and riskier if the key leaks.");
+        if (latest.names.length > 30) add("low", `Covers ${latest.names.length} names`, "A shared certificate for many unrelated names is typical of cheap shared hosting or CDNs.");
+        const recent = list.filter(c => now - c.from < 90 * 864e5).length; if (recent > 6) add("medium", `${recent} certificates issued in the last 90 days`, "Frequent re-issuing can mean misconfigured automation or someone repeatedly regenerating keys.");
+    } else add("info", "No certificate history found", "Certificate Transparency logs returned nothing, or the log service was slow.");
+    const kk = state === "success" ? "ok" : state === "warning" ? "warn" : "bad", pct = days == null ? (h0.ok ? 70 : 10) : Math.max(0, Math.min(100, Math.round(days / 90 * 100)));
+    const summary = verdict(state === "success" ? "🔒" : state === "warning" ? "⏳" : "🔓", state === "success" ? "HTTPS looks healthy" : state === "warning" ? "Certificate needs attention" : "TLS problem detected", state, esc(host)) + kv([["Handshake", h0.ok ? badge(`trusted · ${h0.ms} ms`, "ok") : badge("FAILED", "danger")], latest ? ["Issuer", esc(latest.issuer)] : null, latest ? ["Expires", `${fmtDate(latest.to)} ` + badge(days < 0 ? "expired" : days + " days left", days < 14 ? "danger" : days < 30 ? "warn" : "ok")] : null]);
+    let h = rHero(state === "success" ? "🔒" : "🔓", esc(host), h0.ok ? "Trusted HTTPS connection" : "HTTPS connection failed", kk, rGauge(pct, days == null ? "status" : "days left (of 90)", kk));
+    h += rSec("🧾", "Findings explained", P.sort((a, b) => SEV_ORDER[a.sev] - SEV_ORDER[b.sev]).map(rSignal).join(""));
+    if (latest) h += rSec("📜", "Newest certificate", rTiles([["Issuer", esc(latest.issuer)], ["Valid from", fmtDate(latest.from)], ["Valid until", fmtDate(latest.to)], ["Lifetime", life + " days"], ["Names covered", String(latest.names.length)], ["Days remaining", days < 0 ? badge("expired", "danger") : String(days)]]) + (latest.names.length ? `<div class="tp-sub">Names on the certificate</div>` + chips(latest.names.slice(0, 30), "info") : ""));
+    if (list.length) h += rSec("🕰️", "Certificate history (public log)", rTable(["Issued", "Expires", "Issuer", "Names"], list.slice(0, 10).map(c => [fmtDate(c.from), fmtDate(c.to), esc(c.issuer), String(c.names.length)])) + rPara("Certificate Transparency logs are public and append-only, so even attackers cannot hide certificates issued for a name."));
+    h += rSec("🧰", "Go deeper", `<div class="tpr-links">${[["SSL Labs full test", "https://www.ssllabs.com/ssltest/analyze.html?d=" + host], ["crt.sh log search", "https://crt.sh/?q=" + host], ["Security headers audit", "https://securityheaders.com/?q=" + host]].map(([t, u]) => `<a href="${u}" target="_blank" rel="noopener noreferrer">${t} ↗</a>`).join("")}</div>` + rPara("A valid padlock only means the connection is encrypted. It does not prove the site is trustworthy."));
+    setR("sslResult", "ssl", "TLS certificate report", host, summary, h, state);
+};
+
+/* ============================================================
+   EXTRA INSIGHTS for the remaining tools (collapsible)
+   ============================================================ */
+function addDetails(id, title, html) {
+    const el = $(id); if (!el || el.querySelector(".tp-busy") || el.querySelector(".tp-extra")) return;
+    const d = `<details class="tp-det tp-extra"><summary>${title}</summary><div>${html}</div></details>`, act = el.querySelector(".tp-actions");
+    act ? act.insertAdjacentHTML("beforebegin", d) : el.insertAdjacentHTML("beforeend", d);
+}
+function wrapTool(name, fn) { const o = window[name]; if (typeof o !== "function") return; window[name] = async function () { const r = await o.apply(this, arguments); try { fn.apply(null, arguments); } catch (_) { } return r; }; }
+const CLAIMS = { iss: "Issuer: who created and signed the token.", sub: "Subject: the user or account the token is about.", aud: "Audience: which service the token is meant for. APIs must check it.", exp: "Expiry time. After this the token must be rejected.", nbf: "Not before: token is not valid until this time.", iat: "Issued at: when the token was created.", jti: "Unique token ID, used to block replays.", scope: "Permissions granted to the token.", scp: "Permissions granted to the token.", roles: "Roles the user has (admin, user…). Never trust without verifying the signature.", role: "User role. Verify signature first.", email: "User email address.", name: "User display name.", azp: "Authorised party (client that requested the token).", nonce: "Value that links the token to a login request (anti-replay).", auth_time: "When the user actually authenticated.", sid: "Session ID.", typ: "Token type.", kid: "Key ID: which key signed the token.", amr: "How the user authenticated (password, otp…)." };
+wrapTool("decodeJWT", () => {
+    const jwt = val("jwtInput").replace(/^Bearer\s+/i, ""), parts = jwt.split("."); if (parts.length !== 3) return;
+    const dec = new TextDecoder(); let p; try { p = JSON.parse(dec.decode(b64uBytes(parts[1]))); } catch (_) { return; }
+    const keys = Object.keys(p);
+    addDetails("jwtResult", "📖 What each claim means", rTable(["Claim", "Value", "Meaning"], keys.slice(0, 18).map(k => [code(k), code(JSON.stringify(p[k]).slice(0, 60)), esc(CLAIMS[k] || "Custom claim defined by the application.")])) + `<div class="tp-sub">Security reminders</div>` + rList(["A JWT is <b>signed, not encrypted</b>: anyone can read this payload.", "Always verify the signature and check <code>exp</code>, <code>aud</code> and <code>iss</code> on the server.", "Prefer RS256/ES256 for tokens verified by many services; HS256 secrets must be long and random.", "Never put passwords or secrets inside a JWT."], "tpr-mini"));
+});
+wrapTool("validateIBAN", () => {
+    const iban = val("ibanInput").replace(/\s+/g, "").toUpperCase(); if (!/^[A-Z]{2}\d{2}[A-Z0-9]+$/.test(iban)) return;
+    const cc = iban.slice(0, 2), re = iban.slice(4) + iban.slice(0, 4), conv = re.replace(/[A-Z]/g, c => c.charCodeAt(0) - 55);
+    addDetails("ibanResult", "🧩 Structure & how validation works", rTable(["Part", "Value", "Meaning"], [["Country code", code(cc), "ISO country of the account"], ["Check digits", code(iban.slice(2, 4)), "Two digits that catch typing mistakes (MOD-97)"], ["BBAN (rest)", code(iban.slice(4)), cc === "PK" ? "4-letter bank code + 16-character account number" : "Domestic bank + account identifier"]]) + rList(["Move the first 4 characters to the end: <code>" + esc(re.slice(0, 28)) + "…</code>", "Replace letters with numbers (A=10 … Z=35): <code>" + esc(conv.slice(0, 32)) + "…</code>", "Divide by 97. If the remainder is <b>1</b>, the IBAN is structurally valid."], "tpr-mini") + `<p class="tp-note">A valid IBAN can still belong to a scammer. Always confirm the beneficiary name with the person or company through a known number.</p>`);
+});
+wrapTool("calculateCIDR", () => {
+    const raw = val("cidrInput").trim(), m = /^(\d+\.\d+\.\d+\.\d+)\/(\d+)$/.exec(raw); if (!m || !isIPv4(m[1])) return;
+    const pre = +m[2]; if (pre > 30 || pre < 1) return;
+    const host = BigInt(32 - pre), mask = ((1n << 32n) - 1n) ^ ((1n << host) - 1n), net = ip4n(m[1]) & mask;
+    const kids = []; for (let i = 0n; i < 4n && pre <= 28; i++) kids.push(`${n4ip(net + i * (1n << (host - 2n)))}/${pre + 2}`);
+    const halves = [`${n4ip(net)}/${pre + 1}`, `${n4ip(net + (1n << (host - 1n)))}/${pre + 1}`];
+    const sup = `${n4ip(net & (mask << 1n & 0xffffffffn))}/${pre - 1}`;
+    addDetails("cidrResult", "🧮 Splitting, merging & special ranges", rTable(["Operation", "Result"], [["Split in 2", halves.map(code).join(" ")], pre <= 28 ? ["Split in 4", kids.map(code).join(" ")] : null, ["Merge up (supernet)", code(sup)], ["Equivalent /24 networks", pre <= 24 ? num(Math.pow(2, 24 - pre)) : "less than one /24"]].filter(Boolean)) + rList(["<b>10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16</b> are private (RFC 1918).", "<b>100.64.0.0/10</b> is carrier-grade NAT (many users share one public IP).", "<b>169.254.0.0/16</b> is link-local (device found no DHCP server).", "Subnet math: usable hosts = 2<sup>(32-prefix)</sup> − 2."], "tpr-mini"));
+});
+wrapTool("checkBIN", () => {
+    const raw = ($("binInput")?.value || "").replace(/\D/g, ""); if (raw.length < 6 || raw.length > 8) return;
+    const mii = { 1: "Airlines", 2: "Airlines / financial", 3: "Travel & entertainment (Amex, Diners)", 4: "Banking / financial (Visa)", 5: "Banking / financial (Mastercard)", 6: "Merchandising & banking (Discover, UnionPay, RuPay)", 7: "Petroleum", 8: "Healthcare / telecom", 9: "Government / national" }[raw[0]] || "Other";
+    addDetails("binResult", "💳 How to read a card number", rTable(["Part", "Digits", "Meaning"], [["Major Industry Identifier", code(raw[0]), esc(mii)], ["Issuer ID number (BIN/IIN)", code(raw.slice(0, 6)), "Identifies the card network and issuing bank"], ["Account identifier", "digits 7 to second-last", "The cardholder's account within that bank"], ["Check digit", "last digit", "Verified by the Luhn algorithm to catch typos"]]) + `<p class="tp-note">The BIN alone cannot be used to charge a card. Never type your <b>full card number, CVV or PIN</b> into any lookup tool.</p>`);
+});
+wrapTool("checkMAC", () => {
+    const raw = val("macInput").replace(/[^0-9a-f]/gi, "").toLowerCase(); if (raw.length !== 12) return;
+    const b0 = parseInt(raw.slice(0, 2), 16) ^ 2, eui = (b0.toString(16).padStart(2, "0") + raw.slice(2, 6) + "fffe" + raw.slice(6)).match(/.{4}/g).join(":").replace(/(^|:)0+(?=\w)/g, "$1");
+    addDetails("macResult", "🔌 Formats, structure & IPv6 link", rTable(["Format", "Value"], [["Colon", code(raw.match(/.{2}/g).join(":"))], ["Dash (Windows)", code(raw.match(/.{2}/g).join("-").toUpperCase())], ["Cisco dot", code(raw.match(/.{4}/g).join("."))], ["Plain", code(raw)], ["OUI (vendor)", code(raw.slice(0, 6).toUpperCase())], ["Device part (NIC)", code(raw.slice(6).toUpperCase())], ["IPv6 link-local (EUI-64)", code("fe80::" + eui)]]) + `<p class="tp-note">The first 3 bytes identify the manufacturer. Phones now often use <b>random private MACs</b> per Wi-Fi network, so the vendor may show as unknown.</p>`);
+});
+wrapTool("checkSQLi", () => {
+    const t = $("sqliResult")?.textContent || ""; if (!/threat score/i.test(t)) return;
+    addDetails("sqliResult", "🛡️ Secure code examples (parameterised queries)", `<div class="tpr-code"><div><small>Python (psycopg2 / sqlite3)</small><code>cur.execute("SELECT * FROM users WHERE email = %s", (email,))</code></div><div><small>PHP (PDO)</small><code>$s = $pdo-&gt;prepare("SELECT * FROM users WHERE email = ?"); $s-&gt;execute([$email]);</code></div><div><small>Node.js (mysql2)</small><code>await db.execute("SELECT * FROM users WHERE email = ?", [email]);</code></div><div><small>Java (JDBC)</small><code>PreparedStatement ps = c.prepareStatement("SELECT * FROM users WHERE email = ?"); ps.setString(1, email);</code></div></div><p class="tp-note">Never build SQL by joining strings. Also use least-privilege DB accounts, hide detailed errors, and validate input types.</p>`);
+});
+wrapTool("generateHash", () => {
+    if (!$("hashResult")?.querySelector(".tp-verdict.tp-success")) return;
+    addDetails("hashResult", "📚 Which algorithm should I use?", rTable(["Algorithm", "Output", "Status"], [["MD5", "128-bit", badge("Broken: collisions are easy", "danger")], ["SHA-1", "160-bit", badge("Weak: collisions demonstrated", "danger")], ["SHA-256", "256-bit", badge("Secure: good default", "ok")], ["SHA-384", "384-bit", badge("Secure", "ok")], ["SHA-512", "512-bit", badge("Secure", "ok")]]) + `<p class="tp-note">Hashes check <b>integrity</b>, they do not hide data. For passwords use <b>bcrypt, scrypt or Argon2</b> (slow, salted), never a plain hash.</p>`);
+});
+wrapTool("handleBase64", () => addDetails("base64Result", "📖 Encoding is not encryption", `<p class="tp-note">Base64 turns bytes into safe text characters. <b>Anyone can decode it.</b> It is used in emails, JWTs, data URLs and API keys. If you see credentials in Base64, they are effectively in plain text.</p>`));
+wrapTool("handleURLCodec", () => addDetails("urlCodecResult", "📖 Why URLs are encoded", `<p class="tp-note">Characters like space, <code>&amp;</code>, <code>?</code> and <code>#</code> have special meaning in URLs, so they are written as <code>%20</code>, <code>%26</code>… Attackers double-encode (<code>%2527</code>) to slip payloads past filters, so always decode fully before inspecting.</p>`));
+wrapTool("sanitizeXSS", () => {
+    if (!$("xssResult")?.querySelector(".tp-verdict")) return;
+    addDetails("xssResult", "🧱 Defence in depth", rList(["Encode output for the exact context: HTML text, attribute, JavaScript string, URL.", "Add a strict <b>Content-Security-Policy</b>: <code>default-src 'self'; script-src 'self'; object-src 'none'</code>", "Set cookies <code>HttpOnly; Secure; SameSite=Lax</code> so injected scripts cannot steal sessions.", "Use framework auto-escaping (React, Vue, Django) and avoid <code>innerHTML</code> with user data."], "tpr-mini"));
+});
+wrapTool("handleAES", () => addDetails("aesResult", "🔐 How this encryption works", rList(["Your passphrase is stretched with <b>PBKDF2</b> into a 256-bit key.", "<b>AES-256-GCM</b> encrypts and also detects tampering.", "A random salt and IV are stored with the output so you can decrypt later.", "If you forget the passphrase, the data cannot be recovered."], "tpr-mini")));
+
+/* ============================================================
+   "ABOUT THIS TOOL" under every card  +  init
+   ============================================================ */
+const ABOUT = {
+    strengthText: ["Estimates how long attackers need to guess your password and checks it against real breached-password lists.", "Bits of entropy double the work per bit. Aim for 60+ bits online and 80+ for important accounts.", "Local analysis only. A strong password reused on a hacked site is still unsafe."],
+    breachResult: ["Checks whether an email appears in public data breaches, and analyses the address, mail provider and spoofing protection.", "Open the full report for every breach, what was exposed and a prioritised action plan.", "No database is complete. A clean result is not a guarantee."],
+    urlResult: ["Examines a link for scam signals: look-alike brands, fake characters, domain age, server location and certificate history.", "Higher score = more warning signs. Read each reason; the explanation says why scammers do it.", "It never opens the page. Brand-new scam sites may not be flagged anywhere yet."],
+    ipResult: ["Shows where an IP is, who owns the network, whether it is a VPN or data centre, and what services it exposes.", "Location is city-level and approximate. The abuse contact is who you report problems to.", "Private addresses (192.168.x.x) cannot be located."],
+    genPassOutput: ["Creates random passwords with your browser's secure random generator.", "Use 16+ characters and turn off 'no look-alikes' only if a site demands specific symbols.", "Passwords are created locally and never sent anywhere."],
+    jwtResult: ["Decodes a JSON Web Token and flags risky settings such as alg=none or missing expiry.", "Check exp, aud and iss, and verify the signature on your server.", "Decoding is not verification. Do not paste live production tokens."],
+    base64Result: ["Encodes and decodes Base64 with correct UTF-8 handling and URL-safe detection.", "If decoded data is JSON or a URL, treat it with the same caution as the original.", "Base64 is encoding, not encryption."],
+    hashResult: ["Calculates MD5, SHA-1, SHA-256, SHA-384 and SHA-512 of any text.", "Same text always gives the same hash. A single changed character changes everything.", "Not for storing passwords."],
+    urlCodecResult: ["Encodes and decodes URLs, shows query parameters and detects double-encoding tricks.", "Look for hidden scripts or path traversal after decoding.", "Works locally."],
+    portScanResult: ["Looks up which services a public host exposes using internet-wide scan data.", "Each port is explained with its risk and how to fix it.", "Passive data, not a live scan. Scan only systems you own."],
+    uaResult: ["Reads what websites can learn about your browser and device and estimates how unique your fingerprint is.", "Higher privacy score is better. Fix the red items first.", "Everything is read locally except your IP lookup."],
+    dnsResult: ["Audits a domain's DNS: records, DNSSEC, SPF/DKIM/DMARC email security, providers and registration.", "Email grade A-F shows how easy it is to spoof the domain's email.", "DKIM selectors are guessed, so a missing DKIM is not conclusive."],
+    headerResult: ["Checks the security headers a website sends and explains how to add the missing ones.", "Missing headers raise the risk of XSS and clickjacking.", "Some sites block automated checks."],
+    binResult: ["Identifies the card network, type and issuing bank from the first 6-8 digits.", "A mismatch between card country and the seller's claim can signal fraud.", "Never enter a full card number."],
+    qrResult: ["Reads a QR code image or text and analyses links, payment (Raast/EMV) QR codes, Wi-Fi and more.", "For payment QR, confirm the merchant name in your banking app before paying.", "Scanning to receive money never needs a PIN."],
+    sslResult: ["Tests whether your browser trusts a site's certificate and shows its public history.", "Expiry, issuer and recent re-issues tell you how well it is maintained.", "A padlock proves encryption, not honesty."],
+    subdomainResult: ["Finds subdomains from public certificate logs and checks which ones are live.", "Look for forgotten dev, admin and test hosts.", "Passive discovery; not every subdomain appears."],
+    macResult: ["Identifies a device maker from a MAC address and explains private/random addresses.", "Locally-administered MACs are random, so no vendor exists.", "Vendor lookups use public registries."],
+    fileHashResult: ["Computes SHA hashes of a file locally, compares with a hash you provide and checks known-file databases.", "A match with the publisher's hash proves the file is unchanged.", "The file is never uploaded."],
+    aesResult: ["Encrypts or decrypts text with AES-256-GCM in your browser.", "Use a long passphrase and keep it safe.", "Lost passphrase = lost data."],
+    cidrResult: ["Calculates network, broadcast, host range and masks for IPv4 and IPv6 CIDR blocks.", "Use it for firewall rules and network planning.", "Pure local math."],
+    pingResult: ["Measures real HTTPS round-trip time to a host with jitter and loss.", "Lower and steadier is better.", "Browsers cannot send ICMP ping."],
+    honeypotResult: ["Looks for signs that an IP is a decoy system (honeypot) using exposed-service patterns.", "Trap scores above 60 are suspicious.", "Heuristic only."],
+    handleResult: ["Analyses a username or Pakistani phone number for scam patterns and operator series.", "Use the profile links to verify the account yourself.", "Cannot read private data from social platforms."],
+    extResult: ["Rates file-name risk and detects double extensions and hidden characters; can check a file's real type.", "Anything executable or macro-enabled deserves caution.", "Names can lie; real content is checked only for files you pick."],
+    ibanResult: ["Validates IBAN structure with MOD-97 and identifies Pakistani bank codes.", "Valid format does not mean the account exists or who owns it.", "Confirm the beneficiary name before paying."],
+    wifiResult: ["Rates Wi-Fi security settings (WEP, WPA, WPA2, WPA3, WPS) and gives fixes.", "Prefer WPA3, or WPA2 with AES and a long passphrase.", "Rule-based advice."],
+    sqliResult: ["Checks text for SQL-injection patterns and shows secure code.", "Higher score = more attack-like structure.", "Pattern analysis, not a full scanner."],
+    xssResult: ["Sanitizes HTML with DOMPurify and shows safe encodings for each output context.", "Neutralised vectors are listed so you learn the attack.", "Payload is parsed in an inert DOM and never executed."],
+    darkwebResult: ["Searches public breach databases for an email or domain.", "Open breaches show what data leaked and when.", "Covers disclosed breaches, not private dark-web markets."]
+};
+function initToolsV6() {
+    ensureModal();
+    Object.keys(ABOUT).forEach(id => {
+        const el = $(id); const card = el && el.closest(".tool-card"); if (!card || card.querySelector(".tp-about")) return;
+        const [what, read, limit] = ABOUT[id];
+        card.insertAdjacentHTML("beforeend", `<details class="tp-about"><summary>ℹ️ How this tool works</summary><div><p><b>What it does:</b> ${esc(what)}</p><p><b>How to read it:</b> ${esc(read)}</p><p><b>Limits:</b> ${esc(limit)}</p></div></details>`);
+    });
+}
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initToolsV6); else initToolsV6();
+
+window.CG_TOOLS_PRO = { version: "6.0", analyzePassword, analyzeUrl };
 })();

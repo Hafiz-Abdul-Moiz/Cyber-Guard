@@ -324,6 +324,21 @@ function initAudio() {
     window.syncCyberAudioUi();
 }
 
-function boot() { initNavbar(); initAudio(); }
+/* ============================================================
+   REVEAL SAFETY-NET: layout badalne ya tez scroll par koi section
+   chhup na jaye. Viewport mein aaya hua har chhupa element dikha deta hai.
+   ============================================================ */
+function revealGuard() {
+    const check = () => {
+        const els = document.querySelectorAll(".cg-reveal:not(.cg-visible)");
+        if (!els.length) return false;
+        const vh = window.innerHeight || 800;
+        els.forEach(el => { const r = el.getBoundingClientRect(); if (r.height > 0 && r.bottom > -60 && r.top < vh + 60) el.classList.add("cg-visible"); });
+        return true;
+    };
+    const t = setInterval(() => { if (!check()) { clearInterval(t); } }, 600);
+    window.addEventListener("scroll", () => { check(); }, { passive: true });
+}
+function boot() { initNavbar(); initAudio(); revealGuard(); }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot); else boot();
 })();

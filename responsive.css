@@ -945,3 +945,7 @@ html[data-perf="medium"] .modal { backdrop-filter: blur(6px) !important; -webkit
 @media (prefers-reduced-motion: reduce) {
     html:not([data-perf="high"]) .nav-scanline { animation: none !important; }
 }
+
+
+/* ---------- LOW tier: sab content foran visible (reveal animation band) ---------- */
+html[data-perf="low"] .cg-reveal { opacity: 1 !important; transform: none !important; }
