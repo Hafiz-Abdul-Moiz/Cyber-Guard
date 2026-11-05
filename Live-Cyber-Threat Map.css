@@ -115,3 +115,10 @@ html:not([data-perf="low"]) .tm6-mk .pl { animation: tmMk 2.2s ease-in-out infin
 }
 @media (max-width: 400px) { .tm6-kpis { grid-template-columns: 1fr; } }
 html[data-perf="low"] .tm6-arc, html[data-perf="low"] .tm6-ev, html[data-perf="low"] .tm6-row { animation: none !important; }
+
+
+/* v6.1 dark scrollbars */
+.tm6-list, .tm6-tabs, .tm6-feedcard { scrollbar-width: thin; scrollbar-color: rgba(0, 240, 255, .4) rgba(255, 255, 255, .05); }
+.tm6-list::-webkit-scrollbar { width: 8px; height: 8px; }
+.tm6-list::-webkit-scrollbar-track { background: rgba(255, 255, 255, .04); border-radius: 8px; }
+.tm6-list::-webkit-scrollbar-thumb { background: linear-gradient(180deg, rgba(0, 255, 170, .55), rgba(0, 188, 255, .55)); border-radius: 8px; }
