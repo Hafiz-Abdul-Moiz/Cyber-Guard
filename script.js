@@ -3246,6 +3246,31 @@ function checkDarkWeb() {
    TOOL SEARCH / FILTER / MODULE UI
    ============================================================ */
 
+/* v7: category + search index built from the card HEADER only (tag, title, description, keywords),
+   so words inside results or "How this tool works" text no longer cause wrong filter matches. */
+const TOOL_CATS = {
+    strengthText: "crypto defense", genPassOutput: "crypto defense", jwtResult: "crypto web", base64Result: "crypto", hashResult: "crypto", aesResult: "crypto",
+    fileHashResult: "crypto defense", sslResult: "crypto network web", redactResult: "crypto defense",
+    ipResult: "network", portScanResult: "network", dnsResult: "network", subdomainResult: "network web", macResult: "network", cidrResult: "network", pingResult: "network",
+    honeypotResult: "network defense", wifiResult: "network defense", hdrResult: "network defense",
+    urlResult: "web defense", urlCodecResult: "web", uaResult: "web defense", headerResult: "web defense", sqliResult: "web", xssResult: "web", qrGenResult: "web defense",
+    breachResult: "defense", binResult: "defense", qrResult: "defense", extResult: "defense", ibanResult: "defense", handleResult: "defense", darkwebResult: "defense",
+    scamMsgResult: "defense", exifResult: "defense"
+};
+function toolCats(card) {
+    if (card.dataset.cats && card.dataset.catsFixed === "1") return card.dataset.cats;
+    for (const id in TOOL_CATS) { if (card.querySelector("#" + id)) { card.dataset.cats = TOOL_CATS[id]; card.dataset.catsFixed = "1"; return card.dataset.cats; } }
+    if (card.querySelector("#genPassOutput")) { card.dataset.cats = TOOL_CATS.genPassOutput; card.dataset.catsFixed = "1"; return card.dataset.cats; }
+    return card.dataset.cats || "";
+}
+function toolIndexText(card) {
+    if (!card.dataset.cgIdx) {
+        const g = sel => (card.querySelector(sel) || {}).textContent || "";
+        card.dataset.cgIdx = [g(".card-tag"), g("h3"), g("p"), card.dataset.keywords || "", toolCats(card)].join(" ").toLowerCase();
+    }
+    return card.dataset.cgIdx;
+}
+
 function initToolUpgradeUI() {
 
     const cards =
@@ -3326,9 +3351,7 @@ function initToolUpgradeUI() {
         cards.forEach(
             card => {
 
-                const content =
-                    card.textContent
-                        .toLowerCase();
+                const content = toolIndexText(card);
 
                 const queryMatch =
                     !query ||
@@ -3345,12 +3368,11 @@ function initToolUpgradeUI() {
                         .test(content);
 
 
+                const cats = toolCats(card);
                 const categoryMatch =
+                    /PINNED/i.test(mode) ? card.dataset.fav === "1" :
                     mode === "ALL" ||
-                    content.includes(
-                        modeLower
-                    ) ||
-                    defenseMatch;
+                    (cats ? cats.split(" ").includes(modeLower) : (content.includes(modeLower) || defenseMatch));
 
 
                 card.hidden =
@@ -5903,63 +5925,3 @@ document.addEventListener("DOMContentLoaded", () => {
     fetchLiveFeedbacks();
     setInterval(fetchLiveFeedbacks, 10000);
 });
-/* ============================================================
-   CYBERGUARD SHIELD - EDITABLE SHORTCUTS SYSTEM
-   ============================================================ */
-(function () {
-    "use strict";
-
-    // 1. Right Click Completely Disable (Inspect Option Blocked)
-    document.addEventListener("contextmenu", function (e) {
-        e.preventDefault();
-    });
-
-    // 2. Allowed & Blocked Shortcuts Engine
-    document.addEventListener("keydown", function (e) {
-        
-        // --- ALLOWED SHORTCUTS SECTION ---
-        // A. Ctrl + A (Select All) -> Isko chalne do
-        if (e.ctrlKey && (e.key === "A" || e.key === "a" || e.keyCode === 65)) {
-            return true; 
-        }
-        // B. Ctrl + C (Copy) -> Isko chalne do
-        if (e.ctrlKey && (e.key === "C" || e.key === "c" || e.keyCode === 67)) {
-            return true; 
-        }
-        // C. Ctrl + V (Paste) -> Isko chalne do
-        if (e.ctrlKey && (e.key === "V" || e.key === "v" || e.keyCode === 86)) {
-            return true; 
-        }
-        // D. Windows + Shift + S (Screenshot) -> Windows native shortcut hai, isko interrupt nahi karna
-        if (e.winKey && e.shiftKey && (e.key === "S" || e.key === "s" || e.keyCode === 83)) {
-            return true;
-        }
-
-        // --- BLOCKED INSPECT SHORTCUTS SECTION ---
-        // F12 key block
-        if (e.key === "F12" || e.keyCode === 123) {
-            e.preventDefault();
-            return false;
-        }
-        // Ctrl + Shift + I (Inspect) / J (Console) / C (Selector)
-        if (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "J" || e.key === "C" || e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) {
-            e.preventDefault();
-            return false;
-        }
-        // Ctrl + U (View Source Code Block)
-        if (e.ctrlKey && (e.key === "U" || e.key === "u" || e.keyCode === 85)) {
-            e.preventDefault();
-            return false;
-        }
-        // Ctrl + S (Save Page Block - Taake raw assets download na hon)
-        if (e.ctrlKey && (e.key === "S" || e.key === "s" || e.keyCode === 83)) {
-            e.preventDefault();
-            return false;
-        }
-        // Mac Users Ke Liye: Command + Option + I / J / C
-        if (e.metaKey && e.altKey && (e.key === "I" || e.key === "J" || e.key === "C" || e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) {
-            e.preventDefault();
-            return false;
-        }
-    });
-})();

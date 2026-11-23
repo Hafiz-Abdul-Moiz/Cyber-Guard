@@ -159,7 +159,7 @@
         </div>
     </section>
 
-    <!-- SECTION 2: SECURITY INTELLIGENCE & VIP TOOL SUITE (30 TOOLS) -->
+    <!-- SECTION 2: SECURITY INTELLIGENCE & VIP TOOL SUITE (35 TOOLS) -->
     <section id="tools" class="page-section tools-page">
         <h2 class="section-title"><span class="icon">⚡</span> <span data-key="secToolsTitle">Security Intelligence & Audit Suite</span></h2>
         <p class="section-desc">Run real-time diagnostics on passwords, email breach history, IP addresses, hashes, encryption, and network headers.</p>
@@ -199,12 +199,15 @@
         <button class="tool-filter" type="button">
             DEFENSE
         </button>
+        <button class="tool-filter" type="button">
+            ★ PINNED
+        </button>
 
     </div>
 
     <div class="tools-status">
         <span class="tools-status-dot"></span>
-        30 MODULES READY
+        35 MODULES READY
     </div>
 
 </div>
@@ -577,6 +580,84 @@
                 <button class="btn-primary-small" onclick="checkDarkWeb()">Scan Darknet Feed</button>
                 <p id="darkwebResult" class="breach-result-text"></p>
             </div>
+
+            <!-- 31. Scam Message Analyzer -->
+            <div class="tool-card glowing-card" data-cats="defense" data-keywords="sms whatsapp email phishing fraud message text otp scam smishing">
+                <div class="card-tag">SOCIAL ENGINEERING</div>
+                <h3>Scam Message Analyzer</h3>
+                <p>Paste a suspicious SMS, WhatsApp or email. Spots OTP theft, fake prizes, fees, threats and risky links:</p>
+                <div class="input-group">
+                    <textarea id="scamMsgInput" rows="5" maxlength="6000" placeholder="Paste the full message here..." aria-label="Suspicious message text"></textarea>
+                </div>
+                <button class="btn-primary-small" onclick="analyzeScamMessage()">Analyze Message</button>
+                <p id="scamMsgResult" class="breach-result-text"></p>
+            </div>
+
+            <!-- 32. Email Header Analyzer -->
+            <div class="tool-card glowing-card" data-cats="defense network" data-keywords="email headers spf dkim dmarc received spoofing phishing forensics">
+                <div class="card-tag">EMAIL FORENSICS</div>
+                <h3>Email Header Analyzer</h3>
+                <p>Paste raw email headers to check SPF, DKIM, DMARC, the sender identity and the delivery path:</p>
+                <div class="input-group">
+                    <textarea id="hdrInput" rows="5" placeholder="Paste the full headers (Gmail: ⋮ → Show original)..." aria-label="Raw email headers" spellcheck="false"></textarea>
+                </div>
+                <button class="btn-primary-small" onclick="analyzeEmailHeaders()">Analyze Headers</button>
+                <p id="hdrResult" class="breach-result-text"></p>
+            </div>
+
+            <!-- 33. Photo Metadata Scanner & Cleaner -->
+            <div class="tool-card glowing-card" data-cats="defense" data-keywords="photo exif gps location privacy metadata jpeg png image clean geotag">
+                <div class="card-tag">PHOTO PRIVACY</div>
+                <h3>Photo Metadata Scanner &amp; Cleaner</h3>
+                <p>Find hidden GPS location, device and author data inside a photo, then remove it losslessly:</p>
+                <div class="input-group">
+                    <input type="file" id="exifFile" accept="image/jpeg,image/png,.jpg,.jpeg,.png" aria-label="Choose a JPEG or PNG photo">
+                </div>
+                <button class="btn-primary-small" onclick="scanPhotoMetadata()">Scan Photo</button>
+                <p id="exifResult" class="breach-result-text"></p>
+            </div>
+
+            <!-- 34. QR Studio -->
+            <div class="tool-card glowing-card tool-wide" data-cats="web defense" data-keywords="qr code generator wifi url whatsapp phone sms email png svg">
+                <div class="card-tag">QR GENERATOR</div>
+                <h3>QR Studio (Safe QR Generator)</h3>
+                <p>Make QR codes for links, Wi-Fi, WhatsApp, calls, SMS or email. Safety-checked and works offline:</p>
+                <div class="qrs-grid">
+                    <div class="qrs-f"><label for="qrsType">What should it contain?</label>
+                        <select id="qrsType"><option value="url">Website link</option><option value="wifi">Wi-Fi network</option><option value="whatsapp">WhatsApp chat</option><option value="phone">Phone call</option><option value="sms">SMS message</option><option value="email">Email</option><option value="text">Plain text</option></select></div>
+                    <div class="qrs-f"><label for="qrsMain">Web address</label><input type="text" id="qrsMain" autocomplete="off" placeholder="https://example.com"></div>
+                    <div class="qrs-f"><label for="qrsSub">Subject (optional)</label><input type="text" id="qrsSub" autocomplete="off" placeholder="Email subject"></div>
+                    <div class="qrs-f"><label for="qrsBody">Message (optional)</label><textarea id="qrsBody" rows="3" placeholder="Optional message..."></textarea></div>
+                    <div class="qrs-f"><label for="qrsWifiSsid">Network name (SSID)</label><input type="text" id="qrsWifiSsid" autocomplete="off" placeholder="My Home Wi-Fi"></div>
+                    <div class="qrs-f"><label for="qrsWifiPass">Wi-Fi password</label><input type="password" id="qrsWifiPass" autocomplete="new-password" placeholder="Password"></div>
+                    <div class="qrs-f"><label for="qrsWifiSec">Security</label><select id="qrsWifiSec"><option value="WPA">WPA / WPA2 / WPA3</option><option value="WEP">WEP (old, not safe)</option><option value="nopass">No password</option></select></div>
+                    <div class="qrs-f"><label class="tp-check"><input type="checkbox" id="qrsWifiHidden"> Hidden network</label></div>
+                </div>
+                <div class="qrs-opts">
+                    <div class="qrs-f"><label for="qrsEc">Error correction</label><select id="qrsEc"><option value="L">L (7%)</option><option value="M" selected>M (15%)</option><option value="Q">Q (25%)</option><option value="H">H (30%)</option></select></div>
+                    <div class="qrs-f"><label for="qrsSize">Size</label><select id="qrsSize"><option value="256">256 px</option><option value="512" selected>512 px</option><option value="1024">1024 px</option><option value="2048">2048 px</option></select></div>
+                    <div class="qrs-f"><label for="qrsQz">Quiet zone</label><select id="qrsQz"><option value="2">2</option><option value="4" selected>4 (standard)</option><option value="6">6</option></select></div>
+                    <div class="qrs-f"><label for="qrsFg">Dark colour</label><input type="color" id="qrsFg" value="#000000"></div>
+                    <div class="qrs-f"><label for="qrsBg">Light colour</label><input type="color" id="qrsBg" value="#ffffff"></div>
+                </div>
+                <button class="btn-primary-small" id="qrsGo" type="button">Generate QR Code</button>
+                <p id="qrGenResult" class="breach-result-text"></p>
+            </div>
+
+            <!-- 35. Sensitive Data Redactor -->
+            <div class="tool-card glowing-card" data-cats="defense crypto" data-keywords="redact mask pii secrets api key password token cnic card iban email phone log share privacy">
+                <div class="card-tag">DATA PRIVACY</div>
+                <h3>Sensitive Data Redactor</h3>
+                <p>Find and hide passwords, API keys, cards, IBANs, CNIC, phones and emails before you share a log or ticket:</p>
+                <div class="input-group">
+                    <textarea id="redInput" rows="5" placeholder="Paste text, a log, a config or a message..." aria-label="Text to scan and redact" spellcheck="false"></textarea>
+                    <select id="redMode" aria-label="Redaction mode"><option value="mask">Mask (safest)</option><option value="partial">Partial (keep last 4)</option><option value="pseudo">Pseudonymise (&lt;EMAIL_1&gt;)</option></select>
+                </div>
+                <button class="btn-primary-small" onclick="redactSensitive()">Scan &amp; Redact</button>
+                <p id="redactResult" class="breach-result-text"></p>
+            </div>
+
+
 
         </div>
     </section>
@@ -2843,7 +2924,7 @@
                                 <select id="fbCategorySelect">
                                     <option value="General">🌐 Overall CyberGuard Hub</option>
                                     <option value="Scam Shield">🛡️ Financial Scam Shield (EasyPaisa/JazzCash)</option>
-                                    <option value="Tools Suite">⚡ Security Audit Suite (30 Modules)</option>
+                                    <option value="Tools Suite">⚡ Security Audit Suite (35 Modules)</option>
                                     <option value="Cyber Games">🎮 Interactive Cyber Games (5 Games)</option>
                                     <option value="Threat Matrix">⚠️ Threat Matrix &amp; Labs</option>
                                     <option value="About Us">🏛️ About Us &amp; Mission</option>

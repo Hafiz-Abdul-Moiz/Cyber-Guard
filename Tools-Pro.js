@@ -1205,7 +1205,7 @@ window.checkFileExtension = async function (fileObj) {
    26. IBAN VALIDATOR (real MOD-97 + Pakistan bank-code map)
    ============================================================ */
 const IBAN_LEN = { AD: 24, AE: 23, AL: 28, AT: 20, AZ: 28, BA: 20, BE: 16, BG: 22, BH: 22, BR: 29, BY: 28, CH: 21, CR: 22, CY: 28, CZ: 24, DE: 22, DK: 18, DO: 28, EE: 20, EG: 29, ES: 24, FI: 18, FO: 18, FR: 27, GB: 22, GE: 22, GI: 23, GR: 27, GT: 28, HR: 21, HU: 28, IE: 22, IL: 23, IQ: 23, IS: 26, IT: 27, JO: 30, KW: 30, KZ: 20, LB: 28, LI: 21, LT: 20, LU: 20, LV: 21, MC: 27, MD: 24, ME: 22, MK: 19, MR: 27, MT: 31, MU: 30, NL: 18, NO: 15, PK: 24, PL: 28, PS: 29, PT: 25, QA: 29, RO: 24, RS: 22, SA: 24, SE: 24, SI: 19, SK: 24, SM: 27, TN: 24, TR: 26, UA: 29, VA: 22, VG: 24, XK: 20 };
-const PK_BANKS = { HABB: "Habib Bank Limited (HBL)", MUCB: "MCB Bank", UNIL: "United Bank Limited (UBL)", ALFH: "Bank Alfalah", MEZN: "Meezan Bank", ABPA: "Allied Bank", SCBL: "Standard Chartered Pakistan", BKIP: "BankIslami", FAYS: "Faysal Bank", SONE: "Soneri Bank", BAHL: "Bank AL Habib", NBPA: "National Bank of Pakistan", ASCM: "Askari Bank", SAMB: "Samba Bank", JSBL: "JS Bank", DUIB: "Dubai Islamic Bank Pakistan", KHYB: "Bank of Khyber", BPUN: "Bank of Punjab", SIND: "Sindh Bank", SUMB: "Summit Bank", AIBL: "Al Baraka Bank", FWBL: "First Women Bank", ZTBL: "Zarai Taraqiati Bank" };
+const PK_BANKS = { HABB: "Habib Bank Limited (HBL)", MUCB: "MCB Bank", UNIL: "United Bank Limited (UBL)", ALFH: "Bank Alfalah", MEZN: "Meezan Bank", ABPA: "Allied Bank", SCBL: "Standard Chartered Pakistan", BKIP: "BankIslami", FAYS: "Faysal Bank", SONE: "Soneri Bank", BAHL: "Bank AL Habib", NBPA: "National Bank of Pakistan", ASCM: "Askari Bank", JSBL: "JS Bank", KHYB: "Bank of Khyber", BPUN: "Bank of Punjab" }; /* only well-known codes; mergers can change codes, so always confirm with your bank */
 function mod97(iban) {
     const s = iban.slice(4) + iban.slice(0, 4); let rem = 0;
     for (const ch of s) { const v = /\d/.test(ch) ? ch : String(ch.charCodeAt(0) - 55); for (const d of v) rem = (rem * 10 + +d) % 97; }
@@ -2363,6 +2363,2120 @@ function initAutoReports() {
     if (gen && !$("genReportBtn")) { const row = gen.closest(".tool-card").querySelector("#genMeta") || gen.closest(".input-group"); (row || gen).insertAdjacentHTML("afterend", `<div class="tp-actions" style="margin-top:8px"><button type="button" id="genReportBtn" class="tp-open" data-report="auto:genPassOutput">📄 Open full report</button></div>`); }
 }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => setTimeout(initAutoReports, 400)); else setTimeout(initAutoReports, 400);
+
+/* ---- Embedded QR encoder: "QRCode for JavaScript" (c) 2009 Kazuhiko Arase, MIT license
+   (via qrcode-terminal 0.12.0 vendor copy). The word "QR Code" is a registered trademark of DENSO WAVE INCORPORATED. ---- */
+const CG_QRLIB = (function () {
+    const S = {}, C = {};
+    const req = n => { n = String(n).replace(/^\.\//, "").replace(/\.js$/, ""); if (C[n]) return C[n].exports; const m = C[n] = { exports: {} }; S[n](m, m.exports, req); return m.exports; };
+    S['QRMode'] = function (module, exports, require) {
+module.exports = {
+    MODE_NUMBER :       1 << 0,
+    MODE_ALPHA_NUM :    1 << 1,
+    MODE_8BIT_BYTE :    1 << 2,
+    MODE_KANJI :        1 << 3
+};
+
+    };
+    S['QR8bitByte'] = function (module, exports, require) {
+var QRMode = require('./QRMode');
+
+function QR8bitByte(data) {
+	this.mode = QRMode.MODE_8BIT_BYTE;
+	this.data = data;
+}
+
+QR8bitByte.prototype = {
+
+	getLength : function() {
+		return this.data.length;
+	},
+	
+	write : function(buffer) {
+		for (var i = 0; i < this.data.length; i++) {
+			// not JIS ...
+			buffer.put(this.data.charCodeAt(i), 8);
+		}
+	}
+};
+
+module.exports = QR8bitByte;
+
+    };
+    S['QRMath'] = function (module, exports, require) {
+var QRMath = {
+
+	glog : function(n) {
+	
+		if (n < 1) {
+			throw new Error("glog(" + n + ")");
+		}
+		
+		return QRMath.LOG_TABLE[n];
+	},
+	
+	gexp : function(n) {
+	
+		while (n < 0) {
+			n += 255;
+		}
+	
+		while (n >= 256) {
+			n -= 255;
+		}
+	
+		return QRMath.EXP_TABLE[n];
+	},
+	
+	EXP_TABLE : new Array(256),
+	
+	LOG_TABLE : new Array(256)
+
+};
+	
+for (var i = 0; i < 8; i++) {
+	QRMath.EXP_TABLE[i] = 1 << i;
+}
+for (var i = 8; i < 256; i++) {
+	QRMath.EXP_TABLE[i] = QRMath.EXP_TABLE[i - 4]
+		^ QRMath.EXP_TABLE[i - 5]
+		^ QRMath.EXP_TABLE[i - 6]
+		^ QRMath.EXP_TABLE[i - 8];
+}
+for (var i = 0; i < 255; i++) {
+	QRMath.LOG_TABLE[QRMath.EXP_TABLE[i] ] = i;
+}
+
+module.exports = QRMath;
+
+    };
+    S['QRPolynomial'] = function (module, exports, require) {
+var QRMath = require('./QRMath');
+
+function QRPolynomial(num, shift) {
+	if (num.length === undefined) {
+		throw new Error(num.length + "/" + shift);
+	}
+
+	var offset = 0;
+
+	while (offset < num.length && num[offset] === 0) {
+		offset++;
+	}
+
+	this.num = new Array(num.length - offset + shift);
+	for (var i = 0; i < num.length - offset; i++) {
+		this.num[i] = num[i + offset];
+	}
+}
+
+QRPolynomial.prototype = {
+
+	get : function(index) {
+		return this.num[index];
+	},
+	
+	getLength : function() {
+		return this.num.length;
+	},
+	
+	multiply : function(e) {
+	
+		var num = new Array(this.getLength() + e.getLength() - 1);
+	
+		for (var i = 0; i < this.getLength(); i++) {
+			for (var j = 0; j < e.getLength(); j++) {
+				num[i + j] ^= QRMath.gexp(QRMath.glog(this.get(i) ) + QRMath.glog(e.get(j) ) );
+			}
+		}
+	
+		return new QRPolynomial(num, 0);
+	},
+	
+	mod : function(e) {
+	
+		if (this.getLength() - e.getLength() < 0) {
+			return this;
+		}
+	
+		var ratio = QRMath.glog(this.get(0) ) - QRMath.glog(e.get(0) );
+	
+		var num = new Array(this.getLength() );
+		
+		for (var i = 0; i < this.getLength(); i++) {
+			num[i] = this.get(i);
+		}
+		
+		for (var x = 0; x < e.getLength(); x++) {
+			num[x] ^= QRMath.gexp(QRMath.glog(e.get(x) ) + ratio);
+		}
+	
+		// recursive call
+		return new QRPolynomial(num, 0).mod(e);
+	}
+};
+
+module.exports = QRPolynomial;
+
+    };
+    S['QRMaskPattern'] = function (module, exports, require) {
+module.exports = {
+	PATTERN000 : 0,
+	PATTERN001 : 1,
+	PATTERN010 : 2,
+	PATTERN011 : 3,
+	PATTERN100 : 4,
+	PATTERN101 : 5,
+	PATTERN110 : 6,
+	PATTERN111 : 7
+};
+
+    };
+    S['QRUtil'] = function (module, exports, require) {
+var QRMode = require('./QRMode');
+var QRPolynomial = require('./QRPolynomial');
+var QRMath = require('./QRMath');
+var QRMaskPattern = require('./QRMaskPattern');
+
+var QRUtil = {
+
+    PATTERN_POSITION_TABLE : [
+        [],
+        [6, 18],
+        [6, 22],
+        [6, 26],
+        [6, 30],
+        [6, 34],
+        [6, 22, 38],
+        [6, 24, 42],
+        [6, 26, 46],
+        [6, 28, 50],
+        [6, 30, 54],        
+        [6, 32, 58],
+        [6, 34, 62],
+        [6, 26, 46, 66],
+        [6, 26, 48, 70],
+        [6, 26, 50, 74],
+        [6, 30, 54, 78],
+        [6, 30, 56, 82],
+        [6, 30, 58, 86],
+        [6, 34, 62, 90],
+        [6, 28, 50, 72, 94],
+        [6, 26, 50, 74, 98],
+        [6, 30, 54, 78, 102],
+        [6, 28, 54, 80, 106],
+        [6, 32, 58, 84, 110],
+        [6, 30, 58, 86, 114],
+        [6, 34, 62, 90, 118],
+        [6, 26, 50, 74, 98, 122],
+        [6, 30, 54, 78, 102, 126],
+        [6, 26, 52, 78, 104, 130],
+        [6, 30, 56, 82, 108, 134],
+        [6, 34, 60, 86, 112, 138],
+        [6, 30, 58, 86, 114, 142],
+        [6, 34, 62, 90, 118, 146],
+        [6, 30, 54, 78, 102, 126, 150],
+        [6, 24, 50, 76, 102, 128, 154],
+        [6, 28, 54, 80, 106, 132, 158],
+        [6, 32, 58, 84, 110, 136, 162],
+        [6, 26, 54, 82, 110, 138, 166],
+        [6, 30, 58, 86, 114, 142, 170]
+    ],
+
+    G15 : (1 << 10) | (1 << 8) | (1 << 5) | (1 << 4) | (1 << 2) | (1 << 1) | (1 << 0),
+    G18 : (1 << 12) | (1 << 11) | (1 << 10) | (1 << 9) | (1 << 8) | (1 << 5) | (1 << 2) | (1 << 0),
+    G15_MASK : (1 << 14) | (1 << 12) | (1 << 10)    | (1 << 4) | (1 << 1),
+
+    getBCHTypeInfo : function(data) {
+        var d = data << 10;
+        while (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G15) >= 0) {
+            d ^= (QRUtil.G15 << (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G15) ) );    
+        }
+        return ( (data << 10) | d) ^ QRUtil.G15_MASK;
+    },
+
+    getBCHTypeNumber : function(data) {
+        var d = data << 12;
+        while (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G18) >= 0) {
+            d ^= (QRUtil.G18 << (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G18) ) );    
+        }
+        return (data << 12) | d;
+    },
+
+    getBCHDigit : function(data) {
+
+        var digit = 0;
+
+        while (data !== 0) {
+            digit++;
+            data >>>= 1;
+        }
+
+        return digit;
+    },
+
+    getPatternPosition : function(typeNumber) {
+        return QRUtil.PATTERN_POSITION_TABLE[typeNumber - 1];
+    },
+
+    getMask : function(maskPattern, i, j) {
+        
+        switch (maskPattern) {
+            
+        case QRMaskPattern.PATTERN000 : return (i + j) % 2 === 0;
+        case QRMaskPattern.PATTERN001 : return i % 2 === 0;
+        case QRMaskPattern.PATTERN010 : return j % 3 === 0;
+        case QRMaskPattern.PATTERN011 : return (i + j) % 3 === 0;
+        case QRMaskPattern.PATTERN100 : return (Math.floor(i / 2) + Math.floor(j / 3) ) % 2 === 0;
+        case QRMaskPattern.PATTERN101 : return (i * j) % 2 + (i * j) % 3 === 0;
+        case QRMaskPattern.PATTERN110 : return ( (i * j) % 2 + (i * j) % 3) % 2 === 0;
+        case QRMaskPattern.PATTERN111 : return ( (i * j) % 3 + (i + j) % 2) % 2 === 0;
+
+        default :
+            throw new Error("bad maskPattern:" + maskPattern);
+        }
+    },
+
+    getErrorCorrectPolynomial : function(errorCorrectLength) {
+
+        var a = new QRPolynomial([1], 0);
+
+        for (var i = 0; i < errorCorrectLength; i++) {
+            a = a.multiply(new QRPolynomial([1, QRMath.gexp(i)], 0) );
+        }
+
+        return a;
+    },
+
+    getLengthInBits : function(mode, type) {
+
+        if (1 <= type && type < 10) {
+
+            // 1 - 9
+
+            switch(mode) {
+            case QRMode.MODE_NUMBER     : return 10;
+            case QRMode.MODE_ALPHA_NUM  : return 9;
+            case QRMode.MODE_8BIT_BYTE  : return 8;
+            case QRMode.MODE_KANJI      : return 8;
+            default :
+                throw new Error("mode:" + mode);
+            }
+
+        } else if (type < 27) {
+
+            // 10 - 26
+
+            switch(mode) {
+            case QRMode.MODE_NUMBER     : return 12;
+            case QRMode.MODE_ALPHA_NUM  : return 11;
+            case QRMode.MODE_8BIT_BYTE  : return 16;
+            case QRMode.MODE_KANJI      : return 10;
+            default :
+                throw new Error("mode:" + mode);
+            }
+
+        } else if (type < 41) {
+
+            // 27 - 40
+
+            switch(mode) {
+            case QRMode.MODE_NUMBER     : return 14;
+            case QRMode.MODE_ALPHA_NUM  : return 13;
+            case QRMode.MODE_8BIT_BYTE  : return 16;
+            case QRMode.MODE_KANJI      : return 12;
+            default :
+                throw new Error("mode:" + mode);
+            }
+
+        } else {
+            throw new Error("type:" + type);
+        }
+    },
+
+    getLostPoint : function(qrCode) {
+        
+        var moduleCount = qrCode.getModuleCount();
+        var lostPoint = 0;
+        var row = 0; 
+        var col = 0;
+
+        
+        // LEVEL1
+        
+        for (row = 0; row < moduleCount; row++) {
+
+            for (col = 0; col < moduleCount; col++) {
+
+                var sameCount = 0;
+                var dark = qrCode.isDark(row, col);
+
+                for (var r = -1; r <= 1; r++) {
+
+                    if (row + r < 0 || moduleCount <= row + r) {
+                        continue;
+                    }
+
+                    for (var c = -1; c <= 1; c++) {
+
+                        if (col + c < 0 || moduleCount <= col + c) {
+                            continue;
+                        }
+
+                        if (r === 0 && c === 0) {
+                            continue;
+                        }
+
+                        if (dark === qrCode.isDark(row + r, col + c) ) {
+                            sameCount++;
+                        }
+                    }
+                }
+
+                if (sameCount > 5) {
+                    lostPoint += (3 + sameCount - 5);
+                }
+            }
+        }
+
+        // LEVEL2
+
+        for (row = 0; row < moduleCount - 1; row++) {
+            for (col = 0; col < moduleCount - 1; col++) {
+                var count = 0;
+                if (qrCode.isDark(row,     col    ) ) count++;
+                if (qrCode.isDark(row + 1, col    ) ) count++;
+                if (qrCode.isDark(row,     col + 1) ) count++;
+                if (qrCode.isDark(row + 1, col + 1) ) count++;
+                if (count === 0 || count === 4) {
+                    lostPoint += 3;
+                }
+            }
+        }
+
+        // LEVEL3
+
+        for (row = 0; row < moduleCount; row++) {
+            for (col = 0; col < moduleCount - 6; col++) {
+                if (qrCode.isDark(row, col) && 
+                        !qrCode.isDark(row, col + 1) && 
+                         qrCode.isDark(row, col + 2) && 
+                         qrCode.isDark(row, col + 3) && 
+                         qrCode.isDark(row, col + 4) && 
+                        !qrCode.isDark(row, col + 5) && 
+                         qrCode.isDark(row, col + 6) ) {
+                    lostPoint += 40;
+                }
+            }
+        }
+
+        for (col = 0; col < moduleCount; col++) {
+            for (row = 0; row < moduleCount - 6; row++) {
+                if (qrCode.isDark(row, col) &&
+                        !qrCode.isDark(row + 1, col) &&
+                         qrCode.isDark(row + 2, col) &&
+                         qrCode.isDark(row + 3, col) &&
+                         qrCode.isDark(row + 4, col) &&
+                        !qrCode.isDark(row + 5, col) &&
+                         qrCode.isDark(row + 6, col) ) {
+                    lostPoint += 40;
+                }
+            }
+        }
+
+        // LEVEL4
+        
+        var darkCount = 0;
+
+        for (col = 0; col < moduleCount; col++) {
+            for (row = 0; row < moduleCount; row++) {
+                if (qrCode.isDark(row, col) ) {
+                    darkCount++;
+                }
+            }
+        }
+        
+        var ratio = Math.abs(100 * darkCount / moduleCount / moduleCount - 50) / 5;
+        lostPoint += ratio * 10;
+
+        return lostPoint;       
+    }
+
+};
+
+module.exports = QRUtil;
+
+    };
+    S['QRErrorCorrectLevel'] = function (module, exports, require) {
+module.exports = {
+	L : 1,
+	M : 0,
+	Q : 3,
+	H : 2
+};
+
+
+    };
+    S['QRRSBlock'] = function (module, exports, require) {
+var QRErrorCorrectLevel = require('./QRErrorCorrectLevel');
+
+function QRRSBlock(totalCount, dataCount) {
+	this.totalCount = totalCount;
+	this.dataCount  = dataCount;
+}
+
+QRRSBlock.RS_BLOCK_TABLE = [
+
+	// L
+	// M
+	// Q
+	// H
+
+	// 1
+	[1, 26, 19],
+	[1, 26, 16],
+	[1, 26, 13],
+	[1, 26, 9],
+	
+	// 2
+	[1, 44, 34],
+	[1, 44, 28],
+	[1, 44, 22],
+	[1, 44, 16],
+
+	// 3
+	[1, 70, 55],
+	[1, 70, 44],
+	[2, 35, 17],
+	[2, 35, 13],
+
+	// 4		
+	[1, 100, 80],
+	[2, 50, 32],
+	[2, 50, 24],
+	[4, 25, 9],
+	
+	// 5
+	[1, 134, 108],
+	[2, 67, 43],
+	[2, 33, 15, 2, 34, 16],
+	[2, 33, 11, 2, 34, 12],
+	
+	// 6
+	[2, 86, 68],
+	[4, 43, 27],
+	[4, 43, 19],
+	[4, 43, 15],
+	
+	// 7		
+	[2, 98, 78],
+	[4, 49, 31],
+	[2, 32, 14, 4, 33, 15],
+	[4, 39, 13, 1, 40, 14],
+	
+	// 8
+	[2, 121, 97],
+	[2, 60, 38, 2, 61, 39],
+	[4, 40, 18, 2, 41, 19],
+	[4, 40, 14, 2, 41, 15],
+	
+	// 9
+	[2, 146, 116],
+	[3, 58, 36, 2, 59, 37],
+	[4, 36, 16, 4, 37, 17],
+	[4, 36, 12, 4, 37, 13],
+	
+	// 10		
+	[2, 86, 68, 2, 87, 69],
+	[4, 69, 43, 1, 70, 44],
+	[6, 43, 19, 2, 44, 20],
+	[6, 43, 15, 2, 44, 16],
+
+	// 11
+	[4, 101, 81],
+	[1, 80, 50, 4, 81, 51],
+	[4, 50, 22, 4, 51, 23],
+	[3, 36, 12, 8, 37, 13],
+
+	// 12
+	[2, 116, 92, 2, 117, 93],
+	[6, 58, 36, 2, 59, 37],
+	[4, 46, 20, 6, 47, 21],
+	[7, 42, 14, 4, 43, 15],
+
+	// 13
+	[4, 133, 107],
+	[8, 59, 37, 1, 60, 38],
+	[8, 44, 20, 4, 45, 21],
+	[12, 33, 11, 4, 34, 12],
+
+	// 14
+	[3, 145, 115, 1, 146, 116],
+	[4, 64, 40, 5, 65, 41],
+	[11, 36, 16, 5, 37, 17],
+	[11, 36, 12, 5, 37, 13],
+
+	// 15
+	[5, 109, 87, 1, 110, 88],
+	[5, 65, 41, 5, 66, 42],
+	[5, 54, 24, 7, 55, 25],
+	[11, 36, 12],
+
+	// 16
+	[5, 122, 98, 1, 123, 99],
+	[7, 73, 45, 3, 74, 46],
+	[15, 43, 19, 2, 44, 20],
+	[3, 45, 15, 13, 46, 16],
+
+	// 17
+	[1, 135, 107, 5, 136, 108],
+	[10, 74, 46, 1, 75, 47],
+	[1, 50, 22, 15, 51, 23],
+	[2, 42, 14, 17, 43, 15],
+
+	// 18
+	[5, 150, 120, 1, 151, 121],
+	[9, 69, 43, 4, 70, 44],
+	[17, 50, 22, 1, 51, 23],
+	[2, 42, 14, 19, 43, 15],
+
+	// 19
+	[3, 141, 113, 4, 142, 114],
+	[3, 70, 44, 11, 71, 45],
+	[17, 47, 21, 4, 48, 22],
+	[9, 39, 13, 16, 40, 14],
+
+	// 20
+	[3, 135, 107, 5, 136, 108],
+	[3, 67, 41, 13, 68, 42],
+	[15, 54, 24, 5, 55, 25],
+	[15, 43, 15, 10, 44, 16],
+
+	// 21
+	[4, 144, 116, 4, 145, 117],
+	[17, 68, 42],
+	[17, 50, 22, 6, 51, 23],
+	[19, 46, 16, 6, 47, 17],
+
+	// 22
+	[2, 139, 111, 7, 140, 112],
+	[17, 74, 46],
+	[7, 54, 24, 16, 55, 25],
+	[34, 37, 13],
+
+	// 23
+	[4, 151, 121, 5, 152, 122],
+	[4, 75, 47, 14, 76, 48],
+	[11, 54, 24, 14, 55, 25],
+	[16, 45, 15, 14, 46, 16],
+
+	// 24
+	[6, 147, 117, 4, 148, 118],
+	[6, 73, 45, 14, 74, 46],
+	[11, 54, 24, 16, 55, 25],
+	[30, 46, 16, 2, 47, 17],
+
+	// 25
+	[8, 132, 106, 4, 133, 107],
+	[8, 75, 47, 13, 76, 48],
+	[7, 54, 24, 22, 55, 25],
+	[22, 45, 15, 13, 46, 16],
+
+	// 26
+	[10, 142, 114, 2, 143, 115],
+	[19, 74, 46, 4, 75, 47],
+	[28, 50, 22, 6, 51, 23],
+	[33, 46, 16, 4, 47, 17],
+
+	// 27
+	[8, 152, 122, 4, 153, 123],
+	[22, 73, 45, 3, 74, 46],
+	[8, 53, 23, 26, 54, 24],
+	[12, 45, 15, 28, 46, 16],
+
+	// 28
+	[3, 147, 117, 10, 148, 118],
+	[3, 73, 45, 23, 74, 46],
+	[4, 54, 24, 31, 55, 25],
+	[11, 45, 15, 31, 46, 16],
+
+	// 29
+	[7, 146, 116, 7, 147, 117],
+	[21, 73, 45, 7, 74, 46],
+	[1, 53, 23, 37, 54, 24],
+	[19, 45, 15, 26, 46, 16],
+
+	// 30
+	[5, 145, 115, 10, 146, 116],
+	[19, 75, 47, 10, 76, 48],
+	[15, 54, 24, 25, 55, 25],
+	[23, 45, 15, 25, 46, 16],
+
+	// 31
+	[13, 145, 115, 3, 146, 116],
+	[2, 74, 46, 29, 75, 47],
+	[42, 54, 24, 1, 55, 25],
+	[23, 45, 15, 28, 46, 16],
+
+	// 32
+	[17, 145, 115],
+	[10, 74, 46, 23, 75, 47],
+	[10, 54, 24, 35, 55, 25],
+	[19, 45, 15, 35, 46, 16],
+
+	// 33
+	[17, 145, 115, 1, 146, 116],
+	[14, 74, 46, 21, 75, 47],
+	[29, 54, 24, 19, 55, 25],
+	[11, 45, 15, 46, 46, 16],
+
+	// 34
+	[13, 145, 115, 6, 146, 116],
+	[14, 74, 46, 23, 75, 47],
+	[44, 54, 24, 7, 55, 25],
+	[59, 46, 16, 1, 47, 17],
+
+	// 35
+	[12, 151, 121, 7, 152, 122],
+	[12, 75, 47, 26, 76, 48],
+	[39, 54, 24, 14, 55, 25],
+	[22, 45, 15, 41, 46, 16],
+
+	// 36
+	[6, 151, 121, 14, 152, 122],
+	[6, 75, 47, 34, 76, 48],
+	[46, 54, 24, 10, 55, 25],
+	[2, 45, 15, 64, 46, 16],
+
+	// 37
+	[17, 152, 122, 4, 153, 123],
+	[29, 74, 46, 14, 75, 47],
+	[49, 54, 24, 10, 55, 25],
+	[24, 45, 15, 46, 46, 16],
+
+	// 38
+	[4, 152, 122, 18, 153, 123],
+	[13, 74, 46, 32, 75, 47],
+	[48, 54, 24, 14, 55, 25],
+	[42, 45, 15, 32, 46, 16],
+
+	// 39
+	[20, 147, 117, 4, 148, 118],
+	[40, 75, 47, 7, 76, 48],
+	[43, 54, 24, 22, 55, 25],
+	[10, 45, 15, 67, 46, 16],
+
+	// 40
+	[19, 148, 118, 6, 149, 119],
+	[18, 75, 47, 31, 76, 48],
+	[34, 54, 24, 34, 55, 25],
+	[20, 45, 15, 61, 46, 16]
+];
+
+QRRSBlock.getRSBlocks = function(typeNumber, errorCorrectLevel) {
+	
+	var rsBlock = QRRSBlock.getRsBlockTable(typeNumber, errorCorrectLevel);
+	
+	if (rsBlock === undefined) {
+		throw new Error("bad rs block @ typeNumber:" + typeNumber + "/errorCorrectLevel:" + errorCorrectLevel);
+	}
+
+	var length = rsBlock.length / 3;
+	
+	var list = [];
+	
+	for (var i = 0; i < length; i++) {
+
+		var count = rsBlock[i * 3 + 0];
+		var totalCount = rsBlock[i * 3 + 1];
+		var dataCount  = rsBlock[i * 3 + 2];
+
+		for (var j = 0; j < count; j++) {
+			list.push(new QRRSBlock(totalCount, dataCount) );	
+		}
+	}
+	
+	return list;
+};
+
+QRRSBlock.getRsBlockTable = function(typeNumber, errorCorrectLevel) {
+
+	switch(errorCorrectLevel) {
+	case QRErrorCorrectLevel.L :
+		return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 0];
+	case QRErrorCorrectLevel.M :
+		return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 1];
+	case QRErrorCorrectLevel.Q :
+		return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 2];
+	case QRErrorCorrectLevel.H :
+		return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 3];
+	default :
+		return undefined;
+	}
+};
+
+module.exports = QRRSBlock;
+
+    };
+    S['QRBitBuffer'] = function (module, exports, require) {
+function QRBitBuffer() {
+	this.buffer = [];
+	this.length = 0;
+}
+
+QRBitBuffer.prototype = {
+
+	get : function(index) {
+		var bufIndex = Math.floor(index / 8);
+		return ( (this.buffer[bufIndex] >>> (7 - index % 8) ) & 1) == 1;
+	},
+	
+	put : function(num, length) {
+		for (var i = 0; i < length; i++) {
+			this.putBit( ( (num >>> (length - i - 1) ) & 1) == 1);
+		}
+	},
+	
+	getLengthInBits : function() {
+		return this.length;
+	},
+	
+	putBit : function(bit) {
+	
+		var bufIndex = Math.floor(this.length / 8);
+		if (this.buffer.length <= bufIndex) {
+			this.buffer.push(0);
+		}
+	
+		if (bit) {
+			this.buffer[bufIndex] |= (0x80 >>> (this.length % 8) );
+		}
+	
+		this.length++;
+	}
+};
+
+module.exports = QRBitBuffer;
+
+    };
+    S['index'] = function (module, exports, require) {
+//---------------------------------------------------------------------
+// QRCode for JavaScript
+//
+// Copyright (c) 2009 Kazuhiko Arase
+//
+// URL: http://www.d-project.com/
+//
+// Licensed under the MIT license:
+//   http://www.opensource.org/licenses/mit-license.php
+//
+// The word "QR Code" is registered trademark of 
+// DENSO WAVE INCORPORATED
+//   http://www.denso-wave.com/qrcode/faqpatent-e.html
+//
+//---------------------------------------------------------------------
+// Modified to work in node for this project (and some refactoring)
+//---------------------------------------------------------------------
+
+var QR8bitByte = require('./QR8bitByte');
+var QRUtil = require('./QRUtil');
+var QRPolynomial = require('./QRPolynomial');
+var QRRSBlock = require('./QRRSBlock');
+var QRBitBuffer = require('./QRBitBuffer');
+
+function QRCode(typeNumber, errorCorrectLevel) {
+	this.typeNumber = typeNumber;
+	this.errorCorrectLevel = errorCorrectLevel;
+	this.modules = null;
+	this.moduleCount = 0;
+	this.dataCache = null;
+	this.dataList = [];
+}
+
+QRCode.prototype = {
+	
+	addData : function(data) {
+		var newData = new QR8bitByte(data);
+		this.dataList.push(newData);
+		this.dataCache = null;
+	},
+	
+	isDark : function(row, col) {
+		if (row < 0 || this.moduleCount <= row || col < 0 || this.moduleCount <= col) {
+			throw new Error(row + "," + col);
+		}
+		return this.modules[row][col];
+	},
+
+	getModuleCount : function() {
+		return this.moduleCount;
+	},
+	
+	make : function() {
+		// Calculate automatically typeNumber if provided is < 1
+		if (this.typeNumber < 1 ){
+			var typeNumber = 1;
+			for (typeNumber = 1; typeNumber < 40; typeNumber++) {
+				var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, this.errorCorrectLevel);
+
+				var buffer = new QRBitBuffer();
+				var totalDataCount = 0;
+				for (var i = 0; i < rsBlocks.length; i++) {
+					totalDataCount += rsBlocks[i].dataCount;
+				}
+
+				for (var x = 0; x < this.dataList.length; x++) {
+					var data = this.dataList[x];
+					buffer.put(data.mode, 4);
+					buffer.put(data.getLength(), QRUtil.getLengthInBits(data.mode, typeNumber) );
+					data.write(buffer);
+				}
+				if (buffer.getLengthInBits() <= totalDataCount * 8)
+					break;
+			}
+			this.typeNumber = typeNumber;
+		}
+		this.makeImpl(false, this.getBestMaskPattern() );
+	},
+	
+	makeImpl : function(test, maskPattern) {
+		
+		this.moduleCount = this.typeNumber * 4 + 17;
+		this.modules = new Array(this.moduleCount);
+		
+		for (var row = 0; row < this.moduleCount; row++) {
+			
+			this.modules[row] = new Array(this.moduleCount);
+			
+			for (var col = 0; col < this.moduleCount; col++) {
+				this.modules[row][col] = null;//(col + row) % 3;
+			}
+		}
+	
+		this.setupPositionProbePattern(0, 0);
+		this.setupPositionProbePattern(this.moduleCount - 7, 0);
+		this.setupPositionProbePattern(0, this.moduleCount - 7);
+		this.setupPositionAdjustPattern();
+		this.setupTimingPattern();
+		this.setupTypeInfo(test, maskPattern);
+		
+		if (this.typeNumber >= 7) {
+			this.setupTypeNumber(test);
+		}
+	
+		if (this.dataCache === null) {
+			this.dataCache = QRCode.createData(this.typeNumber, this.errorCorrectLevel, this.dataList);
+		}
+	
+		this.mapData(this.dataCache, maskPattern);
+	},
+
+	setupPositionProbePattern : function(row, col)  {
+		
+		for (var r = -1; r <= 7; r++) {
+			
+			if (row + r <= -1 || this.moduleCount <= row + r) continue;
+			
+			for (var c = -1; c <= 7; c++) {
+				
+				if (col + c <= -1 || this.moduleCount <= col + c) continue;
+				
+				if ( (0 <= r && r <= 6 && (c === 0 || c === 6) ) || 
+                     (0 <= c && c <= 6 && (r === 0 || r === 6) ) || 
+                     (2 <= r && r <= 4 && 2 <= c && c <= 4) ) {
+					this.modules[row + r][col + c] = true;
+				} else {
+					this.modules[row + r][col + c] = false;
+				}
+			}		
+		}		
+	},
+	
+	getBestMaskPattern : function() {
+	
+		var minLostPoint = 0;
+		var pattern = 0;
+	
+		for (var i = 0; i < 8; i++) {
+			
+			this.makeImpl(true, i);
+	
+			var lostPoint = QRUtil.getLostPoint(this);
+	
+			if (i === 0 || minLostPoint >  lostPoint) {
+				minLostPoint = lostPoint;
+				pattern = i;
+			}
+		}
+	
+		return pattern;
+	},
+	
+	createMovieClip : function(target_mc, instance_name, depth) {
+	
+		var qr_mc = target_mc.createEmptyMovieClip(instance_name, depth);
+		var cs = 1;
+	
+		this.make();
+
+		for (var row = 0; row < this.modules.length; row++) {
+			
+			var y = row * cs;
+			
+			for (var col = 0; col < this.modules[row].length; col++) {
+	
+				var x = col * cs;
+				var dark = this.modules[row][col];
+			
+				if (dark) {
+					qr_mc.beginFill(0, 100);
+					qr_mc.moveTo(x, y);
+					qr_mc.lineTo(x + cs, y);
+					qr_mc.lineTo(x + cs, y + cs);
+					qr_mc.lineTo(x, y + cs);
+					qr_mc.endFill();
+				}
+			}
+		}
+		
+		return qr_mc;
+	},
+
+	setupTimingPattern : function() {
+		
+		for (var r = 8; r < this.moduleCount - 8; r++) {
+			if (this.modules[r][6] !== null) {
+				continue;
+			}
+			this.modules[r][6] = (r % 2 === 0);
+		}
+	
+		for (var c = 8; c < this.moduleCount - 8; c++) {
+			if (this.modules[6][c] !== null) {
+				continue;
+			}
+			this.modules[6][c] = (c % 2 === 0);
+		}
+	},
+	
+	setupPositionAdjustPattern : function() {
+	
+		var pos = QRUtil.getPatternPosition(this.typeNumber);
+		
+		for (var i = 0; i < pos.length; i++) {
+		
+			for (var j = 0; j < pos.length; j++) {
+			
+				var row = pos[i];
+				var col = pos[j];
+				
+				if (this.modules[row][col] !== null) {
+					continue;
+				}
+				
+				for (var r = -2; r <= 2; r++) {
+				
+					for (var c = -2; c <= 2; c++) {
+					
+						if (Math.abs(r) === 2 || 
+                            Math.abs(c) === 2 ||
+                            (r === 0 && c === 0) ) {
+							this.modules[row + r][col + c] = true;
+						} else {
+							this.modules[row + r][col + c] = false;
+						}
+					}
+				}
+			}
+		}
+	},
+	
+	setupTypeNumber : function(test) {
+	
+		var bits = QRUtil.getBCHTypeNumber(this.typeNumber);
+        var mod;
+	
+		for (var i = 0; i < 18; i++) {
+			mod = (!test && ( (bits >> i) & 1) === 1);
+			this.modules[Math.floor(i / 3)][i % 3 + this.moduleCount - 8 - 3] = mod;
+		}
+	
+		for (var x = 0; x < 18; x++) {
+			mod = (!test && ( (bits >> x) & 1) === 1);
+			this.modules[x % 3 + this.moduleCount - 8 - 3][Math.floor(x / 3)] = mod;
+		}
+	},
+	
+	setupTypeInfo : function(test, maskPattern) {
+	
+		var data = (this.errorCorrectLevel << 3) | maskPattern;
+		var bits = QRUtil.getBCHTypeInfo(data);
+        var mod;
+	
+		// vertical		
+		for (var v = 0; v < 15; v++) {
+	
+			mod = (!test && ( (bits >> v) & 1) === 1);
+	
+			if (v < 6) {
+				this.modules[v][8] = mod;
+			} else if (v < 8) {
+				this.modules[v + 1][8] = mod;
+			} else {
+				this.modules[this.moduleCount - 15 + v][8] = mod;
+			}
+		}
+	
+		// horizontal
+		for (var h = 0; h < 15; h++) {
+	
+			mod = (!test && ( (bits >> h) & 1) === 1);
+			
+			if (h < 8) {
+				this.modules[8][this.moduleCount - h - 1] = mod;
+			} else if (h < 9) {
+				this.modules[8][15 - h - 1 + 1] = mod;
+			} else {
+				this.modules[8][15 - h - 1] = mod;
+			}
+		}
+	
+		// fixed module
+		this.modules[this.moduleCount - 8][8] = (!test);
+	
+	},
+	
+	mapData : function(data, maskPattern) {
+		
+		var inc = -1;
+		var row = this.moduleCount - 1;
+		var bitIndex = 7;
+		var byteIndex = 0;
+		
+		for (var col = this.moduleCount - 1; col > 0; col -= 2) {
+	
+			if (col === 6) col--;
+	
+			while (true) {
+	
+				for (var c = 0; c < 2; c++) {
+					
+					if (this.modules[row][col - c] === null) {
+						
+						var dark = false;
+	
+						if (byteIndex < data.length) {
+							dark = ( ( (data[byteIndex] >>> bitIndex) & 1) === 1);
+						}
+	
+						var mask = QRUtil.getMask(maskPattern, row, col - c);
+	
+						if (mask) {
+							dark = !dark;
+						}
+						
+						this.modules[row][col - c] = dark;
+						bitIndex--;
+	
+						if (bitIndex === -1) {
+							byteIndex++;
+							bitIndex = 7;
+						}
+					}
+				}
+								
+				row += inc;
+	
+				if (row < 0 || this.moduleCount <= row) {
+					row -= inc;
+					inc = -inc;
+					break;
+				}
+			}
+		}
+		
+	}
+
+};
+
+QRCode.PAD0 = 0xEC;
+QRCode.PAD1 = 0x11;
+
+QRCode.createData = function(typeNumber, errorCorrectLevel, dataList) {
+	
+	var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, errorCorrectLevel);
+	
+	var buffer = new QRBitBuffer();
+	
+	for (var i = 0; i < dataList.length; i++) {
+		var data = dataList[i];
+		buffer.put(data.mode, 4);
+		buffer.put(data.getLength(), QRUtil.getLengthInBits(data.mode, typeNumber) );
+		data.write(buffer);
+	}
+
+	// calc num max data.
+	var totalDataCount = 0;
+	for (var x = 0; x < rsBlocks.length; x++) {
+		totalDataCount += rsBlocks[x].dataCount;
+	}
+
+	if (buffer.getLengthInBits() > totalDataCount * 8) {
+		throw new Error("code length overflow. (" + 
+            buffer.getLengthInBits() + 
+            ">" +  
+            totalDataCount * 8 + 
+            ")");
+	}
+
+	// end code
+	if (buffer.getLengthInBits() + 4 <= totalDataCount * 8) {
+		buffer.put(0, 4);
+	}
+
+	// padding
+	while (buffer.getLengthInBits() % 8 !== 0) {
+		buffer.putBit(false);
+	}
+
+	// padding
+	while (true) {
+		
+		if (buffer.getLengthInBits() >= totalDataCount * 8) {
+			break;
+		}
+		buffer.put(QRCode.PAD0, 8);
+		
+		if (buffer.getLengthInBits() >= totalDataCount * 8) {
+			break;
+		}
+		buffer.put(QRCode.PAD1, 8);
+	}
+
+	return QRCode.createBytes(buffer, rsBlocks);
+};
+
+QRCode.createBytes = function(buffer, rsBlocks) {
+
+	var offset = 0;
+	
+	var maxDcCount = 0;
+	var maxEcCount = 0;
+	
+	var dcdata = new Array(rsBlocks.length);
+	var ecdata = new Array(rsBlocks.length);
+	
+	for (var r = 0; r < rsBlocks.length; r++) {
+
+		var dcCount = rsBlocks[r].dataCount;
+		var ecCount = rsBlocks[r].totalCount - dcCount;
+
+		maxDcCount = Math.max(maxDcCount, dcCount);
+		maxEcCount = Math.max(maxEcCount, ecCount);
+		
+		dcdata[r] = new Array(dcCount);
+		
+		for (var i = 0; i < dcdata[r].length; i++) {
+			dcdata[r][i] = 0xff & buffer.buffer[i + offset];
+		}
+		offset += dcCount;
+		
+		var rsPoly = QRUtil.getErrorCorrectPolynomial(ecCount);
+		var rawPoly = new QRPolynomial(dcdata[r], rsPoly.getLength() - 1);
+
+		var modPoly = rawPoly.mod(rsPoly);
+		ecdata[r] = new Array(rsPoly.getLength() - 1);
+		for (var x = 0; x < ecdata[r].length; x++) {
+            var modIndex = x + modPoly.getLength() - ecdata[r].length;
+			ecdata[r][x] = (modIndex >= 0)? modPoly.get(modIndex) : 0;
+		}
+
+	}
+	
+	var totalCodeCount = 0;
+	for (var y = 0; y < rsBlocks.length; y++) {
+		totalCodeCount += rsBlocks[y].totalCount;
+	}
+
+	var data = new Array(totalCodeCount);
+	var index = 0;
+
+	for (var z = 0; z < maxDcCount; z++) {
+		for (var s = 0; s < rsBlocks.length; s++) {
+			if (z < dcdata[s].length) {
+				data[index++] = dcdata[s][z];
+			}
+		}
+	}
+
+	for (var xx = 0; xx < maxEcCount; xx++) {
+		for (var t = 0; t < rsBlocks.length; t++) {
+			if (xx < ecdata[t].length) {
+				data[index++] = ecdata[t][xx];
+			}
+		}
+	}
+
+	return data;
+
+};
+
+module.exports = QRCode;
+
+    };
+    return { QRCode: req('index'), Level: req('QRErrorCorrectLevel') };
+})();
+
+/* ============================================================================
+   TOOLS v7  -  5 NEW TOOLS (31-35)
+   31 Scam Message Analyzer · 32 Email Header Analyzer · 33 Photo Metadata Scanner & Cleaner
+   34 QR Studio (safe QR generator) · 35 Sensitive Data Redactor
+   Everything runs locally in your browser. Only the optional IP look-up in tool 32
+   contacts a public service (ipwho.is).
+   ============================================================================ */
+const defang = s => String(s).replace(/^http/i, "hxxp").replace(/:\/\//, "[://]").replace(/\./g, "[.]");
+const refang = s => String(s).replace(/^hxxp/i, "http").replace(/\[:\/\/\]/g, "://").replace(/\[\.\]/g, ".").replace(/\[:\]/g, ":").replace(/\(\.\)/g, ".");
+const dlBlob = (name, data, mime) => { const a = document.createElement("a"); a.href = URL.createObjectURL(data instanceof Blob ? data : new Blob([data], { type: mime || "text/plain" })); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 800); };
+const fmtBytes = n => n < 1024 ? n + " B" : n < 1048576 ? (n / 1024).toFixed(1) + " KB" : (n / 1048576).toFixed(2) + " MB";
+function mergeRanges(rs) { rs = rs.slice().sort((a, b) => a.s - b.s || b.e - a.e); const out = []; rs.forEach(r => { const l = out[out.length - 1]; if (l && r.s < l.e) { if (r.e > l.e) l.e = r.e; if (SEV_ORDER[r.sev] < SEV_ORDER[l.sev]) { l.sev = r.sev; } l.t.push(r.t); } else out.push({ s: r.s, e: r.e, sev: r.sev, t: [r.t] }); }); return out; }
+function highlightText(text, ranges) {
+    let h = "", p = 0; mergeRanges(ranges).forEach(r => { h += esc(text.slice(p, r.s)) + `<mark class="tp-hl tp-hl-${r.sev}" title="${esc([...new Set(r.t)].join(" · "))}">${esc(text.slice(r.s, r.e))}</mark>`; p = r.e; });
+    return h + esc(text.slice(p));
+}
+
+/* ============================================================
+   31. SCAM MESSAGE ANALYZER
+   ============================================================ */
+const NEG_BEFORE = /(do not|don'?t|dont|never|please do not|kabhi na|kabhi nahi|mat)\s+$/i;
+const SCAM_RULES = [
+    { id: "otp", cat: "Credential / OTP theft", sev: "critical", w: 36, tactic: "Authority + urgency", neg: true,
+      re: /\b(share|send|tell|give|provide|read out|forward|reply with|bata(?:o|en|ye|iye)?|bhej(?:o|en|iye)?|batana|dena)\b[^.\n]{0,45}\b(otp|pin|cvv|cvc|mpin|one[- ]?time (?:password|code)|verification code|security code|6[- ]digit code|passcode)\b/gi,
+      title: "Asks you to hand over an OTP, PIN or security code", why: "An OTP or PIN is the final key to your account or money. Real banks, wallets and telecoms never ask you to read it out, send it by message or tell it to an agent." },
+    { id: "creds", cat: "Personal-data / KYC harvesting", sev: "high", w: 26, tactic: "Authority", neg: false,
+      re: /\b(send|share|enter|confirm|verify|update|upload|provide|submit|bhej(?:o|en)?)\b[^.\n]{0,50}\b(password|login details|cnic|nic number|id card|identity card|card number|account number|selfie|biometric|kyc|date of birth|mother'?s? maiden|ssn|passport)\b/gi,
+      title: "Requests sensitive personal or account details", why: "Scammers collect ID numbers, card data and selfies for identity theft and account takeover. Genuine KYC updates happen inside the official app or branch." },
+    { id: "urgency", cat: "Pressure & urgency", sev: "medium", w: 16, tactic: "Urgency", neg: false,
+      re: /\b(urgent(?:ly)?|immediately|right now|act now|asap|within \d+ ?(?:hours?|hrs?|minutes?|mins?|days?)|last chance|final (?:warning|notice|reminder)|expires? (?:today|soon|tonight)|only \d+ (?:hours?|minutes?) left|limited time|hurry|jaldi|foran|abhi|aaj hi|warna|fauran)\b/gi,
+      title: "Creates time pressure", why: "A deadline stops you from thinking and from checking with someone you trust. Real organisations give written notice and official channels, not 'reply in 10 minutes'." },
+    { id: "threat", cat: "Fear & threats", sev: "high", w: 22, tactic: "Fear", neg: false,
+      re: /\b(?:(?:account|sim|card|wallet|number|line|service|connection)\b[^.\n]{0,30}\b(?:will be|has been|is being|ho ga|hogi|ho jaye ga)\b[^.\n]{0,20}\b(?:blocked?|suspended|closed|deactivated|terminated|frozen|cancell?ed|barred|band)\b|legal action|arrest(?:ed)?|\bfir\b|court (?:notice|case)|police case|case (?:has been )?registered|penalty|fine of|blacklist(?:ed)?|block ho jaye?ga|band ho jaye?ga)/gi,
+      title: "Threatens blocking, fines or legal trouble", why: "Fear makes people comply. Scammers pose as a bank, telecom or authority and threaten blocked accounts or arrests to force a quick reaction." },
+    { id: "prize", cat: "Fake prize / reward", sev: "high", w: 26, tactic: "Greed / reward", neg: false,
+      re: /\b(congratulations?|you(?:'ve| have)? (?:won|been selected|been chosen)|winner|lucky (?:draw|winner|customer)|lottery|jackpot|prize|free (?:gift|iphone|money|data|laptop|recharge)|cashback|bonus|reward|inaam|inam|jeet(?:a|e)|selected for)\b/gi,
+      title: "Promises a prize, reward or free money", why: "If you did not enter a draw you cannot win it. Prize scams ask for a 'fee', your card details or personal data to release the reward." },
+    { id: "fee", cat: "Advance-fee scam", sev: "critical", w: 34, tactic: "Reciprocity + greed", neg: false,
+      re: /\b(?:(?:processing|registration|clearance|customs|delivery|release|activation|admission|insurance|handling|tax) (?:fee|charges?|payment|tax)|pay (?:a |the )?(?:small )?(?:fee|charge|deposit)|refundable deposit|(?:send|pay|transfer|deposit|jama|bhej(?:o|en)?)\b[^.\n]{0,40}\b(?:rs\.?|pkr|rupees?|usd|\$|aed)\s?[\d,]{2,})/gi,
+      title: "Asks you to pay money first to receive something", why: "Advance-fee fraud: you pay a 'small fee' to unlock a prize, job, loan or parcel that does not exist. Genuine prizes, loans and jobs do not require upfront payment." },
+    { id: "wrong", cat: "Wrong-transfer (reverse payment) scam", sev: "high", w: 28, tactic: "Reciprocity / guilt", neg: false,
+      re: /\b(?:by mistake|wrong(?:ly)? (?:transfer(?:red)?|sent|number)|sent (?:you )?(?:money|rs\.?|pkr)|please (?:return|send back|refund)|galti se|ghalti se|wapis (?:bhej|kar))\b/gi,
+      title: "Claims money was sent to you by mistake and asks for it back", why: "The 'received' message is fake or the payment will be reversed later. Never send money back based on a message: check your balance in the official app first." },
+    { id: "job", cat: "Fake job / investment", sev: "high", w: 26, tactic: "Greed", neg: false,
+      re: /\b(work from home|earn (?:rs\.?|up to|daily|money)|daily (?:income|profit|earning)|per day|guaranteed (?:profit|returns?)|double your (?:money|investment)|investment plan|forex|crypto(?:currency)?|bitcoin|usdt|trading signal|part[- ]time job|simple task|like (?:and|&) (?:share|subscribe)|commission|passive income)\b/gi,
+      title: "Offers easy money, a job or a 'guaranteed' investment", why: "High pay for simple tasks and guaranteed returns are hallmarks of task, Ponzi and trading scams. Early small payouts are used to lure larger deposits." },
+    { id: "remote", cat: "Remote-access / malicious app", sev: "critical", w: 32, tactic: "Authority", neg: false,
+      re: /\b(anydesk|teamviewer|quick ?support|ultraviewer|remote (?:access|support|control)|install (?:this |the )?(?:app|apk|software)|download (?:this |the )?(?:app|apk|file)|\.apk\b|your (?:device|phone|computer|pc) (?:is|has been) (?:infected|hacked|compromised)|virus (?:detected|found|alert))/gi,
+      title: "Pushes you to install an app or give remote access", why: "Remote-control apps let criminals see your screen and approve payments. APK files from messages are a common way to install banking malware." },
+    { id: "secret", cat: "Isolation / secrecy", sev: "high", w: 22, tactic: "Isolation", neg: false,
+      re: /\b(don'?t tell (?:anyone|anybody)|do not tell (?:anyone|anybody)|keep (?:this|it) (?:a )?(?:secret|confidential|private)|strictly confidential|do not (?:share|discuss) (?:this )?(?:with|message)|kisi ko (?:na|mat) (?:batana|batao|batayen))\b/gi,
+      title: "Tells you to keep it secret", why: "Secrecy cuts you off from the people who could say 'that is a scam'. Genuine organisations never need you to hide a request from family or colleagues." },
+    { id: "chain", cat: "Chain / forward pressure", sev: "medium", w: 12, tactic: "Social proof", neg: false,
+      re: /\b(forward (?:this )?(?:message )?to \d+|share (?:this )?with \d+ (?:friends|contacts|groups|people)|send (?:this )?to \d+ (?:friends|contacts|groups)|\d+ (?:friends|contacts) ko (?:forward|bhej))\b/gi,
+      title: "Chain-message pressure to forward it", why: "Forward-to-N messages spread hoaxes and phishing links and harvest your contacts." },
+    { id: "cta", cat: "Click / log-in call to action", sev: "medium", w: 12, tactic: "Authority", neg: false,
+      re: /\b(click (?:the )?(?:link|here|below)|tap (?:the )?(?:link|here|below)|open (?:the )?link|visit (?:the )?(?:link|website|site)|log ?in (?:here|now|to)|login (?:here|now)|verify (?:now|your account|here)|confirm (?:now|your account)|unlock your account|reactivate)\b/gi,
+      title: "Tells you to click a link to log in or verify", why: "Links in unexpected messages commonly lead to fake login pages. Open the official app or type the website yourself." },
+    { id: "family", cat: "Family-emergency impersonation", sev: "high", w: 22, tactic: "Fear + trust", neg: false,
+      re: /\b(hi (?:mum|mom|dad|mama|papa|ammi|abu)|new number|lost my phone|changed my number|i(?:'m| am) in (?:trouble|hospital|jail)|had an accident|need (?:money )?urgent(?:ly)?)\b/gi,
+      title: "Looks like a family-member 'new number' emergency", why: "Criminals pretend to be a relative with a new number and a sudden emergency. Always call the person on their old number or ask a question only they can answer." },
+    { id: "crypto", cat: "Crypto transfer request", sev: "high", w: 24, tactic: "Greed", neg: false,
+      re: /\b(?:(?:send|transfer|deposit)\b[^.\n]{0,30}\b(?:usdt|btc|bitcoin|eth|crypto)|trust wallet|binance (?:account|support)|wallet address|seed phrase|recovery phrase|private key)\b/gi,
+      title: "Asks for crypto or a wallet seed phrase", why: "Crypto transfers cannot be reversed. No legitimate service ever asks for your seed phrase or recovery phrase." },
+    { id: "blackmail", cat: "Blackmail / sextortion", sev: "critical", w: 36, tactic: "Fear + shame", neg: false,
+      re: /\b(?:i (?:have|recorded|hacked)\b[^.\n]{0,40}\b(?:your|you)\b[^.\n]{0,30}\b(?:video|videos|photos?|webcam|camera|nudes?)|(?:pay|send)\b[^.\n]{0,50}\b(?:or|otherwise|else)\b[^.\n]{0,50}\b(?:leak|share|post|expose|viral|send to your contacts))\b/gi,
+      title: "Threatens to leak private material unless you pay", why: "This is blackmail. Mass-sent 'I hacked your webcam' emails are usually bluffs. Do not pay: stop contact, keep evidence and report it." },
+    { id: "delivery", cat: "Fake parcel / delivery", sev: "medium", w: 14, tactic: "Curiosity", neg: false,
+      re: /\b(parcel|package|courier|shipment|delivery (?:failed|attempt|fee|address)|tracking (?:number|id|link)|customs (?:fee|clearance|hold)|dhl|fedex|tcs|leopards|postex|bykea|pakistan post)\b/gi,
+      title: "Mentions a parcel or delivery problem", why: "'Your parcel is held' texts lead to fake payment pages. Check tracking only in the courier's official app or website." },
+    { id: "govt", cat: "Impersonates an authority", sev: "low", w: 10, tactic: "Authority", neg: false,
+      re: /\b(bisp|benazir|ehsaas|nadra|fbr|pta|sbp|state bank|nab|fia|ministry|government of|police|customs|wapda|k-?electric|sui (?:gas|northern|southern)|ptcl|jazz|zong|ufone|telenor|easypaisa|jazzcash|sadapay|nayapay|hbl|ubl|mcb|meezan|alfalah|paypal|microsoft|google|facebook|whatsapp|amazon)\b/gi,
+      title: "Names a bank, wallet, telecom or government body", why: "Scammers borrow trusted names. The name alone proves nothing: check the sender number and any link against the organisation's official channels." },
+    { id: "generic", cat: "Impersonal greeting", sev: "low", w: 6, tactic: "Mass targeting", neg: false,
+      re: /\b(dear (?:customer|user|client|sir\/madam|sir or madam|valued customer|account holder|member)|valued customer)\b/gi,
+      title: "Generic greeting instead of your name", why: "Mass-sent scams do not know your name. Real banks usually address you by name in email and use their app for sensitive alerts." },
+    { id: "contactnum", cat: "Unknown contact number", sev: "low", w: 8, tactic: "Authority", neg: false,
+      re: /\b(?:call|contact|whatsapp|message|text|dial|reach)\b[^.\n]{0,25}(?:\+?\d[\d\s-]{8,15}\d)/gi,
+      title: "Asks you to call or WhatsApp a number in the message", why: "Fake 'helplines' in a message connect you to the scammer. Use the number printed on your card or the official website." }
+];
+const SCAM_STEPS = {
+    otp: ["Do NOT share any code. Hang up or stop replying.", "Open the official app yourself (not a link) and check for alerts.", "If you shared a code: call the bank or wallet's official helpline immediately and ask to block the account or card."],
+    creds: ["Do not send IDs, selfies or account details by message.", "Contact the organisation through its official website or app to check if the request is real.", "If you already sent details: change passwords, tell your bank and watch for new SIMs or accounts in your name."],
+    urgency: ["Pause. Real organisations do not need an answer in minutes.", "Check with the organisation through an official channel you find yourself."],
+    threat: ["Do not reply or click. A real block or legal notice is delivered through official channels, not a threatening text.", "Log in through the official app or call the number on the back of your card."],
+    prize: ["You cannot win a draw you did not enter: ignore it.", "Never pay a 'fee' or give card details to claim a prize."],
+    fee: ["Do not pay. Real prizes, loans, jobs and parcels do not require upfront fees.", "If you already paid, tell your bank/wallet immediately and report it."],
+    wrong: ["Do not send money back based on a message or call.", "Check your real balance in the official app. If money really arrived, contact the wallet or bank so they reverse it properly."],
+    job: ["Do not deposit money to 'unlock' tasks or investments.", "Check whether the company is registered and licensed by the proper regulator before investing anything."],
+    remote: ["Do NOT install the app or grant remote access. Delete the message.", "If you already installed it: turn on airplane mode, uninstall it, change banking passwords from another device and call your bank."],
+    secret: ["Tell someone you trust right away: secrecy is the scammer's tool.", "Ask a family member or colleague to look at the message with you."],
+    chain: ["Do not forward it. Chain messages spread scams and hoaxes."],
+    cta: ["Do not click the link. Open the official app or type the website address yourself."],
+    family: ["Call the person on their old, saved number before doing anything.", "Ask a question only the real person can answer."],
+    crypto: ["Never share a seed phrase or private key with anyone.", "Crypto payments cannot be reversed: do not send funds on a message's instruction."],
+    blackmail: ["Do not pay and do not reply. Paying usually leads to more demands.", "Keep screenshots and the sender details, block the contact and report it to your national cyber-crime authority."],
+    delivery: ["Track parcels only in the courier's official app or website.", "Never pay a 'redelivery fee' through a link in a message."],
+    govt: ["Verify through the organisation's official website or helpline, not the contact details in the message."],
+    generic: ["Treat unexpected messages with extra care, especially if the sender cannot show your name or account details."],
+    contactnum: ["Use contact details from the official website or card, not the message."]
+};
+const URL_RE = /\b(?:https?:\/\/|www\.)[^\s<>"'`]+|\b(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+(?:com|net|org|pk|info|xyz|top|click|shop|online|site|link|app|co|io|me|ly|gl|cc|tk|ml|ga|cf|gq|ru|cn|in|uk|us|biz|live|store|vip|icu|buzz|work|club|fun|page|cloud|digital|tech|help|support|services)\b(?:\/[^\s<>"'`]*)?/gi;
+function extractUrls(text) {
+    const out = [], seen = new Set();
+    for (const m of text.matchAll(URL_RE)) { let u = m[0].replace(/[.,;:!?)\]}'"]+$/, ""); if (/^[\d.]+$/.test(u) || /@/.test(text.slice(Math.max(0, m.index - 1), m.index))) continue; const k = u.toLowerCase(); if (seen.has(k)) continue; seen.add(k); out.push({ url: u, s: m.index, e: m.index + u.length }); }
+    return out;
+}
+function extractPhones(text) {
+    const out = [], seen = new Set();
+    for (const m of text.matchAll(/(?:\+92|0092|\b92|\b0)[\s-]?3\d{2}[\s-]?\d{7}\b|\+\d{1,3}[\s-]?\d{2,4}[\s-]?\d{3,4}[\s-]?\d{3,5}\b/g)) {
+        const raw = m[0], d = raw.replace(/\D/g, ""); let norm = d.replace(/^0092/, "92"); if (/^0\d{10}$/.test(d)) norm = "92" + d.slice(1);
+        if (seen.has(norm)) continue; seen.add(norm);
+        let op = ""; if (/^923\d{9}$/.test(norm)) { const p = +norm.slice(2, 5), o = PK_OPS.find(x => p >= x[0] && p <= x[1]); op = o ? o[2] : "Pakistani mobile (series not in our list)"; }
+        out.push({ raw, norm, op, s: m.index, e: m.index + raw.length });
+    }
+    return out;
+}
+function analyzeScam(text) {
+    const hits = [], ranges = [];
+    SCAM_RULES.forEach(r => {
+        const ms = []; r.re.lastIndex = 0;
+        for (const m of text.matchAll(r.re)) { if (r.neg && NEG_BEFORE.test(text.slice(Math.max(0, m.index - 22), m.index))) continue; ms.push(m); }
+        if (ms.length) { hits.push({ r, n: ms.length, ex: ms[0][0] }); ms.forEach(m => ranges.push({ s: m.index, e: m.index + m[0].length, sev: r.sev, t: r.title })); }
+    });
+    const urls = extractUrls(text).map(u => { let sig = null, risk = 0, flags = []; try { sig = lexicalSignals(u.url); sig.S.forEach(s => { risk += s.w || 0; if (s.sev !== "good" && s.sev !== "info") flags.push(s); }); if (sig.fake) risk += 30; } catch (_) { } risk = Math.min(100, risk); return Object.assign(u, { sig, risk, flags }); });
+    const phones = extractPhones(text);
+    const amounts = []; for (const m of text.matchAll(/(?:rs\.?|pkr|rupees?|usd|\$|aed|£|€)\s?([\d,]{2,}(?:\.\d+)?)|\b([\d,]{3,})\s?(?:rs\.?|pkr|rupees?|usd|dollars?)\b/gi)) amounts.push(m[0].trim());
+    urls.forEach(u => ranges.push({ s: u.s, e: u.e, sev: u.risk >= 50 ? "critical" : u.risk >= 20 ? "high" : "medium", t: "Link found in message" }));
+    phones.forEach(p => ranges.push({ s: p.s, e: p.e, sev: "low", t: "Phone number" }));
+    let score = hits.reduce((a, h) => a + h.r.w, 0);
+    const letters = text.replace(/[^A-Za-z]/g, ""); if (letters.length > 25 && (letters.replace(/[^A-Z]/g, "").length / letters.length) > 0.6) { score += 5; hits.push({ r: { id: "caps", cat: "Shouting", sev: "low", w: 5, tactic: "Urgency", title: "Mostly capital letters", why: "SHOUTING is used to create alarm. Official messages are usually written normally." }, n: 1, ex: "" }); }
+    const worst = urls.reduce((a, u) => Math.max(a, u.risk), 0); score += Math.round(worst * 0.35);
+    if (hits.filter(h => h.r.w >= 12).length >= 4) score += 8;
+    const legitOtp = /\b(otp|code|pin)\b[^.\n]{0,30}?(?:\bis\b|:)\s*\d{4,8}\b/i.test(text) && /(do not|don'?t|never)\s+share/i.test(text);
+    if (legitOtp && !hits.some(h => h.r.sev === "critical")) score = Math.max(0, score - 15);
+    score = Math.min(100, score);
+    const top = hits.slice().sort((a, b) => b.r.w - a.r.w)[0];
+    const lv = score >= 70 ? ["Almost certainly a scam", "danger", "bad"] : score >= 45 ? ["Very likely a scam", "danger", "bad"] : score >= 25 ? ["Suspicious: treat as unsafe", "warning", "warn"] : score >= 10 ? ["Some warning signs", "warning", "warn"] : ["No obvious scam patterns", "success", "ok"];
+    return { hits, ranges, urls, phones, amounts, score, top, lv, legitOtp };
+}
+window.analyzeScamMessage = function () {
+    const text = val("scamMsgInput");
+    if (!text || text.length < 6) return fail("scamMsgResult", "Paste the full message first (at least a few words).");
+    if (text.length > 6000) return fail("scamMsgResult", "Message is too long. Paste up to 6,000 characters.");
+    const A = analyzeScam(text), sev = A.lv[2];
+    const flagList = A.hits.slice().sort((a, b) => SEV_ORDER[a.r.sev] - SEV_ORDER[b.r.sev] || b.r.w - a.r.w);
+    const steps = []; const seen = new Set(); (A.top ? [A.top] : []).concat(flagList).forEach(h => (SCAM_STEPS[h.r.id] || []).forEach(s => { if (!seen.has(s) && steps.length < 7) { seen.add(s); steps.push(s); } }));
+    if (!steps.length) steps.push("Nothing alarming matched, but if the message asks for money, codes or a click you did not expect, verify through the official app or website.");
+    const summary = verdict(A.lv[2] === "ok" ? "✅" : A.lv[2] === "warn" ? "⚠️" : "🚨", A.lv[0], A.lv[1], `${A.score}/100 scam-risk indicators · ${A.hits.length} warning sign${A.hits.length === 1 ? "" : "s"}${A.top ? " · most likely: " + esc(A.top.r.cat) : ""}`) + meter(A.score, A.lv[2] === "ok" ? "ok" : A.lv[2] === "warn" ? "warn" : "bad") +
+        (A.hits.length ? `<div class="tp-chips">${flagList.slice(0, 6).map(h => badge(h.r.cat, h.r.sev === "critical" ? "bad" : h.r.sev === "high" ? "bad" : h.r.sev === "medium" ? "warn" : "info")).join("")}</div>` : "") +
+        (A.urls.length ? kv([["Links found", A.urls.map(u => `<code>${esc(defang(u.url))}</code> ${badge(u.risk >= 50 ? "HIGH RISK" : u.risk >= 20 ? "RISKY" : "CHECK", u.risk >= 50 ? "bad" : u.risk >= 20 ? "warn" : "info")}`).join("<br>")]]) : "") +
+        note(A.legitOtp ? "This looks like a normal one-time-code notice (it tells you not to share the code). Never share it." : "Pattern-based indicators, not proof. When in doubt, contact the organisation through its official app or website.");
+    const html = rHero(A.lv[2] === "ok" ? "✅" : "🚨", esc(A.lv[0]), `Scam Message Analyzer · ${A.hits.length} warning sign(s) · ${A.urls.length} link(s) · ${A.phones.length} number(s)`, sev === "ok" ? "ok" : sev === "warn" ? "warn" : "bad", rGauge(A.score, "risk", sev === "ok" ? "ok" : sev === "warn" ? "warn" : "bad")) +
+        rSec("🧾", "Your message, with the suspicious parts highlighted", `<div class="tpr-msg">${highlightText(text, A.ranges)}</div><p class="tpr-p"><small>Hover over a highlight to see why it was flagged. Colours: <mark class="tp-hl tp-hl-critical">critical</mark> <mark class="tp-hl tp-hl-high">high</mark> <mark class="tp-hl tp-hl-medium">medium</mark> <mark class="tp-hl tp-hl-low">low</mark></small></p>`) +
+        rTiles([["Scam-risk score", A.score + "/100"], ["Most likely type", esc(A.top ? A.top.r.cat : "None detected")], ["Warning signs", String(A.hits.length)], ["Links", String(A.urls.length)], ["Phone numbers", String(A.phones.length)], ["Money amounts", A.amounts.length ? esc(A.amounts.slice(0, 3).join(", ")) : "none"]]) +
+        rSec("🚩", "Warning signs explained", A.hits.length ? flagList.map(h => `<div class="tpr-sig tpr-s-${h.r.sev}"><span class="tpr-dot"></span><div><b>${esc(h.r.title)}</b><p>${esc(h.r.why)}</p><p class="tpr-tag"><span>${esc(h.r.cat)}</span><span>Trick used: ${esc(h.r.tactic)}</span>${h.n > 1 ? `<span>${h.n} matches</span>` : ""}${h.ex ? `<span>e.g. “${esc(h.ex.slice(0, 50))}”</span>` : ""}</p></div></div>`).join("") : rPara("No scam patterns matched. This does not guarantee safety: scammers also write plain, polite messages.")) +
+        (A.urls.length ? rSec("🔗", "Links found in the message (shown safely defanged, never clickable)", rTable(["Link (defanged)", "Risk", "Why"], A.urls.map(u => [`<code>${esc(defang(u.url))}</code>`, `${badge(u.risk >= 50 ? "HIGH" : u.risk >= 20 ? "MEDIUM" : "LOW", u.risk >= 50 ? "bad" : u.risk >= 20 ? "warn" : "info")} ${u.risk}/100`, u.flags.length ? esc(u.flags.slice(0, 3).map(f => f.title).join("; ")) : "No lexical red flags. Still verify before opening."])) + rPara("For a deeper check paste a link into the <b>URL Inspector</b> tool.")) : "") +
+        (A.phones.length ? rSec("📞", "Phone numbers in the message", rTable(["Number", "Normalised", "Operator (series)"], A.phones.map(p => [`<code>${esc(p.raw)}</code>`, `<code>+${esc(p.norm)}</code>`, esc(p.op || "International / unknown")])) + rPara("<small>Operator series are only a hint because numbers can be ported between networks. A matching operator does not make a number trustworthy.</small>")) : "") +
+        rSec("✅", "What to do now", rSteps(steps.map(esc))) +
+        rSec("😰", "If you already clicked, replied or paid", rSteps(["Stop all contact with the sender. Do not pay 'recovery agents': they are a second scam.", "Call your bank or wallet's official helpline (from the card or official website) and ask to block the card/account and reverse payments if possible.", "Change passwords of any account you typed into a link, starting with email, and enable two-step verification.", "If you installed an app: uninstall it, run a security scan and change banking passwords from a different device.", "Keep screenshots, numbers, links and payment receipts as evidence."])) +
+        rSec("📣", "Report it", rList(["Report to your national cyber-crime authority. In Pakistan that is the FIA Cyber Crime Wing (NR3C): confirm the current helpline and online form on <b>nr3c.gov.pk</b>.", "Report spam or scam numbers to your mobile operator and the telecom regulator (PTA: <b>pta.gov.pk</b>).", "In WhatsApp: open the chat → contact name → <b>Report</b> and <b>Block</b>. In SMS apps use 'Report spam'.", "If a bank or wallet was impersonated, tell the real one through its official helpline."])) +
+        rSec("🧠", "Scam-spotting rules to remember", rList(["Real organisations do not ask for OTP, PIN or passwords: ever.", "Urgency + fear + a link or number = stop and verify.", "You cannot win a draw you did not enter.", "Never pay to receive money, a job or a parcel.", "Verify using a number or website you find yourself, never the one in the message."])) +
+        rPara("<small>This analyzer uses pattern matching on the text you pasted. It runs entirely in your browser; nothing is uploaded. Scammers change wording constantly, so the absence of flags is not a guarantee.</small>");
+    setR("scamMsgResult", "scam", "Scam Message Analyzer", `${A.lv[0]} · ${A.score}/100`, summary, html, A.lv[1]);
+};
+
+/* ============================================================
+   32. EMAIL HEADER ANALYZER
+   ============================================================ */
+function decodeWords(s) {
+    return String(s || "").replace(/=\?([^?]+)\?([bBqQ])\?([^?]*)\?=/g, (_, cs, enc, txt) => {
+        try {
+            let bytes;
+            if (enc.toLowerCase() === "b") { const bin = atob(txt.replace(/\s/g, "")); bytes = Uint8Array.from(bin, c => c.charCodeAt(0)); }
+            else { const t = txt.replace(/_/g, " ").replace(/=([0-9A-Fa-f]{2})/g, (m, h) => String.fromCharCode(parseInt(h, 16))); bytes = Uint8Array.from(t, c => c.charCodeAt(0) & 255); }
+            return new TextDecoder(cs.toLowerCase() === "utf8" ? "utf-8" : cs).decode(bytes);
+        } catch (_e) { return txt; }
+    }).replace(/\?=\s+=\?/g, "");
+}
+function parseHeaderBlock(raw) {
+    const t = String(raw).replace(/\r\n?/g, "\n").replace(/^\uFEFF/, ""), idx = t.search(/\n[ \t]*\n/);
+    const head = idx >= 0 ? t.slice(0, idx) : t, body = idx >= 0 ? t.slice(idx).replace(/^\n[ \t]*\n/, "") : "";
+    const H = []; head.replace(/\n[ \t]+/g, " ").split("\n").forEach(line => { const m = line.match(/^([!-9;-~]+):[ \t]*(.*)$/); if (m) H.push({ k: m[1], kl: m[1].toLowerCase(), v: m[2].trim() }); });
+    return { H, body };
+}
+function parseAddr(v) {
+    const d = decodeWords(v || ""); let name = "", addr = "";
+    const m = d.match(/^\s*"?([^"<]*?)"?\s*<([^>]+)>/);
+    if (m) { name = m[1].trim(); addr = m[2].trim(); } else { const e = d.match(/[^\s<>"',;()]+@[^\s<>"',;()]+/); addr = e ? e[0] : ""; name = d.replace(addr, "").replace(/[<>"]/g, "").trim(); }
+    addr = addr.toLowerCase(); return { name, addr, domain: (addr.split("@")[1] || "").replace(/[>;,]+$/, "") };
+}
+function parseReceived(v) {
+    const semi = v.lastIndexOf(";"), head = semi > -1 ? v.slice(0, semi) : v, date = semi > -1 ? v.slice(semi + 1).trim() : "", ts = Date.parse(date.replace(/\s*\([^)]*\)\s*$/, ""));
+    const from = (head.match(/\bfrom\s+(\S+)/i) || [])[1] || "", by = (head.match(/\bby\s+(\S+)/i) || [])[1] || "", withp = (head.match(/\bwith\s+([A-Za-z0-9-]+)/i) || [])[1] || "";
+    const ips = []; for (const m of head.matchAll(/\[(?:IPv6:)?([0-9a-fA-F:.]{3,45})\]|\((?:[^()]*?[\s(])?((?:\d{1,3}\.){3}\d{1,3})\)/g)) { const ip = m[1] || m[2]; if (ip && isIP(ip) && !ips.includes(ip)) ips.push(ip); }
+    const tls = /\bESMTPS|ESMTPSA|LMTPS|using TLS|TLSv1|\(version=TLS|cipher=/i.test(head);
+    return { from, by, withp, ips, tls, ts: isNaN(ts) ? null : ts, date, raw: v };
+}
+function parseAuthResults(list) {
+    const o = { spf: null, dkim: [], dmarc: null, arc: null, compauth: null };
+    list.forEach(v => {
+        const parts = v.split(/;\s*/), server = (parts.shift() || "").trim();
+        parts.forEach(p => {
+            const m = p.match(/^(spf|dkim|dmarc|arc|compauth)\s*=\s*([a-z]+)(.*)$/i); if (!m) return;
+            const meth = m[1].toLowerCase(), rest = m[3], props = {};
+            (rest.match(/[a-z][a-z0-9.\-]*=[^\s;()]+/gi) || []).forEach(kv => { const i = kv.indexOf("="); props[kv.slice(0, i).toLowerCase()] = kv.slice(i + 1); });
+            const e = { res: m[2].toLowerCase(), props, reason: (rest.match(/\(([^)]*)\)/) || [])[1] || "", server };
+            if (meth === "dkim") o.dkim.push(e); else if (!o[meth]) o[meth] = e;
+        });
+    });
+    return o;
+}
+function parseDkimSig(v) { const o = {}; v.split(";").forEach(p => { const i = p.indexOf("="); if (i > 0) o[p.slice(0, i).trim().toLowerCase()] = p.slice(i + 1).trim().replace(/\s+/g, ""); }); return o; }
+const FREE_MAIL = ["gmail.com", "googlemail.com", "yahoo.com", "ymail.com", "outlook.com", "hotmail.com", "live.com", "msn.com", "aol.com", "icloud.com", "me.com", "proton.me", "protonmail.com", "gmx.com", "mail.com", "zoho.com", "yandex.com", "mail.ru", "qq.com", "163.com"];
+const AUTH_EXPLAIN = {
+    spf: { pass: "The sending server's IP is on the sender domain's approved list.", fail: "The sending server is NOT allowed to send for that domain. A strong sign of spoofing.", softfail: "The server is probably not allowed (domain says '~all'). Treat as suspicious.", neutral: "The domain makes no claim about this server.", none: "The domain publishes no SPF policy, so the check could not be made.", temperror: "A temporary DNS error stopped the check.", permerror: "The domain's SPF record is broken." },
+    dkim: { pass: "The message carries a valid cryptographic signature from the signing domain and was not altered in transit.", fail: "The signature does not match: the message was altered, or the signature is forged.", none: "The message is not DKIM-signed.", neutral: "The signature could not be verified.", temperror: "A temporary DNS error stopped the check.", permerror: "The signature or key record is malformed." },
+    dmarc: { pass: "SPF or DKIM passed AND aligned with the visible From domain, so the From address is genuine.", fail: "Neither SPF nor DKIM aligned with the visible From domain: the From address may be forged.", none: "The From domain has no DMARC policy or the result was not recorded.", bestguesspass: "No DMARC record, but the message would have passed.", temperror: "A temporary DNS error stopped the check.", permerror: "The DMARC record is malformed." }
+};
+async function analyzeEmailHeaders(raw) {
+    const { H, body } = parseHeaderBlock(raw), get = n => H.filter(h => h.kl === n).map(h => h.v), one = n => get(n)[0] || "";
+    if (!H.length) throw new Error("No email headers found. Paste the full 'Show original' / 'Internet headers' text (lines like 'From:', 'Received:', 'Subject:').");
+    const from = parseAddr(one("from")), rp = parseAddr(one("return-path")), rt = parseAddr(one("reply-to")), mid = (one("message-id").match(/@([^>\s]+)/) || [])[1] || "";
+    const subject = decodeWords(one("subject")), date = one("date"), dateTs = Date.parse(date.replace(/\s*\([^)]*\)\s*$/, ""));
+    const recv = get("received").map(parseReceived).reverse(); // oldest first
+    const auth = parseAuthResults(get("authentication-results")), rspf = get("received-spf")[0] || "";
+    if (!auth.spf && rspf) { const m = rspf.match(/^\s*(pass|fail|softfail|neutral|none|temperror|permerror)/i); if (m) auth.spf = { res: m[1].toLowerCase(), props: { "smtp.mailfrom": (rspf.match(/envelope-from=\"?<?([^\s;>"]+)/i) || [])[1] || "" }, reason: rspf.slice(0, 120), server: "Received-SPF" }; }
+    const dkimSigs = get("dkim-signature").map(parseDkimSig), arcSeal = get("arc-seal").length;
+    const fromReg = from.domain ? regDomain(from.domain) : "";
+    const S = [], add = (sev, title, why, w) => S.push({ sev, title, why, w: w ?? ({ critical: 40, high: 25, medium: 12, low: 5, info: 0, good: 0 }[sev]) });
+
+    /* authentication */
+    const spf = auth.spf, dm = auth.dmarc, dk = auth.dkim;
+    if (!spf && !dm && !dk.length) add("medium", "No SPF / DKIM / DMARC results were found in the headers", "The headers you pasted contain no Authentication-Results. Paste the complete headers from the receiving mailbox, or the message cannot be verified here.", 12);
+    if (spf) { const r = spf.res; if (r === "pass") add("good", "SPF: PASS", AUTH_EXPLAIN.spf.pass); else if (r === "fail") add("critical", "SPF: FAIL", AUTH_EXPLAIN.spf.fail); else if (r === "softfail") add("high", "SPF: SOFTFAIL", AUTH_EXPLAIN.spf.softfail); else add("medium", "SPF: " + r.toUpperCase(), AUTH_EXPLAIN.spf[r] || "The result was inconclusive.", 8); }
+    if (dk.length) { const best = dk.find(d => d.res === "pass") || dk[0]; if (best.res === "pass") add("good", "DKIM: PASS (signed by " + (best.props["header.d"] || best.props["header.i"] || "unknown") + ")", AUTH_EXPLAIN.dkim.pass); else if (best.res === "fail") add("critical", "DKIM: FAIL", AUTH_EXPLAIN.dkim.fail); else add("medium", "DKIM: " + best.res.toUpperCase(), AUTH_EXPLAIN.dkim[best.res] || "The result was inconclusive.", 8); }
+    else if (dkimSigs.length) add("info", "DKIM signature present (not verified in headers)", "The message carries a DKIM-Signature but no verification result was pasted, so it could not be confirmed here.");
+    else if (spf || dm) add("medium", "No DKIM signature", AUTH_EXPLAIN.dkim.none, 10);
+    if (dm) { const r = dm.res; if (r === "pass") add("good", "DMARC: PASS", AUTH_EXPLAIN.dmarc.pass); else if (r === "fail") add("critical", "DMARC: FAIL", AUTH_EXPLAIN.dmarc.fail); else add("medium", "DMARC: " + r.toUpperCase(), AUTH_EXPLAIN.dmarc[r] || "The result was inconclusive.", 8); }
+    /* alignment */
+    const spfDom = spf ? ((spf.props["smtp.mailfrom"] || spf.props["smtp.helo"] || "").split("@").pop() || "") : "", spfReg = spfDom ? regDomain(spfDom.toLowerCase()) : "";
+    const dkDoms = dk.map(d => (d.props["header.d"] || (d.props["header.i"] || "").replace(/^.*@/, "") || "").toLowerCase()).filter(Boolean).concat(dkimSigs.map(s => (s.d || "").toLowerCase()).filter(Boolean));
+    const spfAligned = !!(spfReg && fromReg && spfReg === fromReg), dkAligned = dkDoms.some(d => fromReg && regDomain(d) === fromReg);
+    if (fromReg && (spf || dk.length) && !spfAligned && !dkAligned && spf && spf.res === "pass" && (dk.length === 0 || dk.some(d => d.res === "pass"))) add("high", "SPF/DKIM passed, but for a different domain than the visible From", `Authentication passed for ${[spfReg, ...dkDoms.map(regDomain)].filter(Boolean).join(", ") || "another domain"}, not for ${fromReg}. This is the classic way attackers get a 'pass' while faking the From address. DMARC exists to catch it.`);
+    /* identity */
+    if (from.domain && rp.domain && regDomain(rp.domain) !== fromReg) add("medium", `Return-Path domain (${rp.domain}) differs from the From domain (${from.domain})`, "Bulk-mail services legitimately use their own return path, but forged mail also shows this mismatch. Judge it together with the authentication results above.", 10);
+    if (from.domain && rt.domain && regDomain(rt.domain) !== fromReg) add(FREE_MAIL.includes(rt.domain) ? "high" : "medium", `Replies would go to a different domain (${rt.domain})`, "Phishing and CEO-fraud emails often show one sender but route your reply to the attacker's address.", FREE_MAIL.includes(rt.domain) ? 25 : 14);
+    if (from.name && /@/.test(from.name) && from.name.toLowerCase().match(/[^\s@]+@[^\s@]+/) && from.name.toLowerCase().match(/[^\s@]+@[^\s@]+/)[0] !== from.addr) add("high", "Display name contains a different email address", "Mail apps often show only the display name. Attackers put a trusted address in the name field to fool you.");
+    const nameL = from.name.toLowerCase();
+    Object.keys(OFFICIAL).forEach(b => { if (b.length >= 4 && new RegExp("\\b" + b + "\\b").test(nameL)) { const ok = OFFICIAL[b].some(d => fromReg === d || fromReg.endsWith("." + d)); if (!ok && fromReg) add("critical", `Display name says "${b}" but the address is ${from.addr}`, `The real ${b} sends from: ${OFFICIAL[b].join(", ")}. Display names can be set to anything, so always read the actual address.`); } });
+    if (from.domain && FREE_MAIL.includes(from.domain) && /(support|security|billing|helpdesk|service|official|team|admin|account|bank|payment|hr|ceo)/i.test(from.name)) add("high", "Official-sounding sender using a free mailbox", `Organisations send from their own domain, not ${from.domain}.`);
+    if (from.domain) { try { const lx = lexicalSignals(from.domain); lx.S.filter(s => s.sev === "critical" && /Pretends|punycode|alphabets|bare IP/.test(s.title)).forEach(s => add("critical", "Sender domain: " + s.title, s.why)); const hi = lx.S.find(s => /High-abuse domain/.test(s.title)); if (hi) add("medium", "Sender domain: " + hi.title, hi.why, 10); } catch (_) { } }
+    if (mid && fromReg && regDomain(mid.toLowerCase()) !== fromReg) add("low", `Message-ID domain (${mid}) differs from the From domain`, "Mail sent through a third-party service often looks like this; forged mail does too. Minor on its own.", 4);
+    if (!one("message-id")) add("medium", "No Message-ID header", "Every genuine mail server adds a Message-ID. Missing ones are typical of hand-built or bulk spam mail.", 10);
+    if (!date) add("medium", "No Date header", "A valid message normally includes a Date header.", 8);
+    /* timing & path */
+    const hops = recv.map((h, i) => Object.assign(h, { delay: i && h.ts != null && recv[i - 1].ts != null ? h.ts - recv[i - 1].ts : null }));
+    if (hops.some(h => h.delay != null && h.delay < -300000)) add("medium", "Time goes backwards between mail servers", "A hop is timestamped earlier than the previous one. This can be clock drift, but forged 'Received' lines also cause it.", 10);
+    const big = hops.filter(h => h.delay != null && h.delay > 3600000); if (big.length) add("low", `Message sat for over an hour at ${big.length} hop(s)`, "Long delays happen with greylisting or queueing, and also with batch-sent spam.", 4);
+    const firstTs = hops.find(h => h.ts != null); if (!isNaN(dateTs) && firstTs && Math.abs(dateTs - firstTs.ts) > 86400000) add("medium", "The Date header disagrees with the first Received time by more than a day", "Spammers often set a fake Date header. Compare it with the time your own server received the message.", 10);
+    if (hops.length === 0) add("low", "No Received headers", "Without Received lines the delivery path cannot be traced.", 4);
+    if (hops.some(h => h.withp && /^(SMTP|ESMTP)$/i.test(h.withp) && !h.tls) && hops.length > 1) add("info", "At least one hop used unencrypted SMTP", "Mail can pass between servers without TLS. This alone is not malicious.");
+    /* origin */
+    const priv = ip => !!privateKind(ip); const xo = (one("x-originating-ip") || one("x-sender-ip") || "").replace(/[\[\]\s]/g, "");
+    let origin = ""; for (const h of hops) { const ip = h.ips.find(i => !priv(i)); if (ip) { origin = ip; break; } } if (!origin && xo && isIP(xo) && !priv(xo)) origin = xo;
+    let geo = null; if (origin) { try { geo = await ipwho(origin); } catch (_) { } }
+    if (geo && geo.connection && HOSTING_RE.test(geo.connection.org || "") && from.domain && FREE_MAIL.includes(from.domain) === false) add("info", "First visible server is in a hosting/cloud network", `${geo.connection.org}. Normal for mail services; for a personal-looking sender it can indicate a script or bulk-mail server.`);
+    /* body */
+    const links = extractUrls(body).slice(0, 12).map(u => { let r = 0, fl = []; try { const s = lexicalSignals(u.url); s.S.forEach(x => { r += x.w || 0; if (!["good", "info"].includes(x.sev)) fl.push(x); }); if (s.fake) r += 30; } catch (_) { } return { url: u.url, risk: Math.min(100, r), flags: fl }; });
+    const atts = []; for (const m of body.matchAll(/(?:file)?name\*?=\s*"?([^";\r\n]+)"?/gi)) { const n = decodeWords(m[1]).trim(), ext = (n.split(".").pop() || "").toLowerCase(), dbl = /\.[a-z0-9]{2,4}\.(exe|scr|bat|cmd|js|vbs|msi|jar|lnk|iso)$/i.test(n), r = EXT_RISK[ext]; if (n && !atts.some(a => a.n === n)) atts.push({ n, ext, risk: r ? r[0] : 0, label: r ? r[1] : "", dbl }); }
+    atts.filter(a => a.risk >= 80 || a.dbl).forEach(a => add("critical", `Risky attachment: ${a.n}`, a.dbl ? "Double extension: the file pretends to be a document but is a program." : `${a.label} files can run code when opened.`));
+    links.filter(l => l.risk >= 50).forEach(l => add("high", `Suspicious link in the body: ${defang(l.url)}`, l.flags.slice(0, 2).map(f => f.title).join("; ") || "Link shows several lexical red flags."));
+    S.sort((a, b) => SEV_ORDER[a.sev] - SEV_ORDER[b.sev]);
+    let score = 100 - S.reduce((a, s) => a + (s.w || 0), 0); score = Math.max(0, Math.min(100, score));
+    const goodAuth = (spf && spf.res === "pass") + (dk.some(d => d.res === "pass")) + (dm && dm.res === "pass");
+    const lv = score >= 80 ? ["Headers look consistent and authentic", "success", "ok"] : score >= 50 ? ["Some concerns: verify before trusting", "warning", "warn"] : ["Likely spoofed or phishing", "danger", "bad"];
+    return { from, rp, rt, mid, subject, date, hops, auth, spfReg, dkDoms, spfAligned, dkAligned, S, score, lv, origin, geo, xo, links, atts, goodAuth, arcSeal, bodyLen: body.length, headerCount: H.length, mailer: one("x-mailer") || one("user-agent"), unsub: !!one("list-unsubscribe") };
+}
+window.analyzeEmailHeaders = async function () {
+    const raw = ($("hdrInput")?.value || "").trim();
+    if (!raw) return fail("hdrResult", "Paste the email headers (or the full 'Show original' text) first.");
+    if (raw.length > 400000) return fail("hdrResult", "That is too large. Paste only the header section.");
+    busy("hdrResult", "Reading headers and checking the sending server…");
+    let R; try { R = await analyzeEmailHeaders(raw); } catch (e) { return fail("hdrResult", e.message); }
+    const st = R.lv[2], k = st === "ok" ? "ok" : st === "warn" ? "warn" : "bad", rs = e => e ? e.res.toUpperCase() : "NOT FOUND", rk = e => !e ? "info" : e.res === "pass" ? "ok" : (e.res === "fail" || e.res === "softfail") ? "bad" : "warn";
+    const dkBest = R.auth.dkim.find(d => d.res === "pass") || R.auth.dkim[0];
+    const summary = verdict(st === "ok" ? "✅" : st === "warn" ? "⚠️" : "🚨", R.lv[0], R.lv[1], `Authenticity score ${R.score}/100 · ${R.hops.length} server hop(s)`) + meter(R.score, k) +
+        `<div class="tp-chips">${badge("SPF " + rs(R.auth.spf), rk(R.auth.spf))}${badge("DKIM " + rs(dkBest), rk(dkBest))}${badge("DMARC " + rs(R.auth.dmarc), rk(R.auth.dmarc))}</div>` +
+        kv([["From", `<code>${esc(R.from.addr || "—")}</code>${R.from.name ? " (" + esc(R.from.name) + ")" : ""}`], ["Return-Path", `<code>${esc(R.rp.addr || "—")}</code>`], ["Reply-To", `<code>${esc(R.rt.addr || "same as From")}</code>`], ["Subject", esc(R.subject.slice(0, 90) || "—")], ["First public server", R.origin ? `<code>${esc(R.origin)}</code>${R.geo ? " · " + esc((R.geo.country || "") + (R.geo.connection ? " · " + R.geo.connection.org : "")) : ""}` : "not visible"]]) +
+        (R.S.filter(s => !["good", "info"].includes(s.sev)).length ? `<div class="tp-note">${R.S.filter(s => !["good", "info"].includes(s.sev)).slice(0, 3).map(s => "• " + esc(s.title)).join("<br>")}</div>` : "");
+    const authRow = (n, e, extra) => [`<span class="nw"><b>${n}</b></span>`, `<span class="nw">${badge(rs(e), rk(e))}</span>`, esc(e ? (AUTH_EXPLAIN[n.toLowerCase()][e.res] || "Inconclusive result.") : "No result was recorded in the pasted headers."), esc(extra || "")];
+    const html = rHero(st === "ok" ? "✅" : "📧", esc(R.lv[0]), `Email Header Analyzer · ${R.headerCount} headers · ${R.hops.length} hop(s)`, k, rGauge(R.score, "authentic", k)) +
+        rTiles([["From", `<code>${esc(R.from.addr || "—")}</code>`, esc(R.from.name)], ["Return-Path", `<code>${esc(R.rp.addr || "—")}</code>`], ["Reply-To", `<code>${esc(R.rt.addr || "none")}</code>`], ["Subject", esc(R.subject.slice(0, 80) || "—")], ["Date header", esc(R.date || "—")], ["Server hops", String(R.hops.length)], ["Authenticated checks passed", `${R.goodAuth}/3`], ["Mailer", esc(R.mailer || "not shown")]]) +
+        rSec("🔐", "Authentication: did the sender prove who they are?", rTable(["Check", "Result", "What it means", "Detail"], [authRow("SPF", R.auth.spf, R.spfReg ? `Domain checked: ${R.spfReg}${R.spfAligned ? " (aligned with From)" : " (not aligned)"}` : ""), authRow("DKIM", dkBest, R.dkDoms.length ? `Signed by: ${[...new Set(R.dkDoms)].join(", ")}${R.dkAligned ? " (aligned)" : " (not aligned)"}` : ""), authRow("DMARC", R.auth.dmarc, R.auth.dmarc && R.auth.dmarc.reason ? R.auth.dmarc.reason : "")]) + rPara("<small>SPF = is this server allowed to send for the domain? DKIM = is the message cryptographically signed and unaltered? DMARC = do SPF/DKIM match the visible From address, and what should receivers do if not?</small>")) +
+        rSec("🚦", "Findings (worst first)", R.S.length ? R.S.map(rSignal).join("") : rPara("Nothing unusual detected in the pasted headers.")) +
+        rSec("🪪", "Does the sender identity add up?", rTable(["Field", "Address / domain", "Matches From domain?"], [["From (what you see)", `<code>${esc(R.from.addr || "—")}</code>`, "—"], ["Return-Path (bounce address)", `<code>${esc(R.rp.addr || "—")}</code>`, R.rp.domain ? (regDomain(R.rp.domain) === regDomain(R.from.domain || "") ? "✅ yes" : "⚠️ no") : "—"], ["Reply-To (where replies go)", `<code>${esc(R.rt.addr || "same as From")}</code>`, R.rt.domain ? (regDomain(R.rt.domain) === regDomain(R.from.domain || "") ? "✅ yes" : "⚠️ no") : "✅ not set"], ["Message-ID domain", `<code>${esc(R.mid || "—")}</code>`, R.mid ? (regDomain(R.mid.toLowerCase()) === regDomain(R.from.domain || "") ? "✅ yes" : "ℹ️ no (common for mail services)") : "⚠️ missing"], ["SPF-checked domain", `<code>${esc(R.spfReg || "—")}</code>`, R.spfReg ? (R.spfAligned ? "✅ yes" : "⚠️ no") : "—"], ["DKIM signing domain", `<code>${esc([...new Set(R.dkDoms)].join(", ") || "—")}</code>`, R.dkDoms.length ? (R.dkAligned ? "✅ yes" : "⚠️ no") : "—"]])) +
+        rSec("🛣️", "Delivery path (oldest hop first)", R.hops.length ? rTable(["#", "From server", "By server", "Protocol", "Encrypted", "Time", "Delay"], R.hops.map((h, i) => [String(i + 1), `<code>${esc(h.from || "—")}</code>${h.ips.length ? "<br><small>" + esc(h.ips.join(", ")) + "</small>" : ""}`, `<code>${esc(h.by || "—")}</code>`, esc(h.withp || "—"), h.tls ? "🔒 TLS" : "—", esc(h.date || "—"), h.delay == null ? "—" : (h.delay < 0 ? "⚠️ −" : "") + Math.abs(Math.round(h.delay / 1000)) + " s"])) : rPara("No Received headers were found.")) +
+        (R.origin ? rSec("📍", "First public sending server", rTiles([["IP", `<code>${esc(R.origin)}</code>`], ["Country", esc(R.geo ? (R.geo.country || "—") : "lookup unavailable")], ["Network", esc(R.geo && R.geo.connection ? R.geo.connection.org || R.geo.connection.isp || "—" : "—")], ["ASN", esc(R.geo && R.geo.connection && R.geo.connection.asn ? "AS" + R.geo.connection.asn : "—")]]) + rPara("<small>This is the first non-private server in the chain, which is often the sender's mail server or ISP gateway, not necessarily the person's own device. Location data comes from a public IP database and can be wrong.</small>")) : "") +
+        (R.atts.length ? rSec("📎", "Attachments named in the message", rTable(["File name", "Risk", "Note"], R.atts.map(a => [`<code>${esc(a.n)}</code>`, a.risk >= 80 || a.dbl ? badge("DANGEROUS", "bad") : a.risk ? badge("CAUTION", "warn") : badge("OK", "ok"), esc(a.dbl ? "Double extension" : a.label || "No known risk by extension")]))) : "") +
+        (R.links.length ? rSec("🔗", "Links found in the message body (defanged)", rTable(["Link", "Risk"], R.links.map(l => [`<code>${esc(defang(l.url))}</code>`, `${badge(l.risk >= 50 ? "HIGH" : l.risk >= 20 ? "MEDIUM" : "LOW", l.risk >= 50 ? "bad" : l.risk >= 20 ? "warn" : "info")} ${l.risk}/100`]))) : "") +
+        rSec("✅", "What to do", rSteps(st === "ok" ? ["The headers are consistent. If the content still feels wrong, contact the sender using a phone number or website you already trust.", "Never act on payment-detail changes without calling to confirm."] : ["Do not click links, open attachments or reply.", "Report it as phishing in your mail app, then delete it.", "If you already interacted: change the password of the affected account, enable two-step verification and tell your IT/security team.", "For payment or bank-detail requests, confirm by phone using a number you already have."])) +
+        rSec("📖", "How to get the full headers", rList(["<b>Gmail:</b> open the message → ⋮ (More) → <b>Show original</b> → copy everything.", "<b>Outlook (desktop):</b> open the message → File → Properties → <b>Internet headers</b>.", "<b>Outlook.com / Microsoft 365:</b> ⋯ → View → <b>View message details</b>.", "<b>Yahoo Mail:</b> ⋯ → <b>View raw message</b>.", "<b>Apple Mail:</b> View → Message → <b>All Headers</b> (or Raw Source)."])) +
+        rPara("<small>Everything is analysed in your browser. Only the first public server IP is sent to ipwho.is for a location look-up. Headers can be forged by attackers: authentication results added by YOUR receiving server are the most trustworthy lines.</small>");
+    setR("hdrResult", "hdr", "Email Header Analyzer", `${R.lv[0]} · ${R.score}/100`, summary, html, R.lv[1]);
+};
+
+/* ============================================================
+   33. PHOTO METADATA SCANNER & CLEANER (JPEG + PNG, lossless strip)
+   ============================================================ */
+const TS_SIZE = { 1: 1, 2: 1, 3: 2, 4: 4, 5: 8, 6: 1, 7: 1, 8: 2, 9: 4, 10: 8, 11: 4, 12: 8 };
+const IFD0_TAGS = { 0x010E: "Image description", 0x010F: "Camera make", 0x0110: "Camera model", 0x0112: "Orientation", 0x0131: "Editing software", 0x0132: "Last modified", 0x013B: "Artist / owner name", 0x8298: "Copyright text" };
+const EXIF_TAGS = { 0x829A: "Exposure time", 0x829D: "Aperture (F-number)", 0x8827: "ISO", 0x9003: "Date & time taken", 0x9004: "Date & time digitised", 0x9010: "Time-zone offset", 0x9209: "Flash", 0x920A: "Focal length", 0x9286: "User comment", 0xA420: "Unique image ID", 0xA430: "Camera owner name", 0xA431: "Camera body serial number", 0xA433: "Lens make", 0xA434: "Lens model", 0xA435: "Lens serial number", 0xA002: "Pixel width", 0xA003: "Pixel height" };
+function parseTiff(u8) {
+    if (u8.length < 12) return null;
+    const dv = new DataView(u8.buffer, u8.byteOffset, u8.byteLength), bom = String.fromCharCode(u8[0], u8[1]), le = bom === "II";
+    if (!(le || bom === "MM") || dv.getUint16(2, le) !== 42) return null;
+    const rd = (type, cnt, off) => {
+        if (type === 2) { let s = ""; for (let i = 0; i < cnt && u8[off + i]; i++) s += String.fromCharCode(u8[off + i]); return s.trim(); }
+        if (type === 7 || type === 1 || type === 6) return u8.slice(off, off + cnt);
+        const out = [];
+        for (let i = 0; i < cnt; i++) {
+            if (type === 3) out.push(dv.getUint16(off + i * 2, le)); else if (type === 8) out.push(dv.getInt16(off + i * 2, le));
+            else if (type === 4) out.push(dv.getUint32(off + i * 4, le)); else if (type === 9) out.push(dv.getInt32(off + i * 4, le));
+            else if (type === 5) { const n = dv.getUint32(off + i * 8, le), d = dv.getUint32(off + i * 8 + 4, le); out.push(d ? n / d : 0); }
+            else if (type === 10) { const n = dv.getInt32(off + i * 8, le), d = dv.getInt32(off + i * 8 + 4, le); out.push(d ? n / d : 0); }
+        }
+        return cnt === 1 ? out[0] : out;
+    };
+    const readIFD = off => {
+        const ents = {}; let next = 0; if (off < 8 || off + 2 > u8.length) return { ents, next, n: 0 };
+        const n = Math.min(dv.getUint16(off, le), 512);
+        for (let i = 0; i < n; i++) {
+            const p = off + 2 + i * 12; if (p + 12 > u8.length) break;
+            const tag = dv.getUint16(p, le), type = dv.getUint16(p + 2, le), cnt = dv.getUint32(p + 4, le), sz = (TS_SIZE[type] || 0) * cnt; if (!sz || cnt > 1 << 20) continue;
+            const vo = sz <= 4 ? p + 8 : dv.getUint32(p + 8, le); if (vo + sz > u8.length) continue;
+            try { ents[tag] = rd(type, cnt, vo); } catch (_) { }
+        }
+        const np = off + 2 + n * 12; if (np + 4 <= u8.length) next = dv.getUint32(np, le);
+        return { ents, next, n };
+    };
+    const ifd0 = readIFD(dv.getUint32(4, le)), ex = ifd0.ents[0x8769] ? readIFD(ifd0.ents[0x8769]) : { ents: {} }, gp = ifd0.ents[0x8825] ? readIFD(ifd0.ents[0x8825]) : { ents: {} };
+    const ifd1 = ifd0.next ? readIFD(ifd0.next) : null;
+    return { ifd0: ifd0.ents, exif: ex.ents, gps: gp.ents, thumb: !!(ifd1 && (ifd1.ents[0x0201] !== undefined || ifd1.ents[0x0202] !== undefined)), thumbBytes: ifd1 && ifd1.ents[0x0202] ? ifd1.ents[0x0202] : 0 };
+}
+function gpsDecode(g) {
+    const conv = (a, ref) => { if (!Array.isArray(a) || a.length < 3) return null; let v = a[0] + a[1] / 60 + a[2] / 3600; if (/^[SW]/i.test(ref || "")) v = -v; return v; };
+    const lat = conv(g[2], g[1]), lon = conv(g[4], g[3]); if (lat == null || lon == null || Math.abs(lat) > 90 || Math.abs(lon) > 180) return null;
+    const alt = typeof g[6] === "number" ? (g[5] && g[5][0] === 1 ? -g[6] : g[6]) : null;
+    const t = Array.isArray(g[7]) && g[7].length >= 3 ? [g[7][0], g[7][1], Math.floor(g[7][2])].map(x => String(Math.floor(x)).padStart(2, "0")).join(":") + " UTC" : "";
+    return { lat, lon, alt, time: t, date: typeof g[0x1D] === "string" ? g[0x1D] : "", dir: typeof g[0x11] === "number" ? g[0x11] : null, method: typeof g[0x1B] === "object" && g[0x1B] && g[0x1B].length ? String.fromCharCode(...[...g[0x1B]].filter(x => x > 31 && x < 127)).trim() : "" };
+}
+const ascii = (u8, a, n) => { let s = ""; for (let i = 0; i < n && a + i < u8.length; i++) s += String.fromCharCode(u8[a + i]); return s; };
+function scanJpeg(u8) {
+    if (u8[0] !== 0xFF || u8[1] !== 0xD8) return null;
+    const segs = []; let p = 2, sof = null, sos = null;
+    while (p + 4 <= u8.length) {
+        if (u8[p] !== 0xFF) break; const mk = u8[p + 1];
+        if (mk === 0xFF) { p++; continue; } if (mk === 0xD8 || (mk >= 0xD0 && mk <= 0xD7) || mk === 0x01) { p += 2; continue; } if (mk === 0xD9) break;
+        const len = (u8[p + 2] << 8) | u8[p + 3]; if (len < 2 || p + 2 + len > u8.length) break;
+        const seg = { mk, start: p, end: p + 2 + len, len, kind: "other" }, d = p + 4;
+        if (mk === 0xE1 && ascii(u8, d, 6) === "Exif\0\0") seg.kind = "exif";
+        else if (mk === 0xE1 && ascii(u8, d, 28).startsWith("http://ns.adobe.com/xap/1.0/")) seg.kind = "xmp";
+        else if (mk === 0xE1 && ascii(u8, d, 34).startsWith("http://ns.adobe.com/xmp/extension/")) seg.kind = "xmp";
+        else if (mk === 0xE1) seg.kind = "app1";
+        else if (mk === 0xE2 && ascii(u8, d, 12) === "ICC_PROFILE\0") seg.kind = "icc";
+        else if (mk === 0xE2 && ascii(u8, d, 4) === "MPF\0") seg.kind = "mpf";
+        else if (mk === 0xED && ascii(u8, d, 13) === "Photoshop 3.0") seg.kind = "iptc";
+        else if (mk === 0xE0 && (ascii(u8, d, 5) === "JFIF\0" || ascii(u8, d, 5) === "JFXX\0")) seg.kind = "jfif";
+        else if (mk === 0xEE && ascii(u8, d, 5) === "Adobe") seg.kind = "adobe";
+        else if (mk === 0xFE) seg.kind = "comment";
+        else if (mk >= 0xE0 && mk <= 0xEF) seg.kind = "app";
+        segs.push(seg);
+        if (mk >= 0xC0 && mk <= 0xCF && ![0xC4, 0xC8, 0xCC].includes(mk) && !sof) sof = { h: (u8[p + 5] << 8) | u8[p + 6], w: (u8[p + 7] << 8) | u8[p + 8], comps: u8[p + 9], progressive: mk === 0xC2 };
+        if (mk === 0xDA) { sos = seg; break; }
+        p = seg.end;
+    }
+    let eoi = -1; if (sos) for (let i = sos.end; i + 1 < u8.length; i++) if (u8[i] === 0xFF && u8[i + 1] === 0xD9) { eoi = i + 2; break; }
+    return { segs, sof, sos, eoi, trailing: eoi > 0 ? u8.length - eoi : 0 };
+}
+function scanPng(u8) {
+    const sig = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]; if (!sig.every((b, i) => u8[i] === b)) return null;
+    const dv = new DataView(u8.buffer, u8.byteOffset, u8.byteLength), chunks = []; let p = 8;
+    while (p + 12 <= u8.length) { const len = dv.getUint32(p), type = ascii(u8, p + 4, 4); if (p + 12 + len > u8.length) break; chunks.push({ type, start: p, end: p + 12 + len, len }); p += 12 + len; if (type === "IEND") break; }
+    const ih = chunks.find(c => c.type === "IHDR"); const dim = ih ? { w: dv.getUint32(ih.start + 8), h: dv.getUint32(ih.start + 12) } : null;
+    return { chunks, dim, trailing: u8.length - p };
+}
+function readExifFromJpeg(u8, seg) { return parseTiff(u8.subarray(seg.start + 10, seg.end)); }
+function xmpFields(u8, seg) {
+    const txt = ascii(u8, seg.start + 4, Math.min(seg.len - 2, 60000)), f = {};
+    [["Creator", /<dc:creator>[\s\S]*?<rdf:li[^>]*>([^<]+)</], ["Title", /<dc:title>[\s\S]*?<rdf:li[^>]*>([^<]+)</], ["Software", /xmp:CreatorTool="([^"]+)"/], ["Created", /xmp:CreateDate="([^"]+)"/], ["Location", /photoshop:(?:City|Country|State)="([^"]+)"/], ["Device", /tiff:Model="([^"]+)"/]].forEach(([k, re]) => { const m = txt.match(re); if (m) f[k] = m[1]; });
+    return f;
+}
+function analyzePhoto(u8, name) {
+    const R = { name, size: u8.length, fmt: "", w: 0, h: 0, finds: [], fields: [], gps: null, thumb: false, xmp: null, iptc: false, comments: [], trailing: 0, orient: 1, removable: 0, supported: true, mpf: false, textChunks: [] };
+    const add = (sev, label, value, why, pts) => R.finds.push({ sev, label, value, why, pts });
+    let tiff = null, j = scanJpeg(u8), pn = null;
+    if (j) {
+        R.fmt = "JPEG"; if (j.sof) { R.w = j.sof.w; R.h = j.sof.h; }
+        const ex = j.segs.find(s => s.kind === "exif"); if (ex) tiff = readExifFromJpeg(u8, ex);
+        const xm = j.segs.find(s => s.kind === "xmp"); if (xm) R.xmp = xmpFields(u8, xm);
+        R.iptc = j.segs.some(s => s.kind === "iptc"); R.mpf = j.segs.some(s => s.kind === "mpf");
+        j.segs.filter(s => s.kind === "comment").forEach(s => R.comments.push(ascii(u8, s.start + 4, Math.min(s.len - 2, 300)).trim()));
+        R.trailing = j.trailing; R.jpeg = j;
+    } else if ((pn = scanPng(u8))) {
+        R.fmt = "PNG"; if (pn.dim) { R.w = pn.dim.w; R.h = pn.dim.h; } R.png = pn; R.trailing = pn.trailing > 0 ? pn.trailing : 0;
+        const ex = pn.chunks.find(c => c.type === "eXIf"); if (ex) tiff = parseTiff(u8.subarray(ex.start + 8, ex.start + 8 + ex.len));
+        pn.chunks.filter(c => ["tEXt", "zTXt", "iTXt"].includes(c.type)).forEach(c => { const key = ascii(u8, c.start + 8, Math.min(c.len, 80)).split("\0")[0]; R.textChunks.push({ type: c.type, key, value: c.type === "tEXt" ? ascii(u8, c.start + 8 + key.length + 1, Math.min(c.len - key.length - 1, 200)).trim() : "" }); });
+        if (pn.chunks.some(c => c.type === "iTXt" && ascii(u8, c.start + 8, 17) === "XML:com.adobe.xmp")) R.xmp = R.xmp || {};
+    } else { R.supported = false; return R; }
+    if (tiff) {
+        R.orient = Number(tiff.ifd0[0x0112]) || 1; const t = tiff;
+        const mk = (o, tags) => Object.keys(tags).forEach(k => { const v = o[k]; if (v !== undefined && v !== null && v !== "" && !(v && v.length === 0)) { let s = typeof v === "number" ? String(Math.round(v * 1e4) / 1e4) : Array.isArray(v) ? v.map(x => Math.round(x * 1e3) / 1e3).join(", ") : (v instanceof Uint8Array ? (/^(ASCII|UNICODE|JIS)/.test(ascii(v, 0, 8)) ? ascii(v, 8, v.length - 8).replace(/[^\x20-\x7e]/g, "").trim() : "[binary " + v.length + " bytes]") : String(v)); R.fields.push([tags[k], s]); } });
+        mk(t.ifd0, IFD0_TAGS); mk(t.exif, EXIF_TAGS);
+        const gp = gpsDecode(t.gps); R.gps = gp; R.thumb = t.thumb;
+        if (gp) add("critical", "GPS location", `${gp.lat.toFixed(6)}, ${gp.lon.toFixed(6)}${gp.alt != null ? " · altitude " + Math.round(gp.alt) + " m" : ""}`, "Reveals exactly where the photo was taken, usually to within a few metres. A photo taken at home shows your home address to anyone who views the original file.", 50);
+        if (t.exif[0xA431] || t.exif[0xA435]) add("high", "Device / lens serial number", String(t.exif[0xA431] || t.exif[0xA435]), "A unique serial number can link photos to one specific camera and, with a purchase record, to its owner.", 14);
+        if (t.exif[0xA430] || t.ifd0[0x013B]) add("high", "Owner / artist name", String(t.exif[0xA430] || t.ifd0[0x013B]), "Your name is embedded in the file and travels with every copy.", 14);
+        if (t.exif[0x9003] || t.exif[0x9004]) add("medium", "Exact date and time taken", String(t.exif[0x9003] || t.exif[0x9004]), "Combined with a location, this reveals when you are usually at a place, or when your home is empty.", 8);
+        if (t.ifd0[0x0110] || t.ifd0[0x010F]) add("low", "Camera / phone model", `${t.ifd0[0x010F] || ""} ${t.ifd0[0x0110] || ""}`.trim(), "Tells viewers which device you own, and helps attackers target device-specific flaws.", 5);
+        if (t.ifd0[0x0131]) add("low", "Editing software", String(t.ifd0[0x0131]), "Shows which app or version edited or created the picture.", 3);
+        if (t.exif[0x9286]) add("medium", "User comment", String(R.fields.find(f => f[0] === "User comment")?.[1] || ""), "Free-text notes can contain names, places or other private details.", 8);
+        if (t.thumb) add("medium", "Embedded thumbnail preview", t.thumbBytes ? fmtBytes(t.thumbBytes) : "present", "A small preview copy is stored inside the file. If you crop or blur the main picture in some editors, the old thumbnail can still show the original.", 8);
+        R.thumbBytes = t.thumbBytes || 0;
+    }
+    if (R.xmp) add("medium", "XMP metadata block", Object.keys(R.xmp).length ? Object.entries(R.xmp).map(([k, v]) => `${k}: ${v}`).join(" · ") : "present", "XMP can hold author names, titles, locations, edit history and software details.", 8);
+    if (R.iptc) add("medium", "IPTC / Photoshop block", "present", "Newsroom-style fields such as caption, keywords, credit and city may be stored here.", 8);
+    if (R.comments.length) add("medium", "JPEG comment", R.comments.join(" | ").slice(0, 160), "Free-text comment embedded in the file.", 6);
+    if (R.textChunks.length) add("medium", "PNG text chunks", R.textChunks.map(c => c.key).slice(0, 8).join(", "), "PNG files can store text such as author, software and prompts used to generate the image.", 8);
+    if (R.png && R.png.chunks.some(c => c.type === "tIME")) add("low", "Last-modified timestamp (tIME)", "present", "Records when the PNG was last changed.", 3);
+    if (R.mpf) add("low", "Multi-picture data (MPF)", "present", "Used by some phones to attach extra images (such as depth maps or previews).", 4);
+    if (R.trailing > 64) add("medium", "Extra data hidden after the image", fmtBytes(R.trailing), "Some phones and apps append extra content (for example a motion-photo video or a second image) after the picture. It is invisible when you view the photo but travels with the file.", 8);
+    R.score = Math.min(100, R.finds.reduce((a, f) => a + f.pts, 0));
+    R.level = R.score >= 50 ? ["High privacy exposure", "danger", "bad"] : R.score >= 20 ? ["Moderate privacy exposure", "warning", "warn"] : R.finds.length ? ["Low privacy exposure", "success", "ok"] : ["No private metadata found", "success", "ok"];
+    return R;
+}
+function minimalExif(orient) {
+    const b = [0xFF, 0xE1, 0x00, 0x22, 0x45, 0x78, 0x69, 0x66, 0x00, 0x00, 0x4D, 0x4D, 0x00, 0x2A, 0x00, 0x00, 0x00, 0x08, 0x00, 0x01, 0x01, 0x12, 0x00, 0x03, 0x00, 0x00, 0x00, 0x01, 0x00, orient, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
+    return Uint8Array.from(b);
+}
+function cleanPhoto(u8, R, keepOri) {
+    const out = [];
+    if (R.fmt === "JPEG") {
+        const j = R.jpeg; out.push(u8.subarray(0, 2));
+        const orientSeg = keepOri && R.orient > 1 && R.orient <= 8 ? minimalExif(R.orient) : null; let placed = !orientSeg;
+        j.segs.forEach(s => {
+            const keep = ["jfif", "icc", "adobe"].includes(s.kind) || (s.mk !== 0xFE && !(s.mk >= 0xE0 && s.mk <= 0xEF));
+            if (!keep) return;
+            if (!placed && s.kind !== "jfif") { out.push(orientSeg); placed = true; }
+            out.push(u8.subarray(s.start, s.end)); if (!placed && s.kind === "jfif") { out.push(orientSeg); placed = true; }
+        });
+        const sosEnd = j.sos ? j.sos.end : 2, end = j.eoi > 0 ? j.eoi : u8.length; out.push(u8.subarray(sosEnd, end));
+    } else if (R.fmt === "PNG") {
+        out.push(u8.subarray(0, 8)); const drop = new Set(["tEXt", "zTXt", "iTXt", "eXIf", "tIME"]);
+        R.png.chunks.forEach(c => { if (!drop.has(c.type)) out.push(u8.subarray(c.start, c.end)); });
+    }
+    const len = out.reduce((a, b) => a + b.length, 0), res = new Uint8Array(len); let p = 0; out.forEach(b => { res.set(b, p); p += b.length; }); return res;
+}
+let PHOTO = null;
+async function readPhotoFile(f) {
+    if (!f) throw new Error("Choose a JPEG or PNG photo first.");
+    if (f.size > 60 * 1048576) throw new Error("That file is over 60 MB. Choose a smaller photo.");
+    return new Uint8Array(await f.arrayBuffer());
+}
+window.scanPhotoMetadata = async function () {
+    const f = $("exifFile")?.files?.[0];
+    busy("exifResult", "Reading the file's hidden data…");
+    let u8; try { u8 = await readPhotoFile(f); } catch (e) { return fail("exifResult", e.message); }
+    const R = analyzePhoto(u8, f.name);
+    if (!R.supported) return fail("exifResult", /heic|heif|webp|avif|gif|tiff?/i.test(f.name + f.type) ? "This format (HEIC/WebP/AVIF/GIF/TIFF) is not supported for lossless cleaning here. Export or convert the photo to JPEG or PNG first, then scan it." : "Only JPEG and PNG photos are supported.", "warning");
+    PHOTO = { u8, R, f };
+    const top = R.finds.slice().sort((a, b) => SEV_ORDER[a.sev] - SEV_ORDER[b.sev]);
+    const k = R.level[2];
+    const prev = URL.createObjectURL(new Blob([u8], { type: R.fmt === "PNG" ? "image/png" : "image/jpeg" }));
+    const summary = verdict(R.level[2] === "ok" ? "✅" : R.level[2] === "warn" ? "⚠️" : "📍", R.level[0], R.level[1], `${esc(f.name)} · ${R.fmt} · ${R.w}×${R.h} · ${fmtBytes(R.size)}`) + meter(R.score, k) +
+        `<div class="tpr-prev"><img src="${prev}" alt="Preview of the selected photo" loading="lazy"></div>` +
+        (top.length ? kv(top.slice(0, 6).map(x => [x.label, esc(x.value.slice(0, 70))])) : "") +
+        `<label class="tp-check"><input type="checkbox" id="exifKeepOri" checked> Keep photo rotation (recommended)</label><div class="tp-actions"><button type="button" class="tp-act" data-exif-clean>🧹 Remove all metadata &amp; download</button></div>` +
+        note("Your photo never leaves this device. The clean copy is made by deleting metadata blocks only: the picture pixels are not re-compressed.");
+    const html = rHero(R.level[2] === "ok" ? "✅" : "📍", esc(R.level[0]), `Photo Metadata Scanner · ${esc(R.fmt)} · ${R.finds.length} privacy finding(s)`, k, rGauge(R.score, "exposure", k)) +
+        rTiles([["File", esc(f.name)], ["Format", esc(R.fmt)], ["Dimensions", `${R.w} × ${R.h}`], ["Size", fmtBytes(R.size)], ["Privacy exposure", R.score + "/100"], ["Findings", String(R.finds.length)]]) +
+        (R.gps ? rSec("📍", "Exact location stored in this photo", rTiles([["Latitude", R.gps.lat.toFixed(6)], ["Longitude", R.gps.lon.toFixed(6)], ["Altitude", R.gps.alt != null ? Math.round(R.gps.alt) + " m" : "n/a"], ["GPS time", esc(R.gps.time || R.gps.date || "n/a")]]) + `<p class="tpr-p"><a class="cg-result-link" href="https://www.openstreetmap.org/?mlat=${R.gps.lat.toFixed(6)}&mlon=${R.gps.lon.toFixed(6)}#map=17/${R.gps.lat.toFixed(6)}/${R.gps.lon.toFixed(6)}" target="_blank" rel="noopener noreferrer">View this spot on OpenStreetMap ↗</a></p>` + rPara("Anyone who receives the <b>original file</b> can read these coordinates with free tools. Many social apps strip location when you upload a picture, but sending the original as a file, document, email attachment or cloud link usually keeps it.")) : "") +
+        rSec("🔍", "What privacy risks were found", top.length ? top.map(f2 => `<div class="tpr-sig tpr-s-${f2.sev}"><span class="tpr-dot"></span><div><b>${esc(f2.label)}: <span class="tpr-val">${esc(f2.value.slice(0, 120))}</span></b><p>${esc(f2.why)}</p></div></div>`).join("") : rPara("No location, device or author metadata was found in this file. It is already clean.")) +
+        (R.fields.length ? rSec("📋", "Every readable EXIF field", rTable(["Field", "Value"], R.fields.map(([a, b]) => [esc(a), `<code>${esc(String(b).slice(0, 120))}</code>`]))) : "") +
+        rSec("🧹", "Clean it before you share", `<p class="tpr-p">Press the button below to download a copy with all of these removed. The picture itself is not re-compressed, so quality stays identical.</p><div class="tp-actions"><button type="button" class="tp-act" data-exif-clean>🧹 Remove all metadata &amp; download</button></div>` + rList(["<b>JPEG:</b> removes EXIF, XMP, IPTC, comments, thumbnails and extra appended data. Colour profile (ICC) is kept so colours look the same.", "<b>PNG:</b> removes text chunks (author, prompts, software), embedded EXIF and the modification timestamp.", "Photo <b>rotation</b> is preserved by keeping one tiny orientation tag, so portrait photos do not turn sideways."])) +
+        rSec("🛡️", "Habits that protect your location", rList(["Turn off <b>Location / Geotag</b> in your camera app if you do not need it (wording varies by phone; on iPhone: Settings → Privacy &amp; Security → Location Services → Camera → Never).", "Before sharing originals, clean them with this tool.", "Remember backgrounds, street signs and reflections can reveal a place even with no metadata.", "Screenshots of a photo normally do not carry the original's GPS data."])) +
+        rPara("<small>Supports JPEG and PNG. For HEIC (iPhone) choose 'Most Compatible' in camera settings or export as JPEG first. The scan reads EXIF/XMP/IPTC; unusual maker-specific blocks are removed from JPEG but not itemised.</small>");
+    setR("exifResult", "exif", "Photo Metadata Scanner", `${R.level[0]} · ${R.score}/100`, summary, html, R.level[1]);
+};
+document.addEventListener("click", e => {
+    const b = e.target.closest("[data-exif-clean]"); if (!b) return;
+    if (!PHOTO) return;
+    const keep = !($("exifKeepOri") && !$("exifKeepOri").checked);
+    const clean = cleanPhoto(PHOTO.u8, PHOTO.R, keep), V = analyzePhoto(clean, PHOTO.f.name), base = PHOTO.f.name.replace(/\.[^.]+$/, ""), ext = PHOTO.R.fmt === "PNG" ? "png" : "jpg";
+    dlBlob(`${base}-clean.${ext}`, new Blob([clean], { type: PHOTO.R.fmt === "PNG" ? "image/png" : "image/jpeg" }));
+    const left = V.finds.filter(f => !(f.label === "Camera / phone model" && false)).length;
+    b.textContent = `✓ Clean copy saved (${fmtBytes(clean.length)}, ${fmtBytes(PHOTO.u8.length - clean.length)} smaller). Re-scan: ${left ? left + " item(s) remain" : "no private metadata left"}`;
+    b.classList.add("tp-done");
+});
+
+/* ============================================================
+   34. QR STUDIO  (safe QR generator, runs fully offline)
+   ============================================================ */
+const QRS = { payload: "", n: 0, ver: 0, svg: "", png: "", ec: "M", bytes: 0 };
+const hexToRgb = h => { const m = /^#?([0-9a-f]{6})$/i.exec(h || ""); if (!m) return [0, 0, 0]; const v = parseInt(m[1], 16); return [(v >> 16) & 255, (v >> 8) & 255, v & 255]; };
+const relLum = ([r, g, b]) => { const f = c => { c /= 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); }; return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); };
+const contrast = (a, b) => { const x = relLum(a), y = relLum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+const wifiEsc = s => String(s).replace(/([\\;,:"])/g, "\\$1");
+function waNumber(raw) { let d = String(raw || "").replace(/\D/g, ""); if (/^00/.test(d)) d = d.slice(2); else if (/^03\d{9}$/.test(d)) d = "92" + d.slice(1); return d; }
+function qrBuild() {
+    const type = $("qrsType").value, g = id => ($(id)?.value || "").trim(), warns = [];
+    let payload = "", label = "";
+    if (type === "url") {
+        let u = g("qrsMain"); if (!u) throw new Error("Enter the web address to put in the QR code.");
+        if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(u)) { warns.push(["medium", "No https:// was typed", "Added https:// automatically. Always include the full address you intend people to open."]); u = "https://" + u; }
+        let x; try { x = new URL(u); } catch (_) { throw new Error("That is not a valid web address."); }
+        if (x.protocol !== "https:") warns.push(["high", "Link is not HTTPS", "People scanning will land on an unencrypted page. Use https:// whenever possible."]);
+        try { const s = lexicalSignals(u); const bad = s.S.filter(z => ["critical", "high"].includes(z.sev)); bad.slice(0, 3).forEach(z => warns.push([z.sev, "Link check: " + z.title, z.why])); } catch (_) { }
+        payload = u; label = "Website link";
+    } else if (type === "text") { payload = $("qrsBody").value.replace(/\r\n/g, "\n"); if (!payload.trim()) throw new Error("Type the text to encode."); label = "Plain text"; }
+    else if (type === "wifi") {
+        const ssid = g("qrsWifiSsid"), pw = $("qrsWifiPass").value, sec = $("qrsWifiSec").value, hid = $("qrsWifiHidden").checked;
+        if (!ssid) throw new Error("Enter the Wi-Fi network name (SSID)."); if (sec !== "nopass" && !pw) throw new Error("Enter the Wi-Fi password, or choose 'No password'.");
+        if (sec === "WEP") warns.push(["high", "WEP is broken", "WEP can be cracked in minutes. Use WPA2 or WPA3 on your router."]);
+        if (sec === "nopass") warns.push(["high", "Open network", "Anyone nearby can join and may be able to watch unencrypted traffic. Use a password."]);
+        if (sec !== "nopass" && pw.length < 12) warns.push(["medium", "Short Wi-Fi password", "A WPA2/WPA3 password of 12+ characters (ideally a passphrase) resists guessing much better."]);
+        warns.push(["info", "The password is readable by anyone who scans the code", "Treat this QR like the password itself. For visitors or a cafe, put it on a guest network, not your main one."]);
+        payload = `WIFI:T:${sec};S:${wifiEsc(ssid)};${sec === "nopass" ? "" : "P:" + wifiEsc(pw) + ";"}${hid ? "H:true;" : ""};`; label = "Wi-Fi network";
+    } else if (type === "phone") { const d = g("qrsMain").replace(/[^\d+]/g, ""); if ((d.match(/\d/g) || []).length < 6) throw new Error("Enter a valid phone number."); payload = "tel:" + d; label = "Phone call"; }
+    else if (type === "sms") { const d = g("qrsMain").replace(/[^\d+]/g, ""); if ((d.match(/\d/g) || []).length < 3) throw new Error("Enter the phone number to text."); payload = `SMSTO:${d}:${$("qrsBody").value.trim()}`; label = "SMS message"; }
+    else if (type === "email") { const a = g("qrsMain"); if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(a)) throw new Error("Enter a valid email address."); const q = []; if (g("qrsSub")) q.push("subject=" + encodeURIComponent(g("qrsSub"))); if ($("qrsBody").value.trim()) q.push("body=" + encodeURIComponent($("qrsBody").value.trim())); payload = "mailto:" + a + (q.length ? "?" + q.join("&") : ""); label = "Email"; }
+    else if (type === "whatsapp") { const d = waNumber(g("qrsMain")); if (d.length < 8 || d.length > 15) throw new Error("Enter the WhatsApp number with country code, e.g. +92 300 1234567 or 0300 1234567."); payload = "https://wa.me/" + d + ($("qrsBody").value.trim() ? "?text=" + encodeURIComponent($("qrsBody").value.trim()) : ""); label = "WhatsApp chat"; }
+    return { type, payload, label, warns };
+}
+function qrRender(payload, ecKey, size, qz, fg, bg) {
+    const bin = unescape(encodeURIComponent(payload)), qr = new CG_QRLIB.QRCode(-1, CG_QRLIB.Level[ecKey]);
+    qr.addData(bin); try { qr.make(); } catch (e) { throw new Error("That content is too long for a QR code at this error-correction level. Shorten it or choose a lower level (L)."); }
+    const n = qr.getModuleCount(), scale = Math.max(2, Math.floor(size / (n + 2 * qz))), px = scale * (n + 2 * qz);
+    const cv = document.createElement("canvas"); cv.width = cv.height = px; const c = cv.getContext("2d"); c.fillStyle = bg; c.fillRect(0, 0, px, px); c.fillStyle = fg;
+    let path = ""; for (let r = 0; r < n; r++) { let run = 0; for (let col = 0; col <= n; col++) { const d = col < n && qr.isDark(r, col); if (d) { run++; } else if (run) { const x = col - run; c.fillRect((x + qz) * scale, (r + qz) * scale, run * scale, scale); path += `M${x + qz},${r + qz}h${run}v1h-${run}z`; run = 0; } } }
+    const tot = n + 2 * qz, svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${tot} ${tot}" width="${px}" height="${px}" shape-rendering="crispEdges"><rect width="${tot}" height="${tot}" fill="${bg}"/><path d="${path}" fill="${fg}"/></svg>`;
+    return { cv, n, ver: (n - 17) / 4, svg, px, bytes: bin.length };
+}
+window.generateQRStudio = function () {
+    const out = "qrGenResult"; let B;
+    try { B = qrBuild(); } catch (e) { return fail(out, e.message, "warning"); }
+    const ec = $("qrsEc").value, size = +$("qrsSize").value || 512, qz = +$("qrsQz").value || 4, fg = $("qrsFg").value || "#000000", bg = $("qrsBg").value || "#ffffff";
+    let Q; try { Q = qrRender(B.payload, ec, size, qz, fg, bg); } catch (e) { return fail(out, e.message, "warning"); }
+    const cr = contrast(hexToRgb(fg), hexToRgb(bg)), W = B.warns.slice();
+    if (relLum(hexToRgb(fg)) > relLum(hexToRgb(bg))) W.push(["high", "Inverted colours (light on dark)", "Many scanner apps only read dark modules on a light background. Use a dark foreground and a light background."]);
+    else if (cr < 4) W.push(["medium", `Low contrast (${cr.toFixed(1)}:1)`, "Scanners need strong contrast. Aim for at least 4:1; black on white is 21:1."]);
+    if (qz < 4) W.push(["medium", "Quiet zone smaller than 4 modules", "The specification asks for a blank border of at least 4 modules. A smaller border can make scanning fail."]);
+    if (Q.ver >= 15) W.push(["info", `Dense code (version ${Q.ver})`, "Print it larger, and shorten the content if you can. Shorter data makes a simpler, easier-to-scan code."]);
+    Object.assign(QRS, { payload: B.payload, n: Q.n, ver: Q.ver, svg: Q.svg, png: Q.cv.toDataURL("image/png"), ec, bytes: Q.bytes, label: B.label, type: B.type, px: Q.px, qz, warns: W, fg, bg, cr });
+    const ecTxt = { L: "~7%", M: "~15%", Q: "~25%", H: "~30%" }[ec], k = W.some(w => w[0] === "high" || w[0] === "critical") ? "warn" : "ok";
+    const summary = verdict("🔳", `${esc(B.label)} QR code ready`, k === "ok" ? "success" : "warning", `Version ${Q.ver} · ${Q.n}×${Q.n} modules · ${Q.px}×${Q.px}px · error correction ${ec} (recovers ${ecTxt} damage)`) +
+        `<div class="tpr-prev tpr-qr"><img src="${QRS.png}" alt="Generated QR code for ${esc(B.label)}"></div>` +
+        `<div class="tp-actions"><button type="button" class="tp-act" data-qr-dl="png">⬇ PNG</button><button type="button" class="tp-act" data-qr-dl="svg">⬇ SVG</button><button type="button" class="tp-act" data-qr-dl="copy">⧉ Copy content</button></div>` +
+        (W.length ? `<div class="tp-note">${W.slice(0, 3).map(w => (w[0] === "info" ? "ℹ️ " : "⚠️ ") + esc(w[1])).join("<br>")}</div>` : note("No problems found. Test the code with two different phones before printing."));
+    const html = rHero("🔳", `${esc(B.label)} QR code`, `QR Studio · version ${Q.ver} · ${Q.bytes} byte(s) encoded`, k, rGauge(Math.min(100, Math.round(cr / 21 * 100)), "contrast", cr >= 4 ? "ok" : "warn")) +
+        `<div class="tpr-prev tpr-qr tpr-qr-big"><img src="${QRS.png}" alt="QR code"></div><div class="tp-actions"><button type="button" class="tp-act" data-qr-dl="png">⬇ Download PNG</button><button type="button" class="tp-act" data-qr-dl="svg">⬇ Download SVG</button></div>` +
+        rTiles([["Content type", esc(B.label)], ["QR version", `${Q.ver} (of 40)`], ["Modules", `${Q.n} × ${Q.n}`], ["Data size", `${Q.bytes} bytes`], ["Error correction", `${ec} · recovers ${ecTxt}`], ["Contrast", `${cr.toFixed(1)}:1`]]) +
+        rSec("🧾", "Exactly what the code contains", `<pre class="tpr-pre">${esc(B.payload)}</pre>` + rPara("Anyone scanning gets this text. Check it before printing: a typo or a wrong address goes on every copy.")) +
+        rSec("🚦", "Safety and scan-quality check", W.length ? W.map(w => rSignal({ sev: w[0], title: w[1], why: w[2] })).join("") : rPara("No problems found.")) +
+        rSec("🖨️", "Printing and placement tips", rList(["Keep a blank border (quiet zone) of at least 4 modules around the code.", "Rule of thumb: print at least about 2 × 2 cm for close-range scanning, and larger for denser codes or longer distances.", "Use dark modules on a light background. Test with two different phones, in the lighting where it will be used.", "Prefer SVG for printing: it stays sharp at any size.", "Write the destination in words next to the code so people know what they are scanning."])) +
+        rSec("🧠", "How QR codes work (and stay accurate)", rList(["A QR code stores data in a grid of modules. Versions run from 1 (21×21) to 40 (177×177); every version adds 4 modules per side.", "Reed–Solomon error correction lets a code survive damage: level L restores about 7%, M about 15%, Q about 25%, H about 30%.", "This generator makes <b>static</b> codes: the content is baked into the image, nothing is tracked, and it cannot be changed later.", "Everything is created in your browser. Nothing you type is sent anywhere."])) +
+        rSec("🛡️", "Stay safe with QR codes", rList(["Never scan a QR sticker placed over another one: criminals paste fake codes over real payment or parking codes ('quishing').", "Check the web address your phone shows before opening it.", "Do not scan codes from unexpected emails or messages that push you to log in or pay.", "A QR code that asks for your card, PIN or OTP is a scam."])) +
+        rPara("<small>QR Code is a registered trademark of DENSO WAVE INCORPORATED. Encoder: Kazuhiko Arase's MIT-licensed 'QRCode for JavaScript'.</small>");
+    setR("qrGenResult", "qrgen", "QR Studio", `${B.label} · version ${Q.ver}`, summary, html, k === "ok" ? "success" : "warning");
+};
+document.addEventListener("click", e => {
+    const b = e.target.closest("[data-qr-dl]"); if (!b || !QRS.payload) return; const a = b.dataset.qrDl, base = "cyberguard-qr-" + (QRS.type || "code");
+    if (a === "png") { fetch(QRS.png).then(r => r.blob()).then(bl => dlBlob(base + ".png", bl)); }
+    else if (a === "svg") dlBlob(base + ".svg", QRS.svg, "image/svg+xml");
+    else if (a === "copy") { (navigator.clipboard ? navigator.clipboard.writeText(QRS.payload) : Promise.reject()).then(() => { b.textContent = "✓ Copied"; setTimeout(() => (b.textContent = "⧉ Copy content"), 1500); }).catch(() => { }); }
+});
+function qrsToggle() {
+    const t = $("qrsType").value, show = (id, on) => { const el = $(id); if (el) el.closest(".qrs-f").style.display = on ? "" : "none"; };
+    const cfg = { url: ["Web address", "https://example.com", 1, 0, 0, 0], text: ["", "", 0, 0, 1, 0], wifi: ["", "", 0, 0, 0, 1], phone: ["Phone number", "+92 300 1234567", 1, 0, 0, 0], sms: ["Phone number", "+92 300 1234567", 1, 0, 1, 0], email: ["Email address", "name@example.com", 1, 1, 1, 0], whatsapp: ["WhatsApp number", "+92 300 1234567 or 0300 1234567", 1, 0, 1, 0] }[t];
+    show("qrsMain", !!cfg[2]); show("qrsSub", !!cfg[3]); show("qrsBody", !!cfg[4]); show("qrsWifiSsid", !!cfg[5]); show("qrsWifiPass", !!cfg[5]); show("qrsWifiSec", !!cfg[5]); show("qrsWifiHidden", !!cfg[5]);
+    const m = $("qrsMain"); if (m) { m.placeholder = cfg[1]; const lb = m.closest(".qrs-f").querySelector("label"); if (lb) lb.textContent = cfg[0]; }
+    const bd = $("qrsBody"), bl = bd.closest(".qrs-f").querySelector("label"); bl.textContent = t === "text" ? "Text to encode" : t === "email" ? "Email body (optional)" : "Message (optional)"; bd.placeholder = t === "text" ? "Type any text…" : "Optional message…";
+}
+
+/* ============================================================
+   35. SENSITIVE DATA REDACTOR (PII + secrets scanner)
+   ============================================================ */
+const wordB = (t, s, e) => !/[A-Za-z0-9_]/.test(t[s - 1] || " ") && !/[A-Za-z0-9_]/.test(t[e] || " ");
+const digitB = (t, s, e) => !/\d/.test(t[s - 1] || " ") && !/\d/.test(t[e] || " ");
+const RED_DETECT = [
+    { t: "PRIVATE_KEY", label: "Private key block", sev: "critical", conf: "certain", secret: true, re: /-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----[\s\S]*?-----END [A-Z0-9 ]*PRIVATE KEY-----/g },
+    { t: "AWS_ACCESS_KEY", label: "AWS access key ID", sev: "critical", conf: "certain", secret: true, re: /(?:AKIA|ASIA)[A-Z0-9]{16}/g, ok: wordB },
+    { t: "GITHUB_TOKEN", label: "GitHub token", sev: "critical", conf: "certain", secret: true, re: /(?:gh[pousr]_[A-Za-z0-9]{36,255}|github_pat_[A-Za-z0-9_]{22,255})/g, ok: wordB },
+    { t: "SLACK_TOKEN", label: "Slack token", sev: "critical", conf: "certain", secret: true, re: /xox[abprs]-[A-Za-z0-9-]{10,}/g, ok: wordB },
+    { t: "STRIPE_LIVE_SECRET", label: "Stripe live secret key", sev: "critical", conf: "certain", secret: true, re: /(?:sk|rk)_live_[0-9A-Za-z]{16,}/g, ok: wordB },
+    { t: "GOOGLE_API_KEY", label: "Google API key", sev: "high", conf: "certain", secret: true, re: /AIza[0-9A-Za-z_-]{35}/g, ok: wordB },
+    { t: "JWT", label: "JSON Web Token", sev: "high", conf: "certain", secret: true, re: /eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{4,}/g, ok: wordB },
+    { t: "BEARER_TOKEN", label: "Bearer token", sev: "high", conf: "likely", secret: true, re: /\bBearer\s+([A-Za-z0-9._~+\/=-]{20,})/gi, g: 1 },
+    { t: "OPENAI_STYLE_KEY", label: "Possible API key (sk-…)", sev: "high", conf: "possible", secret: true, re: /sk-(?:proj-)?[A-Za-z0-9_-]{20,}/g, ok: wordB },
+    { t: "URL_PASSWORD", label: "Password inside a URL", sev: "critical", conf: "certain", secret: true, re: /\b[a-z][a-z0-9+.-]*:\/\/[^\s:@\/]+:([^\s@\/]{3,})@/gi, g: 1 },
+    { t: "PASSWORD_VALUE", label: "Password / secret value", sev: "critical", conf: "likely", secret: true, re: /\b(?:pass(?:word)?|passwd|pwd|secret|api[_-]?key|access[_-]?token|auth[_-]?token|client[_-]?secret)\s*[:=]\s*["']?([^\s"',;&]{4,})/gi, g: 1 },
+    { t: "CREDIT_CARD", label: "Payment card number", sev: "high", conf: "certain", re: /\d(?:[ -]?\d){12,18}/g, ok: (t, s, e) => digitB(t, s, e), v: m => { const d = m.replace(/\D/g, ""); return d.length >= 13 && d.length <= 19 && !/^(\d)\1+$/.test(d) && luhn(d) && /^(?:4|5[1-5]|2[2-7]|3[47]|3[0689]|6)/.test(d); } },
+    { t: "IBAN", label: "IBAN bank account", sev: "high", conf: "certain", re: /\b[A-Z]{2}\d{2}(?: ?[A-Z0-9]{2,4}){3,8}\b/g, v: m => { const s = m.replace(/ /g, ""); return IBAN_LEN[s.slice(0, 2)] === s.length && mod97(s) === 1; } },
+    { t: "CNIC", label: "CNIC number (xxxxx-xxxxxxx-x)", sev: "high", conf: "likely", re: /\d{5}-\d{7}-\d/g, ok: digitB },
+    { t: "EMAIL", label: "Email address", sev: "medium", conf: "certain", re: /[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}/g },
+    { t: "PHONE_PK", label: "Pakistani mobile number", sev: "medium", conf: "likely", re: /(?:\+92|0092|92|0)[\s-]?3\d{2}[\s-]?\d{7}/g, ok: digitB },
+    { t: "ID_13_DIGITS", label: "13-digit number (could be a CNIC)", sev: "medium", conf: "possible", re: /\d{13}/g, ok: digitB },
+    { t: "PHONE_INTL", label: "International phone number", sev: "medium", conf: "possible", re: /\+\d{1,3}[ -]?\d{2,4}[ -]?\d{3,4}[ -]?\d{3,4}/g, ok: digitB },
+    { t: "IPV4", label: "IPv4 address", sev: "low", conf: "likely", re: /(?:\d{1,3}\.){3}\d{1,3}/g, ok: (t, s, e) => !/[\d.]/.test(t[s - 1] || " ") && !/[\d]/.test(t[e] || " ") && !/\bv(?:ersion)?\s*$/i.test(t.slice(Math.max(0, s - 9), s)), v: m => m.split(".").every(x => +x <= 255 && String(+x) === x) },
+    { t: "MAC_ADDRESS", label: "MAC address", sev: "low", conf: "likely", re: /(?:[0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}/g, ok: wordB }
+];
+function findSensitive(text) {
+    const acc = [], taken = [];
+    RED_DETECT.forEach((d, pri) => {
+        d.re.lastIndex = 0;
+        for (const m of text.matchAll(d.re)) {
+            const full = m[0]; let s = m.index, e = s + full.length, val = full;
+            if (d.g) { const gv = m[d.g]; if (!gv) continue; s = m.index + full.lastIndexOf(gv); e = s + gv.length; val = gv; }
+            if (d.ok && !d.ok(text, s, e)) continue; if (d.v && !d.v(val)) continue;
+            if (taken.some(r => s < r[1] && e > r[0])) continue;
+            taken.push([s, e]); acc.push({ s, e, d, val });
+        }
+    });
+    return acc.sort((a, b) => a.s - b.s);
+}
+function maskValue(f, mode, idx) {
+    const d = f.d, v = f.val;
+    if (mode === "pseudo") return `<${d.t}_${idx}>`;
+    if (mode === "partial" && !d.secret) {
+        const digits = v.replace(/\D/g, ""), keep = 4;
+        if (d.t === "EMAIL") { const [l, dom] = v.split("@"), parts = dom.split("."), tld = parts.pop(); return `${l[0]}***@${(parts[0] || "")[0] || ""}***.${tld}`; }
+        if (d.t === "IBAN") { const s = v.replace(/ /g, ""); return s.slice(0, 4) + "•".repeat(Math.max(4, s.length - 8)) + s.slice(-4); }
+        if (d.t === "IPV4") { const p = v.split("."); return `${p[0]}.${p[1]}.•••.•••`; }
+        if (digits.length >= 8) return "•".repeat(Math.max(4, digits.length - keep)) + digits.slice(-keep);
+        return `[REDACTED:${d.t}]`;
+    }
+    return `[REDACTED:${d.t}]`;
+}
+const ROTATE = { AWS_ACCESS_KEY: "AWS: in IAM, make the key Inactive, then delete it and create a new one. Check CloudTrail for use of the old key.", GITHUB_TOKEN: "GitHub: Settings → Developer settings → revoke the token, then create a new one with minimum scopes.", SLACK_TOKEN: "Slack: revoke the token in the app/OAuth settings and issue a new one.", STRIPE_LIVE_SECRET: "Stripe: roll the key in the Dashboard (Developers → API keys) and review recent activity.", GOOGLE_API_KEY: "Google Cloud: create a new key, restrict it (by API and by referrer/IP) and delete the old one.", PRIVATE_KEY: "Treat the key pair as compromised: generate a new pair, replace the public key everywhere it was trusted, and revoke the old one.", JWT: "Invalidate the session/token server-side and force re-login; rotate the signing secret if it may have leaked.", BEARER_TOKEN: "Revoke the token with the issuing service and issue a new one.", OPENAI_STYLE_KEY: "Revoke the key in the provider's dashboard and create a new one.", URL_PASSWORD: "Change that account's password immediately and remove credentials from the URL.", PASSWORD_VALUE: "Change the password/secret now; never keep secrets in logs, tickets or screenshots." };
+window.redactSensitive = function () {
+    const text = $("redInput")?.value || "";
+    if (!text.trim()) return fail("redactResult", "Paste the text, log, config or message you want to check.");
+    if (text.length > 400000) return fail("redactResult", "That is too large. Paste up to 400,000 characters.");
+    const mode = $("redMode").value, F = findSensitive(text), counters = {}, outParts = []; let p = 0;
+    F.forEach(f => { counters[f.d.t] = (counters[f.d.t] || 0) + 1; f.masked = maskValue(f, mode, counters[f.d.t]); outParts.push(text.slice(p, f.s), f.masked); p = f.e; }); outParts.push(text.slice(p));
+    const red = outParts.join(""), by = {}; F.forEach(f => { (by[f.d.t] = by[f.d.t] || { d: f.d, n: 0, ex: f.masked }).n++; });
+    const secrets = F.filter(f => f.d.secret).length, sevN = { critical: 0, high: 0, medium: 0, low: 0 }; F.forEach(f => sevN[f.d.sev]++);
+    const score = Math.min(100, sevN.critical * 30 + sevN.high * 14 + sevN.medium * 5 + sevN.low * 2);
+    const lv = !F.length ? ["Nothing sensitive detected", "success", "ok"] : sevN.critical ? ["Secrets found: do not share this text", "danger", "bad"] : sevN.high ? ["Sensitive data found", "warning", "warn"] : ["Some personal data found", "warning", "warn"];
+    const summary = verdict(!F.length ? "✅" : sevN.critical ? "🚨" : "⚠️", lv[0], lv[1], `${F.length} item(s) found · ${Object.keys(by).length} type(s) · ${text.length.toLocaleString()} characters scanned`) + meter(score, lv[2]) +
+        (F.length ? `<div class="tp-chips">${Object.values(by).map(x => badge(`${x.d.label} ×${x.n}`, x.d.sev === "critical" || x.d.sev === "high" ? "bad" : x.d.sev === "medium" ? "warn" : "info")).join("")}</div>` : "") +
+        `<textarea id="redOut" class="tp-out-area" readonly rows="6" aria-label="Redacted text"></textarea><div class="tp-actions"><button type="button" class="tp-act" data-red="copy">⧉ Copy redacted text</button><button type="button" class="tp-act" data-red="dl">⬇ Download .txt</button></div>` +
+        note(F.length ? (secrets ? "If any real secret was exposed anywhere (chat, ticket, repo, screenshot), treat it as compromised and rotate it." : "Review the output before sharing: automated detection can miss names, addresses and context.") : "Nothing matched the built-in patterns. Names, home addresses and free-text secrets are not detected automatically.");
+    const html = rHero(!F.length ? "✅" : "🙈", esc(lv[0]), `Sensitive Data Redactor · ${F.length} finding(s) · mode: ${mode === "mask" ? "mask" : mode === "partial" ? "partial" : "pseudonymise"}`, lv[2], rGauge(score, "exposure", lv[2])) +
+        rTiles([["Findings", String(F.length)], ["Critical", String(sevN.critical)], ["High", String(sevN.high)], ["Medium / low", String(sevN.medium + sevN.low)], ["Secrets & keys", String(secrets)], ["Characters scanned", text.length.toLocaleString()]]) +
+        rSec("📋", "What was found", F.length ? rTable(["Type", "Count", "Severity", "Confidence", "Replaced with (example)"], Object.values(by).sort((a, b) => SEV_ORDER[a.d.sev] - SEV_ORDER[b.d.sev]).map(x => [esc(x.d.label), String(x.n), badge(x.d.sev.toUpperCase(), x.d.sev === "critical" || x.d.sev === "high" ? "bad" : x.d.sev === "medium" ? "warn" : "info"), esc(x.d.conf), `<code>${esc(x.ex)}</code>`])) : rPara("No patterns matched.")) +
+        rSec("🙈", "Redacted text", `<pre class="tpr-pre">${esc(red.length > 6000 ? red.slice(0, 6000) + "\n… (shortened here, full text is in the tool)" : red)}</pre>` + `<div class="tp-actions"><button type="button" class="tp-act" data-red="copy">⧉ Copy redacted text</button><button type="button" class="tp-act" data-red="dl">⬇ Download .txt</button></div>`) +
+        (secrets ? rSec("🔑", "Rotate every exposed secret", rSteps([...new Set(F.filter(f => f.d.secret).map(f => ROTATE[f.d.t]).filter(Boolean))].map(esc).concat(["Search your logs and repositories for the old value, and check the provider's activity log for unexpected use.", "Remove secrets from code: use environment variables or a secrets manager, and enable secret scanning (for example gitleaks or trufflehog) in your pipeline."]))) : "") +
+        rSec("🧭", "How the three modes work", rList(["<b>Mask:</b> replaces each match with [REDACTED:TYPE]. Safest for sharing.", "<b>Partial:</b> keeps a hint (last 4 digits, first letter of an email). Secrets and keys are never partially shown.", "<b>Pseudonymise:</b> replaces each match with a numbered placeholder such as &lt;EMAIL_1&gt;, so a reader can still follow the story of a log."])) +
+        rSec("🛡️", "Before you share a log, ticket or screenshot", rList(["Read the redacted version once more: automated rules cannot recognise names, addresses or free-text secrets.", "Screenshots: blur or crop, and remember browser tabs, bookmarks and notifications.", "Share the least data needed. Prefer a few relevant lines over a full log.", "Credit-card numbers are only flagged when they pass the Luhn check and look like real card ranges; IBANs only when the country length and checksum are valid."])) +
+        rPara("<small>All detection runs locally in your browser; the text is never sent anywhere. Patterns follow the public formats of each provider, but new key formats appear over time, so treat this as a safety net, not a guarantee.</small>");
+    setR("redactResult", "redact", "Sensitive Data Redactor", `${F.length} finding(s)`, summary, html, lv[1]);
+    const ta = $("redOut"); if (ta) ta.value = red; window.__redOut = red;
+};
+document.addEventListener("click", e => {
+    const b = e.target.closest("[data-red]"); if (!b || window.__redOut === undefined) return;
+    if (b.dataset.red === "copy") { (navigator.clipboard ? navigator.clipboard.writeText(window.__redOut) : Promise.reject()).then(() => { const o = b.textContent; b.textContent = "✓ Copied"; setTimeout(() => (b.textContent = o), 1500); }).catch(() => { }); }
+    else dlBlob("redacted.txt", window.__redOut, "text/plain");
+});
+function initToolsV7() {
+    const ty = $("qrsType"); if (ty) { qrsToggle(); let t = null; const go = () => { clearTimeout(t); t = setTimeout(() => { if ($("qrGenResult").dataset.live) window.generateQRStudio(); }, 300); }; ty.addEventListener("change", () => { qrsToggle(); if ($("qrGenResult").dataset.live) window.generateQRStudio(); });
+        ["qrsMain", "qrsSub", "qrsBody", "qrsWifiSsid", "qrsWifiPass", "qrsWifiSec", "qrsWifiHidden", "qrsEc", "qrsSize", "qrsQz", "qrsFg", "qrsBg"].forEach(id => { const el = $(id); if (el) { el.addEventListener("input", go); el.addEventListener("change", go); } });
+        const btn = $("qrsGo"); if (btn) btn.addEventListener("click", () => { $("qrGenResult").dataset.live = "1"; window.generateQRStudio(); }); }
+}
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initToolsV7); else initToolsV7();
+
+
+/* ============================================================================
+   TOOLS v7b  -  upgrades for all tools: Smart Paste, pin favourites, "Try example",
+   report export (txt / html / print) and advanced panels (JWT, HMAC, DNS, CIDR, AES file, defang)
+   ============================================================================ */
+const REPORT_CSS = "body{font:14px/1.6 system-ui,Segoe UI,Arial,sans-serif;color:#0f172a;max-width:860px;margin:24px auto;padding:0 18px}h3{margin:0 0 4px}h4{margin:22px 0 8px;padding-bottom:4px;border-bottom:2px solid #0ea5e9;color:#075985;text-transform:uppercase;font-size:.8rem;letter-spacing:.06em}.tpr-hero{display:flex;gap:14px;align-items:center;padding:14px;border:2px solid #cbd5e1;border-radius:12px;margin-bottom:12px}.tpr-hero-i{font-size:2rem}.tpr-hero-t p{margin:2px 0;color:#475569}.tpr-gauge{margin-left:auto;text-align:center;font-weight:700}.tpr-gauge svg{display:none}.tpr-gauge b{font-size:1.6rem}.tpr-gauge small{display:block;color:#64748b;font-weight:400}.tpr-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}.tpr-tile{border:1px solid #cbd5e1;border-radius:8px;padding:8px 10px}.tpr-tile small{display:block;color:#64748b;font-size:.68rem;text-transform:uppercase}.tpr-tile em{display:block;color:#64748b;font-size:.72rem;font-style:normal}table{border-collapse:collapse;width:100%;font-size:.84rem}th,td{border:1px solid #cbd5e1;padding:6px 8px;text-align:left;vertical-align:top}th{background:#f1f5f9}code,pre{font-family:Consolas,monospace;background:#f1f5f9;padding:1px 5px;border-radius:4px;white-space:pre-wrap;overflow-wrap:anywhere}.tpr-sig{border-left:4px solid #94a3b8;padding:6px 10px;margin:6px 0;background:#f8fafc}.tpr-s-critical{border-color:#e11d48}.tpr-s-high{border-color:#f97316}.tpr-s-medium{border-color:#eab308}.tpr-s-good{border-color:#16a34a}.tpr-dot{display:none}.tpr-sig p{margin:2px 0;color:#475569}mark{background:#fde68a;padding:0 2px}.tp-actions,button,.tp-copy,.tp-open{display:none}.tpr-prev img{max-width:220px}footer{margin-top:28px;color:#64748b;font-size:.75rem;border-top:1px solid #cbd5e1;padding-top:8px}@media print{h4{break-after:avoid}.tpr-sig,.tpr-tile{break-inside:avoid}}";
+function reportStandalone() {
+    const title = $("tpmTitle").textContent, sub = $("tpmSub").textContent, body = $("tpmBody").cloneNode(true);
+    body.querySelectorAll("button,.tp-actions,script").forEach(x => x.remove());
+    return `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>${esc(title)} - CyberGuard report</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>${REPORT_CSS}</style></head><body><h3>${esc(title)}</h3><small>${esc(sub)} · generated ${new Date().toISOString().slice(0, 16).replace("T", " ")} UTC</small>${body.innerHTML}<footer>Generated by CyberGuard security tools. Educational guidance: confirm important decisions through official sources.</footer></body></html>`;
+}
+function hookReportExport() {
+    const old = ensureModal; /* patch once the modal exists */
+    const add = () => { const act = document.querySelector("#tpModal .tp-modal-actions"); if (!act || $("tpmTxt")) return; act.insertAdjacentHTML("afterbegin", `<button type="button" id="tpmTxt" class="tp-copy" title="Download as text">⬇ .txt</button><button type="button" id="tpmHtml" class="tp-copy" title="Download as a standalone web page">⬇ .html</button><button type="button" id="tpmPrint" class="tp-copy" title="Print or save as PDF">🖨 Print</button>`);
+        const nm = () => ($("tpmTitle").textContent || "report").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+        $("tpmTxt").onclick = () => dlBlob(`cyberguard-${nm()}.txt`, `${$("tpmTitle").textContent}\n${$("tpmSub").textContent}\n${"=".repeat(60)}\n\n${$("tpmBody").innerText.trim()}\n\n-- Generated by CyberGuard security tools --\n`, "text/plain");
+        $("tpmHtml").onclick = () => dlBlob(`cyberguard-${nm()}.html`, reportStandalone(), "text/html");
+        $("tpmPrint").onclick = () => { const f = document.createElement("iframe"); f.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0"; document.body.appendChild(f); f.srcdoc = reportStandalone(); f.onload = () => { try { f.contentWindow.focus(); f.contentWindow.print(); } catch (_) { } setTimeout(() => f.remove(), 60000); }; };
+    };
+    new MutationObserver(add).observe(document.body, { childList: true });
+    add();
+}
+
+/* ---------- Smart Paste ---------- */
+function detectKinds(raw) {
+    const t = raw.trim(), out = []; if (!t) return out;
+    const add = (icon, name, input, fn, why) => out.push({ icon, name, input, fn, why });
+    const oneLine = !/\n/.test(t);
+    if (/^eyJ[\w-]{8,}\.[\w-]{8,}\.[\w-]*$/.test(t)) add("🔑", "JWT Token Inspector", "jwtInput", "decodeJWT", "Looks like a JSON Web Token");
+    else if (/(^|\n)(Received|Authentication-Results|Return-Path|Message-ID|DKIM-Signature):/i.test(t) && /(^|\n)(From|Subject|Date):/i.test(t)) add("📧", "Email Header Analyzer", "hdrInput", "analyzeEmailHeaders", "Looks like raw email headers");
+    else if (oneLine && /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(t)) { add("📨", "Email Breach & Mail-Security Check", "emailInput", "simulateBreachCheck", "Looks like an email address"); add("🙈", "Sensitive Data Redactor", "redInput", "redactSensitive", "Mask it before sharing"); }
+    else if (oneLine && /^(\d{1,3}\.){3}\d{1,3}\/\d{1,2}$/.test(t)) add("🧮", "CIDR Subnet Calculator", "cidrInput", "calculateCIDR", "Looks like a CIDR range");
+    else if (oneLine && isIP(t) && !/^([0-9a-f]{2}[:-]){5}[0-9a-f]{2}$/i.test(t)) { add("🌐", "IP Geolocation & Threat Finder", "ipInput", "lookupIP", "Looks like an IP address"); add("🔌", "Port Vulnerability Scanner", "portScanInput", "scanPorts", "See its exposed services"); add("🍯", "Honeypot Service Detector", "honeypotInput", "detectHoneypot", "Check if it looks like a decoy"); }
+    else if (oneLine && /^([0-9a-f]{2}[:-]){5}[0-9a-f]{2}$/i.test(t)) add("🔌", "MAC Vendor Identifier", "macInput", "checkMAC", "Looks like a MAC address");
+    else if (oneLine && /^[A-Z]{2}\d{2}[A-Z0-9 ]{11,40}$/i.test(t.replace(/\s/g, "")) && IBAN_LEN[t.replace(/\s/g, "").slice(0, 2).toUpperCase()] === t.replace(/\s/g, "").length) add("🏦", "Pakistani IBAN / IBAN Validator", "ibanInput", "validateIBAN", "Looks like an IBAN");
+    else if (oneLine && /^(?:https?:\/\/|www\.)\S+$/i.test(t)) { add("🔗", "URL Inspector", "urlInput", "inspectURL", "Looks like a web link"); add("🔒", "SSL Certificate Inspector", "sslInput", "checkSSL", "Check its certificate"); add("🛡️", "Security Headers Audit", "headerInput", "auditSecurityHeaders", "Audit its headers"); add("🧭", "DNS Record Lookup", "dnsInput", "lookupDNS", "Inspect its DNS"); }
+    else if (oneLine && /^(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}$/i.test(t)) { add("🧭", "DNS Record Lookup", "dnsInput", "lookupDNS", "Looks like a domain name"); add("🔗", "URL Inspector", "urlInput", "inspectURL", "Is it a scam site?"); add("🔒", "SSL Certificate Inspector", "sslInput", "checkSSL", "Check its certificate"); add("🌳", "Subdomain Finder", "subdomainInput", "findSubdomains", "List its subdomains"); add("🌑", "Dark Web Monitoring", "darkwebInput", "checkDarkWeb", "Was it in breaches?"); }
+    else if (oneLine && /^\d{6,8}$/.test(t)) add("💳", "Card BIN Inspector", "binInput", "checkBIN", "6-8 digits: a card BIN");
+    else if (oneLine && /^(?:\d[ -]?){13,19}$/.test(t) && luhn(t.replace(/\D/g, ""))) { add("⚠️", "Sensitive Data Redactor", "redInput", "redactSensitive", "This looks like a FULL card number. Never paste real card numbers into tools. Mask it."); }
+    else if (oneLine && /^(?:\+92|0092|92|0)[\s-]?3\d{2}[\s-]?\d{7}$/.test(t)) add("📞", "Fraud Handle & Number OSINT", "handleInput", "searchScamHandle", "Looks like a Pakistani mobile number");
+    else if (oneLine && /^[0-9a-f]{32}$|^[0-9a-f]{40}$|^[0-9a-f]{64}$|^[0-9a-f]{128}$/i.test(t)) { const n = t.length, g = { 32: "MD5 or NTLM", 40: "SHA-1", 64: "SHA-256", 128: "SHA-512" }[n]; add("#️⃣", "Hash detected: " + g, "", "", `${n} hex characters. A hash cannot be reversed; check it against a known list or compare it with a file's hash in the File Integrity tool.`); }
+    else if (oneLine && /%[0-9A-Fa-f]{2}/.test(t) && !/\s/.test(t)) add("🔗", "URL Encoder / Decoder", "urlCodecInput", "__decode", "Looks percent-encoded");
+    else if (oneLine && t.length >= 16 && t.length % 4 === 0 && /^[A-Za-z0-9+/]+={0,2}$/.test(t) && (() => { try { return /^[\x09\x0a\x0d\x20-\x7e]+$/.test(atob(t)); } catch (_) { return false; } })()) add("🔤", "Base64 Decoder", "base64Input", "__b64dec", "Looks like Base64 text");
+    else if (/[<>]|javascript:/i.test(t) && oneLine) add("🧼", "XSS Sanitizer", "xssInput", "sanitizeXSS", "Contains HTML/script characters");
+    else if (/('|--|\bunion\b|\bselect\b|\bor\b\s+1=1)/i.test(t) && oneLine && t.length < 200) add("💉", "SQLi String Checker", "sqliInput", "checkSQLi", "Contains SQL-like syntax");
+    if (!out.length || t.length > 30) {
+        if (findSensitive(t).length) add("🙈", "Sensitive Data Redactor", "redInput", "redactSensitive", "Contains passwords, keys, cards or personal data");
+        if ((!oneLine || t.length > 40) && /\s/.test(t)) add("🕵️", "Scam Message Analyzer", "scamMsgInput", "analyzeScamMessage", "Is this message a scam?");
+    }
+    return out;
+}
+function initSmartPaste() {
+    const s = $("toolSearch"); if (!s || $("tpOmni")) return; const host = s.closest(".tools-search-wrap") || s.parentElement;
+    host.insertAdjacentHTML("beforebegin", `<div class="tp-omni" id="tpOmni"><label for="tpOmniIn">🧠 <b>Smart Paste</b> <small>paste anything: link, email, IP, hash, JWT, message, headers… and I will pick the right tool</small></label><textarea id="tpOmniIn" rows="1" placeholder="Paste here, e.g. https://example.com  ·  name@mail.com  ·  8.8.8.8  ·  a suspicious SMS…" spellcheck="false" autocomplete="off"></textarea><div class="tp-omni-out" id="tpOmniOut" aria-live="polite"></div></div>`);
+    const inp = $("tpOmniIn"), out = $("tpOmniOut"); let t = null;
+    const render = () => {
+        const v = inp.value; inp.style.height = "auto"; inp.style.height = Math.min(120, inp.scrollHeight) + "px";
+        const k = detectKinds(v);
+        out.innerHTML = !v.trim() ? "" : k.length ? k.map((x, i) => x.fn ? `<button type="button" class="tp-omni-chip" data-i="${i}"><span>${x.icon}</span><b>${esc(x.name)}</b><small>${esc(x.why)}</small></button>` : `<div class="tp-omni-info"><span>${x.icon}</span><div><b>${esc(x.name)}</b><small>${esc(x.why)}</small></div></div>`).join("") : `<div class="tp-omni-info"><span>🤷</span><div><b>No exact match</b><small>Try a full link, an email address, an IP, a domain, or paste a suspicious message.</small></div></div>`;
+        out._k = k;
+    };
+    inp.addEventListener("input", () => { clearTimeout(t); t = setTimeout(render, 160); }); inp.addEventListener("paste", () => setTimeout(render, 30));
+    out.addEventListener("click", e => {
+        const b = e.target.closest(".tp-omni-chip"); if (!b) return; const x = out._k[+b.dataset.i], v = inp.value.trim(), el = $(x.input); if (!el) return;
+        const card = el.closest(".tool-card"); const flt = document.querySelector(".tool-filter.active"); if (card && card.hidden) { const all = [...document.querySelectorAll(".tool-filter")][0]; all && all.click(); const sv = $("toolSearch"); if (sv && sv.value) { sv.value = ""; sv.dispatchEvent(new Event("input")); } }
+        if (x.fn === "__decode") { el.value = v; if (card) card.scrollIntoView({ behavior: "smooth", block: "center" }); setTimeout(() => window.handleURLCodec && window.handleURLCodec("decode"), 350); return; }
+        if (x.fn === "__b64dec") { el.value = v; if (card) card.scrollIntoView({ behavior: "smooth", block: "center" }); setTimeout(() => window.handleBase64 && window.handleBase64("decode"), 350); return; }
+        el.value = v; el.dispatchEvent(new Event("input", { bubbles: true })); if (card) { card.scrollIntoView({ behavior: "smooth", block: "center" }); card.classList.add("tp-flash"); setTimeout(() => card.classList.remove("tp-flash"), 1800); }
+        setTimeout(() => { if (typeof window[x.fn] === "function") window[x.fn](); }, 380);
+    });
+}
+
+/* ---------- pin favourites + "Try example" ---------- */
+const TRY = { strengthText: ["passInput", "correct horse battery staple 7!", () => window.checkPasswordStrength && window.checkPasswordStrength()], breachResult: ["emailInput", "test@example.com", "simulateBreachCheck"], urlResult: ["urlInput", "http://secure-login.paypa1-verify.xyz/otp?next=https://evil.com", "inspectURL"], ipResult: ["ipInput", "8.8.8.8", "lookupIP"], jwtResult: ["jwtInput", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c", "decodeJWT"], base64Result: ["base64Input", "Hello CyberGuard", () => window.handleBase64("encode")], hashResult: ["hashInput", "hello", "generateHash"], urlCodecResult: ["urlCodecInput", "name=Ali Khan&city=Karachi", () => window.handleURLCodec("encode")], portScanResult: ["portScanInput", "scanme.nmap.org", "scanPorts"], dnsResult: ["dnsInput", "example.com", "lookupDNS"], headerResult: ["headerInput", "https://example.com", "auditSecurityHeaders"], binResult: ["binInput", "411111", "checkBIN"], qrResult: ["qrInput", "https://example.com/pay?amount=500", "checkQRData"], sslResult: ["sslInput", "example.com", "checkSSL"], subdomainResult: ["subdomainInput", "example.com", "findSubdomains"], macResult: ["macInput", "00:0C:29:12:34:56", "checkMAC"], cidrResult: ["cidrInput", "192.168.10.0/26", "calculateCIDR"], pingResult: ["pingInput", "example.com", "simulatePing"], honeypotResult: ["honeypotInput", "example.com", "detectHoneypot"], handleResult: ["handleInput", "easypaisa_official_support", "searchScamHandle"], extResult: ["extInput", "invoice.pdf.exe", "checkFileExtension"], ibanResult: ["ibanInput", "PK36SCBL0000001123456702", "validateIBAN"], wifiResult: ["wifiInput", "WPA2-Personal / AES", "analyzeWiFi"], sqliResult: ["sqliInput", "' OR 1=1 --", "checkSQLi"], xssResult: ["xssInput", "<img src=x onerror=alert(1)>", "sanitizeXSS"], darkwebResult: ["darkwebInput", "example.com", "checkDarkWeb"],
+    scamMsgResult: ["scamMsgInput", "URGENT: Your EasyPaisa account will be blocked within 2 hours. You have won Rs. 500,000 in the BISP lucky draw! Send Rs. 2500 processing fee and share your OTP code to claim. Click http://easypaisa-verify.xyz/claim now.", "analyzeScamMessage"],
+    hdrResult: ["hdrInput", "Received: from mail.example.net ([203.0.113.9]) by mx.example.org with ESMTPS; Mon, 02 Nov 2026 08:00:04 +0000\nAuthentication-Results: mx.example.org; spf=fail smtp.mailfrom=billing@examp1e.net; dkim=none; dmarc=fail header.from=examp1e.net\nReturn-Path: <bounce@mailer.test>\nFrom: \"Example Billing\" <billing@examp1e.net>\nReply-To: billing.help@gmail.com\nSubject: Invoice overdue\nDate: Mon, 02 Nov 2026 08:00:00 +0000\nMessage-ID: <1@mailer.test>", "analyzeEmailHeaders"],
+    redactResult: ["redInput", "Contact ali@example.com or 0300-1234567. CNIC 42101-1234567-1. password=Sup3rS3cret! key AKIAIOSFODNN7EXAMPLE card 4111 1111 1111 1111", "redactSensitive"] };
+const PIN_KEY = "cg_pinned_tools";
+const pinned = () => { try { return JSON.parse(localStorage.getItem(PIN_KEY) || "[]"); } catch (_) { return []; } };
+function toolIdOf(card) { const e = card.querySelector('[id$="Result"],#strengthText,#genPassOutput'); return e ? e.id : ""; }
+function initPinsAndExamples() {
+    const cards = document.querySelectorAll("#tools .tool-card"); const pins = new Set(pinned());
+    cards.forEach(card => {
+        const id = toolIdOf(card); if (!id) return;
+        if (!card.querySelector(".tp-pin")) { card.insertAdjacentHTML("afterbegin", `<button type="button" class="tp-pin${pins.has(id) ? " on" : ""}" aria-pressed="${pins.has(id)}" title="Pin this tool to MY TOOLS">★</button>`); card.dataset.fav = pins.has(id) ? "1" : "0"; }
+        const tr = TRY[id]; if (tr && !card.querySelector(".tp-try")) { const btn = card.querySelector(".btn-primary-small") || card.querySelector(".input-group"); if (btn) btn.insertAdjacentHTML("afterend", `<button type="button" class="tp-try" data-try="${id}" title="Fill an example and run it">✨ Try example</button>`); }
+    });
+}
+document.addEventListener("click", e => {
+    const p = e.target.closest(".tp-pin");
+    if (p) { const card = p.closest(".tool-card"), id = toolIdOf(card), s = new Set(pinned()); if (s.has(id)) s.delete(id); else s.add(id); try { localStorage.setItem(PIN_KEY, JSON.stringify([...s])); } catch (_) { } const on = s.has(id); p.classList.toggle("on", on); p.setAttribute("aria-pressed", on); card.dataset.fav = on ? "1" : "0"; const act = document.querySelector(".tool-filter.active"); if (act && /PINNED/i.test(act.textContent)) act.click(); return; }
+    const t = e.target.closest(".tp-try"); if (!t) return; const [inId, text, fn] = TRY[t.dataset.try], el = $(inId); if (!el) return; el.value = text; el.dispatchEvent(new Event("input", { bubbles: true }));
+    setTimeout(() => { typeof fn === "function" ? fn() : (typeof window[fn] === "function" && window[fn]()); }, 120);
+});
+
+/* ---------- advanced panels inside existing tools ---------- */
+const mini = (id, html, kind) => { const e = $(id); if (e) { e.className = "tp-mini" + (kind ? " tp-mini-" + kind : ""); e.innerHTML = html; const d = e.closest("details"); if (d && !d.open) d.open = true; } };
+function advPanel(resultId, key, summary, html) {
+    const res = $(resultId); if (!res || res.parentElement.querySelector(`[data-adv="${key}"]`)) return null;
+    const d = document.createElement("details"); d.className = "tp-adv"; d.dataset.adv = key; d.innerHTML = `<summary>${summary}</summary><div class="tp-adv-body">${html}</div>`; res.parentElement.insertBefore(d, res); return d;
+}
+const enc = new TextEncoder(), dec = new TextDecoder();
+const b64u = u8 => btoa(String.fromCharCode(...u8)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+const b64uToBytes = s => { s = s.replace(/-/g, "+").replace(/_/g, "/"); while (s.length % 4) s += "="; return Uint8Array.from(atob(s), c => c.charCodeAt(0)); };
+const hexOf = u8 => [...u8].map(b => b.toString(16).padStart(2, "0")).join("");
+const HASHN = { "HS256": "SHA-256", "HS384": "SHA-384", "HS512": "SHA-512" };
+async function hmac(hash, key, data) { const k = await crypto.subtle.importKey("raw", enc.encode(key), { name: "HMAC", hash }, false, ["sign"]); return new Uint8Array(await crypto.subtle.sign("HMAC", k, typeof data === "string" ? enc.encode(data) : data)); }
+const ipToInt = ip => ip.split(".").reduce((a, o) => ((a << 8) + (+o)) >>> 0, 0), intToIp = n => [24, 16, 8, 0].map(s => (n >>> s) & 255).join(".");
+const isV4 = s => /^(?:(?:25[0-5]|2[0-4]\d|1?\d?\d)\.){3}(?:25[0-5]|2[0-4]\d|1?\d?\d)$/.test(s);
+function initAdvanced() {
+    /* JWT verify / sign */
+    advPanel("jwtResult", "jwt", "🔏 Advanced: verify a signature or sign a test token (HS256/384/512)", `<div class="tp-adv-row"><input type="text" id="jwtSecret" placeholder="Secret (e.g. your-256-bit-secret)" autocomplete="off"><select id="jwtAlg"><option>HS256</option><option>HS384</option><option>HS512</option></select></div><div class="tp-adv-row"><button type="button" class="tp-act" id="jwtVerifyBtn">Verify the token above</button></div><textarea id="jwtPayload" rows="3" placeholder='Payload JSON to sign, e.g. {"sub":"123","name":"Test","exp":1999999999}'></textarea><div class="tp-adv-row"><button type="button" class="tp-act" id="jwtSignBtn">Sign a test token</button></div><div id="jwtAdvOut"></div><small class="tp-hint">Runs locally. Use test secrets only. Never paste a production secret into any website.</small>`);
+    $("jwtVerifyBtn")?.addEventListener("click", async () => {
+        const tok = val("jwtInput"), sec = $("jwtSecret").value; if (!tok) return mini("jwtAdvOut", "Paste the token in the box above first.", "warn");
+        const p = tok.split("."); if (p.length !== 3) return mini("jwtAdvOut", "That is not a three-part JWT.", "bad");
+        let h; try { h = JSON.parse(dec.decode(b64uToBytes(p[0]))); } catch (_) { return mini("jwtAdvOut", "The header is not valid Base64URL JSON.", "bad"); }
+        const alg = String(h.alg || ""); if (/^none$/i.test(alg)) return mini("jwtAdvOut", "⚠️ alg is <b>none</b>: this token has no signature at all. Servers must reject it. Never trust it.", "bad");
+        if (!HASHN[alg]) return mini("jwtAdvOut", `This token uses <b>${esc(alg || "an unknown algorithm")}</b>. HMAC secrets only verify HS256/384/512. RS*/ES*/PS* tokens need the issuer's public key.`, "warn");
+        if (!sec) return mini("jwtAdvOut", "Enter the secret first.", "warn");
+        try { const sig = b64u(await hmac(HASHN[alg], sec, p[0] + "." + p[1])), ok = sig === p[2]; mini("jwtAdvOut", ok ? `✅ <b>Signature valid</b> for ${esc(alg)} with this secret.` : `❌ <b>Signature does NOT match</b> this secret (or the token was altered).`, ok ? "ok" : "bad"); } catch (e) { mini("jwtAdvOut", "Could not verify: " + esc(e.message), "bad"); }
+    });
+    $("jwtSignBtn")?.addEventListener("click", async () => {
+        const sec = $("jwtSecret").value, alg = $("jwtAlg").value; let pl; if (!sec) return mini("jwtAdvOut", "Enter a test secret first.", "warn");
+        try { pl = JSON.parse($("jwtPayload").value || "{}"); if (!pl || typeof pl !== "object" || Array.isArray(pl)) throw 0; } catch (_) { return mini("jwtAdvOut", "The payload must be a valid JSON object.", "bad"); }
+        const h = b64u(enc.encode(JSON.stringify({ alg, typ: "JWT" }))), b = b64u(enc.encode(JSON.stringify(pl))), s = b64u(await hmac(HASHN[alg], sec, h + "." + b));
+        mini("jwtAdvOut", `Signed ${esc(alg)} token:<textarea class="tp-out-area" rows="3" readonly>${esc(h + "." + b + "." + s)}</textarea>${sec.length < 32 ? "<small class='tp-hint'>⚠️ That secret is shorter than 32 characters: weak secrets can be brute-forced offline.</small>" : ""}`, "ok");
+    });
+    /* HMAC */
+    advPanel("hashResult", "hmac", "🔐 Advanced: HMAC (keyed hash, proves who made a message)", `<div class="tp-adv-row"><input type="text" id="hmacKey" placeholder="Secret key" autocomplete="off"><select id="hmacAlg"><option value="SHA-256">HMAC-SHA-256</option><option value="SHA-384">HMAC-SHA-384</option><option value="SHA-512">HMAC-SHA-512</option><option value="SHA-1">HMAC-SHA-1 (legacy)</option></select></div><div class="tp-adv-row"><button type="button" class="tp-act" id="hmacBtn">Compute HMAC of the text above</button></div><div id="hmacOut"></div><small class="tp-hint">A plain hash can be recomputed by anyone. An HMAC needs the secret key, so it also proves authenticity. Used to sign webhooks and API requests.</small>`);
+    $("hmacBtn")?.addEventListener("click", async () => {
+        const key = $("hmacKey").value, msg = $("hashInput")?.value || ""; if (!key || !msg) return mini("hmacOut", "Enter the text above and a key here.", "warn");
+        const r = await hmac($("hmacAlg").value, key, msg); mini("hmacOut", `<b>Hex:</b> <code>${hexOf(r)}</code><br><b>Base64:</b> <code>${btoa(String.fromCharCode(...r))}</code>`, "ok");
+    });
+    /* DNS: compare resolvers */
+    advPanel("dnsResult", "dnscmp", "🧭 Advanced: compare Google vs Cloudflare answers", `<div class="tp-adv-row"><select id="dnsCmpType"><option>A</option><option>AAAA</option><option>MX</option><option>NS</option><option>TXT</option><option>CAA</option></select><button type="button" class="tp-act" id="dnsCmpBtn">Compare resolvers for the domain above</button></div><div id="dnsCmpOut"></div><small class="tp-hint">Different answers can be normal (CDNs return different IPs by location) but can also reveal DNS hijacking or stale caches.</small>`);
+    $("dnsCmpBtn")?.addEventListener("click", async () => {
+        const raw = val("dnsInput").replace(/^https?:\/\//i, "").split(/[\/?#]/)[0].toLowerCase(), type = $("dnsCmpType").value; if (!raw || !/^[a-z0-9.-]+\.[a-z]{2,}$/.test(raw)) return mini("dnsCmpOut", "Enter a valid domain in the DNS box above.", "warn");
+        mini("dnsCmpOut", "Asking both resolvers…");
+        const q = async url => { try { const r = await fetch(url, { headers: { accept: "application/dns-json" } }); return r.ok ? await r.json() : null; } catch (_) { return null; } };
+        const [g, c] = await Promise.all([q(`https://dns.google/resolve?name=${encodeURIComponent(raw)}&type=${type}`), q(`https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(raw)}&type=${type}`)]);
+        const ans = j => j && j.Answer ? j.Answer.filter(a => a.type === ({ A: 1, AAAA: 28, MX: 15, NS: 2, TXT: 16, CAA: 257 }[type])).map(a => String(a.data).replace(/^"|"$/g, "").trim()).sort() : null;
+        const a = ans(g), b = ans(c); if (a === null && b === null) return mini("dnsCmpOut", "Both resolvers were unreachable (network or blocked).", "bad");
+        const same = a && b && a.length === b.length && a.every((x, i) => x.toLowerCase() === b[i].toLowerCase());
+        const col = (n, l, s) => `<div class="tp-col"><b>${n}</b>${s === null ? "<small>unreachable</small>" : s.length ? s.map(x => `<code>${esc(x.slice(0, 160))}</code>`).join("") : "<small>no records</small>"}<small>Status ${l ? l.Status : "?"}${l && l.AD ? " · DNSSEC validated" : ""}</small></div>`;
+        mini("dnsCmpOut", `<div class="tp-cols">${col("Google (8.8.8.8)", g, a)}${col("Cloudflare (1.1.1.1)", c, b)}</div><div class="tp-verdict-line">${a && b ? (same ? "✅ Both resolvers agree." : "⚠️ The answers differ. Check whether the site uses a CDN or recently changed DNS.") : "⚠️ Only one resolver answered."}</div>`, same ? "ok" : "warn");
+    });
+    /* CIDR: IP inside range + split */
+    advPanel("cidrResult", "cidr", "🧮 Advanced: is an IP inside the range? Split into smaller subnets", `<div class="tp-adv-row"><input type="text" id="cidrIp" placeholder="IP to test, e.g. 192.168.10.37"><button type="button" class="tp-act" id="cidrInBtn">Is it inside the CIDR above?</button></div><div class="tp-adv-row"><input type="number" id="cidrSplit" min="1" max="32" placeholder="New prefix, e.g. 28"><button type="button" class="tp-act" id="cidrSplitBtn">Split the CIDR above</button></div><div id="cidrAdvOut"></div><small class="tp-hint">IPv4 only. For a /N network, usable hosts = 2^(32−N) − 2 (a /31 has 2 and a /32 has 1).</small>`);
+    const cidrParse = () => { const m = val("cidrInput").match(/^(\d{1,3}(?:\.\d{1,3}){3})\/(\d{1,2})$/); if (!m || !isV4(m[1]) || +m[2] > 32) return null; const p = +m[2], mask = p === 0 ? 0 : (0xFFFFFFFF << (32 - p)) >>> 0, net = (ipToInt(m[1]) & mask) >>> 0; return { p, mask, net, bc: (net | (~mask >>> 0)) >>> 0 }; };
+    $("cidrInBtn")?.addEventListener("click", () => { const c = cidrParse(), ip = val("cidrIp"); if (!c) return mini("cidrAdvOut", "Enter a valid IPv4 CIDR (like 192.168.10.0/24) in the box above.", "warn"); if (!isV4(ip)) return mini("cidrAdvOut", "Enter a valid IPv4 address to test.", "warn"); const n = ipToInt(ip), inside = n >= c.net && n <= c.bc; mini("cidrAdvOut", `${inside ? "✅" : "❌"} <b>${esc(ip)}</b> is ${inside ? "" : "<b>NOT</b> "}inside <b>${intToIp(c.net)}/${c.p}</b> (${intToIp(c.net)} – ${intToIp(c.bc)}).`, inside ? "ok" : "bad"); });
+    $("cidrSplitBtn")?.addEventListener("click", () => { const c = cidrParse(), np = +$("cidrSplit").value; if (!c) return mini("cidrAdvOut", "Enter a valid IPv4 CIDR in the box above.", "warn"); if (!np || np <= c.p || np > 32) return mini("cidrAdvOut", `New prefix must be bigger than /${c.p} and at most /32.`, "warn"); const cnt = Math.pow(2, np - c.p), size = Math.pow(2, 32 - np); if (cnt > 64) return mini("cidrAdvOut", `That makes ${cnt.toLocaleString()} subnets. Choose a prefix that gives 64 or fewer.`, "warn"); let rows = ""; for (let i = 0; i < cnt; i++) { const n = (c.net + i * size) >>> 0, b = (n + size - 1) >>> 0, usable = np >= 31 ? size : size - 2; rows += `<tr><td>${intToIp(n)}/${np}</td><td>${np >= 31 ? intToIp(n) : intToIp(n + 1)} – ${np >= 31 ? intToIp(b) : intToIp(b - 1)}</td><td>${intToIp(b)}</td><td>${usable}</td></tr>`; } mini("cidrAdvOut", `<b>${cnt} subnet(s)</b> of /${np}<div class="tp-tbl-wrap"><table class="tp-tbl"><thead><tr><th>Network</th><th>Usable range</th><th>Broadcast</th><th>Usable hosts</th></tr></thead><tbody>${rows}</tbody></table></div>`, "ok"); });
+    /* AES file encryption */
+    advPanel("aesResult", "aesfile", "📁 Advanced: encrypt or decrypt a FILE (AES-256-GCM)", `<input type="file" id="aesFile"><input type="password" id="aesFilePass" placeholder="Passphrase (long and random)" autocomplete="new-password"><div class="tp-adv-row"><button type="button" class="tp-act" id="aesFileEnc">🔒 Encrypt file</button><button type="button" class="tp-act" id="aesFileDec">🔓 Decrypt .cgenc file</button></div><div id="aesFileOut"></div><small class="tp-hint">The key comes from your passphrase with PBKDF2-SHA-256 (250,000 rounds). The file never leaves your device. Lose the passphrase and the file cannot be recovered. Limit: 100 MB.</small>`);
+    const MAGIC = enc.encode("CGENC1"), derive = async (pw, salt) => { const km = await crypto.subtle.importKey("raw", enc.encode(pw), "PBKDF2", false, ["deriveKey"]); return crypto.subtle.deriveKey({ name: "PBKDF2", salt, iterations: 250000, hash: "SHA-256" }, km, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]); };
+    const fileArg = () => { const f = $("aesFile")?.files?.[0], pw = $("aesFilePass")?.value; if (!f) { mini("aesFileOut", "Choose a file first.", "warn"); return null; } if (!pw || pw.length < 8) { mini("aesFileOut", "Enter a passphrase of at least 8 characters (12+ is better).", "warn"); return null; } if (f.size > 100 * 1048576) { mini("aesFileOut", "File is over 100 MB.", "warn"); return null; } return { f, pw }; };
+    $("aesFileEnc")?.addEventListener("click", async () => {
+        const a = fileArg(); if (!a) return; mini("aesFileOut", "Encrypting (key derivation takes a moment)…");
+        try { const data = new Uint8Array(await a.f.arrayBuffer()), hdr = enc.encode(JSON.stringify({ n: a.f.name, t: a.f.type, s: data.length })), plain = new Uint8Array(4 + hdr.length + data.length); new DataView(plain.buffer).setUint32(0, hdr.length); plain.set(hdr, 4); plain.set(data, 4 + hdr.length);
+            const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12)), key = await derive(a.pw, salt), ct = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, plain)), out = new Uint8Array(MAGIC.length + 28 + ct.length); out.set(MAGIC, 0); out.set(salt, MAGIC.length); out.set(iv, MAGIC.length + 16); out.set(ct, MAGIC.length + 28);
+            dlBlob(a.f.name + ".cgenc", new Blob([out], { type: "application/octet-stream" })); mini("aesFileOut", `✅ Encrypted <b>${esc(a.f.name)}</b> → <b>${esc(a.f.name)}.cgenc</b> (${fmtBytes(out.length)}). The original name is stored inside the encrypted data.`, "ok"); } catch (e) { mini("aesFileOut", "Encryption failed: " + esc(e.message), "bad"); }
+    });
+    $("aesFileDec")?.addEventListener("click", async () => {
+        const a = fileArg(); if (!a) return; mini("aesFileOut", "Decrypting…");
+        try { const d = new Uint8Array(await a.f.arrayBuffer()); if (d.length < MAGIC.length + 28 + 16 || !MAGIC.every((b, i) => d[i] === b)) return mini("aesFileOut", "This is not a CyberGuard .cgenc file.", "bad");
+            const salt = d.slice(MAGIC.length, MAGIC.length + 16), iv = d.slice(MAGIC.length + 16, MAGIC.length + 28), ct = d.slice(MAGIC.length + 28), key = await derive(a.pw, salt); let plain; try { plain = new Uint8Array(await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, ct)); } catch (_) { return mini("aesFileOut", "❌ Wrong passphrase, or the file was damaged or altered.", "bad"); }
+            const hl = new DataView(plain.buffer).getUint32(0), meta = JSON.parse(dec.decode(plain.slice(4, 4 + hl))), data = plain.slice(4 + hl), safe = String(meta.n || "decrypted-file").replace(/[\\/:*?"<>|\x00-\x1f]/g, "_").slice(0, 120);
+            dlBlob(safe, new Blob([data], { type: meta.t || "application/octet-stream" })); mini("aesFileOut", `✅ Decrypted and verified. Saved as <b>${esc(safe)}</b> (${fmtBytes(data.length)}).`, "ok"); } catch (e) { mini("aesFileOut", "Decryption failed: " + esc(e.message), "bad"); }
+    });
+    /* URL defang / refang */
+    advPanel("urlResult", "defang", "🧯 Advanced: defang a link so it is safe to share in tickets and chats", `<div class="tp-adv-row"><button type="button" class="tp-act" id="defangBtn">Defang the link above</button><button type="button" class="tp-act" id="refangBtn">Refang (restore)</button></div><div id="defangOut"></div><small class="tp-hint">Defanging (hxxp, [.]) stops chat apps and email from turning a dangerous link into a clickable one. Analysts use it in every report.</small>`);
+    const dfOut = f => { const v = val("urlInput"); if (!v) return mini("defangOut", "Type or paste a link in the box above first.", "warn"); const r = f(v); mini("defangOut", `<textarea class="tp-out-area" rows="2" readonly>${esc(r)}</textarea>`, "ok"); };
+    $("defangBtn")?.addEventListener("click", () => dfOut(defang)); $("refangBtn")?.addEventListener("click", () => dfOut(refang));
+}
+function initV7() { hookReportExport(); initSmartPaste(); initPinsAndExamples(); initAdvanced(); }
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => setTimeout(initV7, 500)); else setTimeout(initV7, 500);
 
 window.CG_TOOLS_PRO = { version: "6.0", analyzePassword, analyzeUrl };
 })();

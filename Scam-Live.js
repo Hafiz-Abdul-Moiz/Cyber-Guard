@@ -532,15 +532,20 @@ function build() {
             <input id="an6Q" type="search" placeholder="Search incidents, vectors, sectors…" aria-label="Search incidents">
             <select id="an6Sev" aria-label="Severity"><option value="all">All severities</option><option value="critical">Critical</option><option value="high">High</option><option value="medium">Medium</option></select>
             <select id="an6Vec" aria-label="Vector"><option value="all">All vectors</option>${V.map(v => `<option value="${v.id}">${v.icon} ${esc(v.name)}</option>`).join("")}</select>
-            <div class="an6-btns"><button type="button" id="an6Pause">⏸ Pause</button><button type="button" id="an6Pulse">⟳ Refresh pulse</button><button type="button" id="an6Csv">⬇ Export CSV</button></div>
+            <div class="an6-btns"><button type="button" id="an6Pause">⏸ Pause</button><button type="button" id="an6Pulse">⟳ Refresh pulse</button><button type="button" id="an6Csv">⬇ Export CSV</button><button type="button" id="an6Shift">📝 Shift report</button></div>
         </div>
         <section class="an6-kpis" id="an6Kpis"></section>
+        <div class="an6-card an6-ti" id="an6Ti"><div class="an6-ch"><h3>🔎 Threat Intel Lookup <em class="t-live">LIVE</em></h3><small>IP · domain · CVE · file hash, checked against public sources</small></div><form id="an6TiForm" class="an6-tiform"><input id="an6TiIn" type="text" placeholder="8.8.8.8  ·  example.com  ·  CVE-2021-44228  ·  MD5 / SHA-1 / SHA-256 hash" autocomplete="off" spellcheck="false" aria-label="Indicator to investigate"><button type="submit">Investigate</button></form><div class="an6-tichips">Try: <button type="button" data-ex="CVE-2021-44228">CVE-2021-44228</button><button type="button" data-ex="1.1.1.1">1.1.1.1</button><button type="button" data-ex="example.com">example.com</button></div><div id="an6TiOut" class="an6-tiout"></div></div>
         <div class="an6-main">
             <div class="an6-card"><div class="an6-ch"><h3>🌡️ Threat vector heatboard <em class="t-sim">SIM</em></h3><small>click a card for the deep-dive</small></div><div class="an6-vgrid" id="an6V"></div></div>
             <div class="an6-card an6-feedcard"><div class="an6-ch"><h3>🚨 Live incident feed <em class="t-sim">SIM</em></h3><small>click an incident to respond</small></div><div class="an6-feed" id="an6Feed"></div></div>
         </div>
         <section class="an6-charts" id="an6Charts"></section>
         <div class="an6-card"><div class="an6-ch"><h3>🌍 Real-world threat pulse <em class="t-live">LIVE</em></h3><div class="an6-feeds" id="an6Fd"></div></div><div class="an6-tabs" id="an6Tabs"></div><div class="an6-pulse" id="an6Pulse2"></div></div>
+        <div class="an6-two">
+            <div class="an6-card"><div class="an6-ch"><h3>📂 My cases <em class="t-sim">SIM</em></h3><small>your incident decisions, with notes</small></div><div id="an6Cases"></div></div>
+            <div class="an6-card"><div class="an6-ch"><h3>🧭 ATT&amp;CK techniques observed <em class="t-sim">SIM</em></h3><small>from the live feed</small></div><div class="an6-attack" id="an6Attack"></div></div>
+        </div>
         <div class="an6-two">
             <div class="an6-card"><div class="an6-ch"><h3>🧠 Daily analyst drill</h3><small id="an6DStat"></small></div><div id="an6Drill"></div></div>
             <div class="an6-card"><div class="an6-ch"><h3>🎓 SOC Academy</h3><input id="an6AQ" type="search" placeholder="Search topics: MTTR, kill chain, SIEM…" aria-label="Search academy"></div><div class="an6-acad" id="an6Acad"></div></div>
@@ -557,7 +562,7 @@ function build() {
     $("#an6Feed").onclick = e => { const c = e.target.closest("[data-e]"); if (c) openIncident(c.dataset.e); };
     $("#an6Charts").onclick = e => { const c = e.target.closest("[data-v]"); if (c) openVector(c.dataset.v); };
     $("#an6AQ").oninput = renderAcademy;
-    $("#an6Tabs").innerHTML = [["nvd", "🐞 New CVEs"], ["kev", "🔥 Exploited (KEV)"], ["epss", "🎯 EPSS top"], ["gh", "📦 Advisories"], ["scam", "🎣 Scam alerts"]].map(([k, n]) => `<button type="button" data-t="${k}" class="${k === S.tab ? "on" : ""}">${n}</button>`).join("");
+    $("#an6Tabs").innerHTML = [["nvd", "🐞 New CVEs"], ["kev", "🔥 Exploited (KEV)"], ["epss", "🎯 EPSS top"], ["gh", "📦 Advisories"], ["scam", "🎣 Scam alerts"], ["breach", "🕳️ Newest breaches"], ["isc", "🌪️ Internet storm"], ["phish", "🪝 Fresh phishing"]].map(([k, n]) => `<button type="button" data-t="${k}" class="${k === S.tab ? "on" : ""}">${n}</button>`).join("");
     $("#an6Tabs").onclick = e => { const b = e.target.closest("button[data-t]"); if (!b) return; S.tab = b.dataset.t; [...$("#an6Tabs").children].forEach(x => x.classList.toggle("on", x === b)); renderPulse(); };
 }
 
@@ -624,7 +629,7 @@ function renderCharts() {
         <div class="an6-card"><h4>Most targeted sectors <em class="t-sim">SIM</em></h4>${secR.length ? bars(secR, "sc") : "<small>collecting…</small>"}</div>
         <div class="an6-card an6-mx"><h4>Risk matrix (likelihood × impact)</h4><div class="an6-matrix">${mat}</div><div class="an6-ax"><span>← lower likelihood</span><span>higher likelihood →</span></div><p class="an6-note">Each icon is a vector. Top-right = fix first. Click an icon for its playbook.</p></div>`;
 }
-function renderAll() { renderKpis(); renderVectors(); renderFeed(); renderCharts(); const c = $("#an6Chip"); if (c) c.textContent = `🎯 Drill score ${S.drill.score}`; }
+function renderAll() { renderKpis(); renderVectors(); renderFeed(); renderCharts(); renderAttack(); const c = $("#an6Chip"); if (c) c.textContent = `🎯 Drill score ${S.drill.score}`; }
 
 /* ---------- vector drawer ---------- */
 function openVector(id) {
@@ -667,7 +672,7 @@ function openIncident(id) {
         const a = x.dataset.a, ok = a === best(e), fb = b.querySelector("#an6ActFb"); b.querySelectorAll("#an6Acts button").forEach(y => y.disabled = true); x.classList.add(ok ? "ok" : "no");
         e.by = a; e.status = a === "fp" ? "CLOSED" : a === "contain" ? "CONTAINED" : a === "escalate" ? "ESCALATED" : "MONITORING"; e.res = ok ? ri(14, 40) : ri(70, 130); S.mttr.push(e.res); S.handled++; if (ok) S.good++;
         fb.hidden = false; fb.className = "an6-fb " + (ok ? "ok" : "no"); fb.innerHTML = `${ok ? "✅ Good call." : "⚠️ Not the best choice."} ${esc(ACTION_WHY[best(e)])} <small>Best action: ${ACTIONS.find(z => z[0] === best(e))[1]}</small>`;
-        const st = b.querySelector("#an6St"); if (st) st.textContent = e.status; renderAll();
+        const st = b.querySelector("#an6St"); if (st) st.textContent = e.status; addCase(e, ok, ""); renderAll();
     });
 }
 function exportCsv() {
@@ -719,6 +724,7 @@ async function feed(name, loader, norm) {
 async function loadPulse(force) {
     if (force) Object.keys(bad).forEach(k => delete bad[k]);
     const now = new Date(), st = new Date(now - 24 * 3600e3), iso = d => d.toISOString().replace("Z", "");
+    loadExtraFeeds();
     await Promise.all([
         feed("nvd", () => getData(`https://services.nvd.nist.gov/rest/json/cves/2.0?pubStartDate=${encodeURIComponent(iso(st))}&pubEndDate=${encodeURIComponent(iso(now))}&resultsPerPage=40`, true), r => ({ total: r.totalResults || (r.vulnerabilities || []).length, items: (r.vulnerabilities || []).map(v => { const c = v.cve, m = c.metrics || {}, mm = (m.cvssMetricV40 || m.cvssMetricV31 || m.cvssMetricV30 || m.cvssMetricV2 || [])[0], cd = mm ? mm.cvssData : null; return { id: c.id, ts: Date.parse(c.published), score: cd ? cd.baseScore : null, sev: cd ? (cd.baseSeverity || (cd.baseScore >= 9 ? "CRITICAL" : cd.baseScore >= 7 ? "HIGH" : cd.baseScore >= 4 ? "MEDIUM" : "LOW")) : "UNRATED", desc: ((c.descriptions || []).find(d => d.lang === "en") || {}).value || "" }; }).sort((a, b) => b.ts - a.ts) })),
         feed("kev", () => getData("https://raw.githubusercontent.com/cisagov/kev-data/develop/known_exploited_vulnerabilities.json", true), r => ({ count: r.count || (r.vulnerabilities || []).length, items: (r.vulnerabilities || []).map(v => ({ id: v.cveID, vendor: v.vendorProject, product: v.product, name: v.vulnerabilityName, ts: Date.parse(v.dateAdded), ransom: /known/i.test(v.knownRansomwareCampaignUse || ""), due: v.dueDate })).sort((a, b) => b.ts - a.ts).slice(0, 60) })),
@@ -727,12 +733,13 @@ async function loadPulse(force) {
         (async () => { try { const c = JSON.parse(localStorage.getItem("cg_scam_live_v1") || "null"); if (c && c.items && c.items.length) { S.data.scam = c.items; S.feeds.scam = { state: Date.now() - c.t < 3600e3 ? "live" : "cached", t: c.t }; } else S.feeds.scam = { state: "off" }; } catch (_) { S.feeds.scam = { state: "off" }; } renderFeedsChips(); renderPulse(); })()
     ]);
 }
-const FN = { nvd: "NVD", kev: "CISA KEV", epss: "EPSS", gh: "GitHub", scam: "Scam radar" };
+const FN = { nvd: "NVD", kev: "CISA KEV", epss: "EPSS", gh: "GitHub", scam: "Scam radar", breach: "HIBP", isc: "SANS ISC", phish: "OpenPhish" };
 function renderFeedsChips() { const b = $("#an6Fd"); if (b) b.innerHTML = Object.entries(FN).map(([k, n]) => { const f = S.feeds[k] || { state: "loading" }; return `<span class="an6-fd an6-fd-${f.state}" title="${n}: ${f.state}"><i></i>${n}</span>`; }).join(""); }
 const svb = s => { const k = /CRIT/i.test(s) ? "c" : /HIGH/i.test(s) ? "h" : /MED|MOD/i.test(s) ? "m" : /LOW/i.test(s) ? "l" : "u"; return `<b class="an6-sv an6-sv-${k}">${esc(String(s).slice(0, 4).toUpperCase())}</b>`; };
 function renderPulse() {
     const el = $("#an6Pulse2"); if (!el) return; const t = S.tab, d = S.data[t], st = (S.feeds[t] || {}).state; let h = "";
     const none = n => `<div class="an6-empty">${st === "loading" || !st ? "⏳ Loading live data…" : st === "off" ? `📴 ${n} is not reachable right now (network, rate limit or blocked). Press Refresh pulse.` : "No items."}</div>`;
+    const xp = renderExtraPulse(t, d, none); if (xp !== null) { el.innerHTML = xp; return; }
     if (t === "nvd") h = d ? `<div class="an6-ph"><b>${num(d.total)}</b> CVEs published in the last 24 hours · showing the newest</div>` + d.items.slice(0, 8).map(x => `<a class="an6-pr" href="https://nvd.nist.gov/vuln/detail/${esc(x.id)}" target="_blank" rel="noopener noreferrer">${svb(x.sev)}<div><b>${esc(x.id)}${x.score != null ? ` <i>CVSS ${x.score}</i>` : ""}</b><small>${esc(x.desc.slice(0, 140))}${x.desc.length > 140 ? "…" : ""}</small></div><time>${ago(x.ts)}</time></a>`).join("") : none("NVD");
     else if (t === "kev") h = d ? `<div class="an6-ph"><b>${num(d.count)}</b> vulnerabilities in CISA's Known Exploited catalogue · latest additions</div>` + d.items.slice(0, 8).map(x => `<a class="an6-pr" href="https://nvd.nist.gov/vuln/detail/${esc(x.id)}" target="_blank" rel="noopener noreferrer"><b class="an6-sv an6-sv-c">KEV</b><div><b>${esc(x.id)} · ${esc(x.vendor)} ${esc(x.product)}</b><small>${esc(x.name)}${x.ransom ? " · <em>used by ransomware</em>" : ""} · patch by ${esc(x.due || "—")}</small></div><time>${ago(x.ts)}</time></a>`).join("") : none("CISA KEV");
     else if (t === "epss") h = d ? `<div class="an6-ph">Probability each CVE is exploited in the next 30 days (FIRST EPSS)</div>` + d.items.map(x => `<a class="an6-pr" href="https://nvd.nist.gov/vuln/detail/${esc(x.id)}" target="_blank" rel="noopener noreferrer"><b class="an6-sv an6-sv-h">EPSS</b><div><b>${esc(x.id)}</b><div class="an6-pbar"><i style="width:${Math.round(x.p * 100)}%"></i></div></div><time>${(x.p * 100).toFixed(1)}%</time></a>`).join("") : none("FIRST EPSS");
@@ -741,13 +748,103 @@ function renderPulse() {
     el.innerHTML = h;
 }
 
+
+/* ============================================================================
+   ANALYTICS v2 EXTENSION  -  Threat Intel Lookup (live), extra real feeds,
+   My cases, ATT&CK heat, shift report
+   ============================================================================ */
+S.cases = lsGet("cg_an6_cases", []); S.data.breach = null; S.data.isc = null; S.data.phish = null;
+const isIPv4 = s => /^(?:(?:25[0-5]|2[0-4]\d|1?\d?\d)\.){3}(?:25[0-5]|2[0-4]\d|1?\d?\d)$/.test(s);
+const isIPv6 = s => s.includes(":") && /^[0-9a-f:.]+$/i.test(s) && (s.match(/:/g) || []).length >= 2 && (s.includes("::") || s.split(":").length === 8);
+const defangT = s => String(s).replace(/\./g, "[.]");
+const nfmt = n => Number(n).toLocaleString("en-US");
+async function gj2(url, proxy, ms = 12000) { const c = new AbortController(), t = setTimeout(() => c.abort(), ms); try { const r = await fetch(url, { signal: c.signal }); if (!r.ok) { const e = new Error("HTTP " + r.status); e.status = r.status; throw e; } return await r.json(); } catch (e) { if (e.status === 404 || !proxy) throw e; for (const mk of PROXIES) { try { const r = await fetch(mk(url), { signal: c.signal }); if (r.ok) return await r.json(); } catch (_) { } } throw e; } finally { clearTimeout(t); } }
+async function gtxt(url, ms = 15000) { for (const u of [url, ...PROXIES.map(m => m(url))]) { const c = new AbortController(), t = setTimeout(() => c.abort(), ms); try { const r = await fetch(u, { signal: c.signal }); if (r.ok) return await r.text(); } catch (_) { } finally { clearTimeout(t); } } throw new Error("unreachable"); }
+const tiBox = (title, rows, links, note) => `<div class="an6-tir"><h4>${title}</h4><div class="tpr-tiles">${rows.filter(Boolean).map(([l, v]) => `<div class="tpr-tile"><small>${esc(l)}</small><b>${v}</b></div>`).join("")}</div>${links && links.length ? `<div class="an6-tilinks">${links.map(([t, u]) => `<a href="${esc(u)}" target="_blank" rel="noopener noreferrer nofollow">${esc(t)} ↗</a>`).join("")}</div>` : ""}${note ? `<p class="an6-note">${note}</p>` : ""}</div>`;
+async function tiLookup(raw) {
+    const out = $("#an6TiOut"); let q = String(raw || "").trim().replace(/\[\.\]/g, ".").replace(/^hxxp/i, "http");
+    if (!q) { out.innerHTML = `<div class="an6-empty">Enter an IP address, domain, CVE ID or file hash.</div>`; return; }
+    out.innerHTML = `<div class="an6-empty">⏳ Investigating <b>${esc(q)}</b> using public data sources…</div>`;
+    try {
+        if (/^CVE-\d{4}-\d{4,}$/i.test(q)) {
+            const id = q.toUpperCase(); const [nv, ep] = await Promise.allSettled([gj2(`https://services.nvd.nist.gov/rest/json/cves/2.0?cveId=${id}`, true), gj2(`https://api.first.org/data/v1/epss?cve=${id}`, true)]);
+            if (nv.status !== "fulfilled" || !nv.value.vulnerabilities || !nv.value.vulnerabilities.length) { out.innerHTML = `<div class="an6-empty">${nv.status === "fulfilled" ? `NVD has no entry for <b>${esc(id)}</b>. Check the ID.` : "NVD is not reachable right now (network or rate limit). Try again in a minute."}</div>`; return; }
+            const c = nv.value.vulnerabilities[0].cve, m = c.metrics || {}, mm = (m.cvssMetricV40 || m.cvssMetricV31 || m.cvssMetricV30 || [])[0] || (m.cvssMetricV2 || [])[0], cd = mm ? mm.cvssData : null, desc = ((c.descriptions || []).find(d => d.lang === "en") || {}).value || "No description.";
+            const cwe = [...new Set((c.weaknesses || []).flatMap(w => (w.description || []).map(d => d.value)).filter(v => /^CWE-/.test(v)))], refs = (c.references || []).slice(0, 6), e0 = ep.status === "fulfilled" && ep.value.data && ep.value.data[0];
+            const kev = c.cisaExploitAdd ? true : false, sevN = cd ? (cd.baseSeverity || (cd.baseScore >= 9 ? "CRITICAL" : cd.baseScore >= 7 ? "HIGH" : cd.baseScore >= 4 ? "MEDIUM" : "LOW")) : "UNRATED";
+            out.innerHTML = tiBox(`🐞 ${esc(id)} <span class="an6-sv an6-sv-${/CRIT/i.test(sevN) ? "c" : /HIGH/i.test(sevN) ? "h" : /MED/i.test(sevN) ? "m" : "l"}">${esc(sevN)}</span> ${kev ? '<span class="an6-sv an6-sv-c">ACTIVELY EXPLOITED (CISA KEV)</span>' : ""}`, [["CVSS base score", cd ? `${cd.baseScore} (${esc(cd.version || "")})` : "not scored yet"], ["Published", esc((c.published || "").slice(0, 10))], ["Last modified", esc((c.lastModified || "").slice(0, 10))], ["Exploit probability (EPSS, 30 d)", e0 ? `${(+e0.epss * 100).toFixed(2)}% · percentile ${(+e0.percentile * 100).toFixed(1)}` : "not available"], ["Weakness (CWE)", cwe.length ? esc(cwe.slice(0, 3).join(", ")) : "n/a"], ["CISA action due", c.cisaActionDue ? esc(c.cisaActionDue) : "n/a"]], [["NVD page", "https://nvd.nist.gov/vuln/detail/" + id], ["CVE.org record", "https://www.cve.org/CVERecord?id=" + id], ["EPSS", "https://api.first.org/data/v1/epss?cve=" + id], ...refs.map(r => ["Reference: " + (r.url || "").replace(/^https?:\/\//, "").split("/")[0], r.url])], `<b>Description:</b> ${esc(desc.slice(0, 600))}${desc.length > 600 ? "…" : ""}${c.cisaRequiredAction ? `<br><b>CISA required action:</b> ${esc(c.cisaRequiredAction)}` : ""}${cd && cd.vectorString ? `<br><b>Vector:</b> <code>${esc(cd.vectorString)}</code>` : ""}<br><b>What to do:</b> find where the affected product runs in your environment, apply the vendor's patch or mitigation, and prioritise it first if it is marked actively exploited or has a high EPSS.`);
+        } else if (isIPv4(q) || isIPv6(q)) {
+            const [g, d, r] = await Promise.allSettled([gj2(`https://ipwho.is/${encodeURIComponent(q)}`), gj2(`https://internetdb.shodan.io/${encodeURIComponent(q)}`).catch(e => { if (e.status === 404) return { notFound: true, ports: [], vulns: [], tags: [], hostnames: [] }; throw e; }), gj2(`https://rdap.org/ip/${encodeURIComponent(q)}`)]);
+            if (/^(10\.|127\.|192\.168\.|169\.254\.|0\.|172\.(1[6-9]|2\d|3[01])\.|192\.0\.2\.|198\.51\.100\.|203\.0\.113\.)/.test(q)) { out.innerHTML = `<div class="an6-empty">That is a private, loopback or documentation address, so it has no public intelligence.</div>`; return; }
+            if (g.status !== "fulfilled" && d.status !== "fulfilled") { out.innerHTML = `<div class="an6-empty">The IP intelligence services are not reachable right now.</div>`; return; }
+            const G = g.status === "fulfilled" && g.value.success !== false ? g.value : null, D = d.status === "fulfilled" ? d.value : null, R = r.status === "fulfilled" ? r.value : null, ports = D && !D.notFound ? D.ports : [], RISK = new Set([21, 23, 445, 502, 1433, 1883, 3306, 3389, 5900, 6379, 9200, 27017]);
+            const ents = []; (function f(a) { (a || []).forEach(e => { ents.push(e); f(e.entities); }); })(R && R.entities); const ab = ents.find(e => (e.roles || []).includes("abuse")), email = ab && ab.vcardArray && (ab.vcardArray[1].find(v => v[0] === "email") || [])[3];
+            out.innerHTML = tiBox(`🌐 ${esc(q)} ${G ? flagEmoji(G.country_code) + " " + esc(G.country || "") : ""}`, [["Location", esc(G ? [G.city, G.region, G.country].filter(Boolean).join(", ") : "n/a")], ["Network", esc(G && G.connection ? G.connection.org || G.connection.isp || "n/a" : "n/a")], ["ASN", G && G.connection && G.connection.asn ? "AS" + G.connection.asn : "n/a"], ["Open ports seen", ports.length ? esc(ports.slice(0, 12).join(", ")) + (ports.some(p => RISK.has(p)) ? " ⚠️ risky service exposed" : "") : (D && D.notFound ? "none indexed" : "n/a")], ["Known CVEs (Shodan)", D && D.vulns && D.vulns.length ? esc(D.vulns.slice(0, 6).join(", ")) : "none listed"], ["Tags", D && D.tags && D.tags.length ? esc(D.tags.join(", ")) : "none"], ["Hostnames", D && D.hostnames && D.hostnames.length ? esc(D.hostnames.slice(0, 2).join(", ")) : "none"], ["Abuse contact", email ? `<code>${esc(email)}</code>` : "n/a"]], [["Shodan", "https://www.shodan.io/host/" + q], ["GreyNoise", "https://viz.greynoise.io/ip/" + q], ["AbuseIPDB", "https://www.abuseipdb.com/check/" + q], ["VirusTotal", "https://www.virustotal.com/gui/ip-address/" + q]], "Sources: ipwho.is, Shodan InternetDB, RDAP. A clean result is not proof of safety, and shared hosting or VPN addresses may belong to many users.");
+        } else if (/^[a-f0-9]{32}$|^[a-f0-9]{40}$|^[a-f0-9]{64}$/i.test(q)) {
+            const type = { 32: "md5", 40: "sha1", 64: "sha256" }[q.length]; let hit = null, err = false; try { hit = await gj2(`https://hashlookup.circl.lu/lookup/${type}/${q.toUpperCase()}`); } catch (e) { if (e.status !== 404) err = true; }
+            out.innerHTML = tiBox(`#️⃣ ${type.toUpperCase()} ${esc(q.slice(0, 16))}…`, hit ? [["Known file", esc(hit.FileName || hit["FileName"] || "listed")], ["Size", hit.FileSize ? fmtB(+hit.FileSize) : "n/a"], ["Trust score", hit["hashlookup:trust"] != null ? esc(hit["hashlookup:trust"]) + "/100" : "n/a"], ["Source", esc(hit.source || "CIRCL hashlookup")], ["SHA-256", hit["SHA-256"] ? `<code>${esc(String(hit["SHA-256"]).slice(0, 20))}…</code>` : "n/a"]] : [["Result", err ? "CIRCL is not reachable right now" : "Not in CIRCL's known-file (NSRL) database"]], [["VirusTotal", "https://www.virustotal.com/gui/file/" + q], ["MalwareBazaar", "https://bazaar.abuse.ch/browse.php?search=" + q]], "CIRCL hashlookup lists known <b>legitimate</b> software. 'Not found' does NOT mean malicious: unknown files need a malware scan (VirusTotal link).");
+        } else {
+            const dom = q.replace(/^https?:\/\//i, "").split(/[\/?#:]/)[0].toLowerCase(); if (!/^(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}$/.test(dom)) { out.innerHTML = `<div class="an6-empty">Not recognised. Enter an IP, a domain (example.com), a CVE ID (CVE-2021-44228) or an MD5/SHA-1/SHA-256 hash.</div>`; return; }
+            const dq = t => gj2(`https://dns.google/resolve?name=${encodeURIComponent(t[1] || dom)}&type=${t[0]}`).catch(() => null);
+            const [a, mx, ns, txt, dm, rd] = await Promise.all([dq(["A"]), dq(["MX"]), dq(["NS"]), dq(["TXT"]), dq(["TXT", "_dmarc." + dom]), gj2(`https://rdap.org/domain/${encodeURIComponent(dom)}`).catch(() => null)]);
+            const ans = (j, t) => j && j.Answer ? j.Answer.filter(x => x.type === t).map(x => String(x.data).replace(/^"|"$/g, "")) : [], ev = rd && rd.events ? rd.events : [], reg = (ev.find(e => e.eventAction === "registration") || {}).eventDate, exp = (ev.find(e => e.eventAction === "expiration") || {}).eventDate, age = reg ? Math.floor((Date.now() - Date.parse(reg)) / 864e5) : null;
+            const reger = rd && rd.entities ? ((rd.entities.find(e => (e.roles || []).includes("registrar")) || {}).vcardArray || [0, []])[1].find(v => v[0] === "fn") : null, spf = ans(txt, 16).find(t => /^v=spf1/i.test(t)), dmarc = ans(dm, 16).find(t => /^v=DMARC1/i.test(t));
+            out.innerHTML = tiBox(`🧭 ${esc(defangT(dom))}`, [["IPv4 (A)", ans(a, 1).length ? esc(ans(a, 1).slice(0, 4).join(", ")) : "none"], ["Mail (MX)", ans(mx, 15).length ? (ans(mx, 15).every(x => /^0\s+\.?$/.test(x)) ? "no mail accepted (null MX)" : esc(ans(mx, 15).slice(0, 2).map(x => x.split(" ").pop()).join(", "))) : "none"], ["Name servers", ans(ns, 2).length ? esc(ans(ns, 2).slice(0, 3).join(", ")) : "n/a"], ["Registered", reg ? `${esc(reg.slice(0, 10))} (${age} days ago)${age < 30 ? " ⚠️ very new" : ""}` : "n/a"], ["Expires", exp ? esc(exp.slice(0, 10)) : "n/a"], ["Registrar", reger ? esc(reger[3]) : "n/a"], ["SPF", spf ? "published" : "missing"], ["DMARC", dmarc ? esc(dmarc.slice(0, 40)) : "missing"]], [["VirusTotal", "https://www.virustotal.com/gui/domain/" + dom], ["urlscan.io", "https://urlscan.io/search/#domain:" + dom], ["Certificates (crt.sh)", "https://crt.sh/?q=" + dom]], "Sources: Google DNS, RDAP. Domains registered in the last 30 days are far more often used for phishing, but age alone is not proof.");
+        }
+    } catch (e) { out.innerHTML = `<div class="an6-empty">Lookup failed: ${esc(e.message || "network error")}. Try again.</div>`; }
+}
+const flagEmoji = cc => (cc && cc.length === 2) ? String.fromCodePoint(...[...cc.toUpperCase()].map(c => 127397 + c.charCodeAt(0))) : "🌎";
+const fmtB = n => n < 1024 ? n + " B" : n < 1048576 ? (n / 1024).toFixed(1) + " KB" : (n / 1048576).toFixed(1) + " MB";
+
+/* extra real feeds */
+function loadExtraFeeds() {
+    return Promise.all([
+        feed("breach", () => gj2("https://haveibeenpwned.com/api/v3/breaches", true, 20000), r => (Array.isArray(r) ? r : []).sort((a, b) => Date.parse(b.AddedDate) - Date.parse(a.AddedDate)).slice(0, 12).map(b => ({ name: b.Title || b.Name, domain: b.Domain || "", ts: Date.parse(b.AddedDate), when: b.BreachDate, pwn: b.PwnCount, classes: (b.DataClasses || []).slice(0, 5), verified: b.IsVerified, url: "https://haveibeenpwned.com/PwnedWebsites#" + b.Name }))),
+        feed("isc", async () => { const [i, p, s] = await Promise.allSettled([gj2("https://isc.sans.edu/api/infocon?json", true), gj2("https://isc.sans.edu/api/topports/records/10?json", true), gj2("https://isc.sans.edu/api/sources/attacks/10?json", true)]); return { i: i.value, p: p.value, s: s.value }; }, r => { const arr = x => Array.isArray(x) ? x : x && typeof x === "object" ? Object.values(x).filter(v => v && typeof v === "object") : []; return { infocon: (r.i && (r.i.status || r.i.infocon)) || "", ports: arr(r.p).slice(0, 10).map(o => ({ port: o.targetport || o.port || o.targetPort || "?", records: o.records || o.count || 0, targets: o.targets || 0, sources: o.sources || 0 })), srcs: arr(r.s).slice(0, 10).map(o => ({ ip: o.ip || o.source || o.sourceip || "?", attacks: o.attacks || o.count || 0 })) }; }),
+        feed("phish", async () => { const t = await gtxt("https://openphish.com/feed.txt"); return t; }, t => ({ items: String(t).split(/\r?\n/).map(l => l.trim()).filter(l => /^https?:\/\//i.test(l)).slice(0, 14).map(u => { let h = ""; try { h = new URL(u).hostname; } catch (_) { } return { host: h, https: /^https:/i.test(u) }; }).filter(x => x.host) }))
+    ]);
+}
+function renderExtraPulse(t, d, none) {
+    if (t === "breach") return d ? `<div class="an6-ph">Newest data breaches added to Have I Been Pwned (real data)</div>` + d.map(x => `<a class="an6-pr" href="${esc(x.url)}" target="_blank" rel="noopener noreferrer nofollow"><b class="an6-sv an6-sv-h">BREACH</b><div><b>${esc(x.name)}${x.domain ? " · " + esc(defangT(x.domain)) : ""}</b><small>${nfmt(x.pwn)} accounts · breached ${esc(String(x.when || "").slice(0, 10))} · ${esc(x.classes.join(", "))}${x.verified ? "" : " · unverified"}</small></div><time>${ago(x.ts)}</time></a>`).join("") : none("Have I Been Pwned");
+    if (t === "isc") return d ? `<div class="an6-ph">SANS Internet Storm Center · InfoCon level: <b>${esc(String(d.infocon || "n/a").toUpperCase())}</b> (green = normal, yellow/orange/red = elevated threat)</div>` + (d.ports.length ? `<div class="an6-ph">Most-scanned ports across the internet (DShield sensors):</div>` + d.ports.map(p => `<div class="an6-pr"><b class="an6-sv an6-sv-m">PORT</b><div><b>${esc(String(p.port))}</b><small>${nfmt(p.records)} records · ${nfmt(p.sources)} sources → ${nfmt(p.targets)} targets</small></div></div>`).join("") : "") + (d.srcs.length ? `<div class="an6-ph">Top attacking sources (defanged):</div>` + d.srcs.map(x => `<div class="an6-pr"><b class="an6-sv an6-sv-c">SRC</b><div><b>${esc(defangT(String(x.ip)))}</b><small>${nfmt(x.attacks)} attacks reported</small></div></div>`).join("") : "") : none("SANS ISC");
+    if (t === "phish") return d ? `<div class="an6-ph">Fresh phishing hosts from the OpenPhish community feed (hostnames only, defanged, never clickable)</div>` + d.items.map(x => `<div class="an6-pr"><b class="an6-sv an6-sv-c">PHISH</b><div><b>${esc(defangT(x.host))}</b><small>${x.https ? "uses HTTPS (a padlock does not mean it is safe)" : "plain HTTP"} · block at DNS/proxy and report</small></div></div>`).join("") : none("OpenPhish");
+    return null;
+}
+
+/* cases, ATT&CK heat, shift report */
+function saveCases() { lsSet("cg_an6_cases", S.cases.slice(0, 60)); }
+function addCase(e, ok, notes) { S.cases.unshift({ id: e.id, title: e.title, sev: e.sev, vec: e.v.name, action: e.by, ok, ts: Date.now(), note: notes || "" }); saveCases(); renderCases(); }
+function renderCases() {
+    const el = $("#an6Cases"); if (!el) return;
+    el.innerHTML = S.cases.length ? S.cases.slice(0, 8).map((c, i) => `<div class="an6-case"><div class="an6-evh"><b>${esc(c.id)} · ${esc(c.title)}</b></div><div class="an6-evm">${sevTag(c.sev)}<b class="an6-st an6-st-${c.ok ? "contained" : "escalated"}">${c.ok ? "BEST CALL" : "REVIEW"}</b><small>${esc(c.vec)} · ${esc(String(c.action))} · ${pkt(c.ts)} PKT</small></div><input type="text" class="an6-cnote" data-i="${i}" value="${esc(c.note)}" placeholder="Add analyst note… (saved automatically)" aria-label="Case note"></div>`).join("") + `<div class="an6-btns"><button type="button" id="an6CasesClear">Clear cases</button></div>` : `<div class="an6-empty">No cases yet. Open an incident in the live feed and choose a response: your decisions are logged here, with notes, and included in the shift report.</div>`;
+    el.querySelectorAll(".an6-cnote").forEach(inp => inp.oninput = () => { S.cases[+inp.dataset.i].note = inp.value.slice(0, 300); saveCases(); });
+    const cl = $("#an6CasesClear"); if (cl) cl.onclick = () => { S.cases = []; saveCases(); renderCases(); };
+}
+function renderAttack() {
+    const el = $("#an6Attack"); if (!el) return; const cnt = {}; S.events.forEach(e => e.v.tags.forEach(t => cnt[t] = (cnt[t] || 0) + 1));
+    const rows = Object.entries(cnt).sort((a, b) => b[1] - a[1]).slice(0, 12), mx = Math.max(1, ...rows.map(r => r[1]));
+    el.innerHTML = rows.length ? rows.map(([t, n]) => `<a class="an6-att" href="https://attack.mitre.org/techniques/${t.replace(".", "/")}/" target="_blank" rel="noopener noreferrer" style="--w:${Math.round(n / mx * 100)}%"><b>${t}</b><span>${esc(MIT[t] || "")}</span><em>${n}</em></a>`).join("") + `<p class="an6-note">Techniques are counted from the simulated incidents above. Click one to read it on MITRE ATT&CK.</p>` : `<div class="an6-empty">Collecting incidents…</div>`;
+}
+function shiftReport() {
+    const m = metrics(), now = new Date(), open = S.events.filter(e => ["DETECTED", "INVESTIGATING", "ESCALATED"].includes(e.status)), top = V.slice().sort((a, b) => S.sig[b.id] - S.sig[a.id]).slice(0, 5), cnt = {}; S.events.forEach(e => e.v.tags.forEach(t => cnt[t] = (cnt[t] || 0) + 1));
+    const nv = S.data.nvd, kv = S.data.kev, ep = S.data.epss, br = S.data.breach;
+    const md = `# SOC shift report\nGenerated: ${now.toLocaleString("en-GB", { timeZone: "Asia/Karachi" })} PKT · Training simulation + public threat feeds\n\n## Key metrics (simulated)\n- Incidents in buffer: ${m.ev.length} (open ${m.open.length}, resolved ${m.resolved.length}, critical open ${m.crit})\n- MTTD: ${m.mttd.toFixed(1)} min · MTTR: ${Math.round(m.mttr)} min · False-positive rate: ${m.fp.toFixed(1)}% · SOC health: ${m.health}/100\n\n## Highest-signal threat vectors\n${top.map(v => `- ${v.name}: ${Math.round(S.sig[v.id])}% (${lvl(S.sig[v.id])[0]}) · ${v.sector}`).join("\n")}\n\n## Open incidents\n${open.length ? open.slice(0, 15).map(e => `- ${e.id} [${e.sev.toUpperCase()}] ${e.title} (${e.sector}) status ${e.status}`).join("\n") : "- None"}\n\n## Top ATT&CK techniques observed (simulation)\n${Object.entries(cnt).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([t, n]) => `- ${t} ${MIT[t] || ""}: ${n}`).join("\n") || "- None"}\n\n## Analyst cases this session\n${S.cases.length ? S.cases.slice(0, 15).map(c => `- ${c.id} ${c.title}: ${c.action} (${c.ok ? "best call" : "review"})${c.note ? " · note: " + c.note : ""}`).join("\n") : "- None logged"}\n\n## Real-world threat pulse\n${nv ? `- New CVEs in last 24h (NVD): ${nfmt(nv.total)}` : "- NVD: not loaded"}\n${kv ? `- CISA KEV catalogue size: ${nfmt(kv.count)}; latest additions: ${kv.items.slice(0, 3).map(x => x.id).join(", ")}` : "- CISA KEV: not loaded"}\n${ep ? `- Highest EPSS: ${ep.items.slice(0, 3).map(x => `${x.id} (${(x.p * 100).toFixed(0)}%)`).join(", ")}` : "- EPSS: not loaded"}\n${br ? `- Newest breaches (HIBP): ${br.slice(0, 3).map(x => x.name).join(", ")}` : "- HIBP breaches: not loaded"}\n\n## Handover notes\n- (add open actions, blockers and escalations here)\n\n_Incidents and vector signals above are simulated for training; the real-world pulse comes from public sources. Not a record of real incidents._\n`;
+    const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([md], { type: "text/markdown" })); a.download = `soc-shift-report-${now.toISOString().slice(0, 10)}.md`; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 600);
+    (navigator.clipboard ? navigator.clipboard.writeText(md) : Promise.reject()).catch(() => { });
+}
+function bindV2() {
+    $("#an6Shift").onclick = shiftReport;
+    $("#an6TiForm").onsubmit = ev => { ev.preventDefault(); tiLookup($("#an6TiIn").value); };
+    $("#an6Ti").addEventListener("click", ev => { const b = ev.target.closest("[data-ex]"); if (b) { $("#an6TiIn").value = b.dataset.ex; tiLookup(b.dataset.ex); } });
+}
+
 /* ---------- boot ---------- */
 function init() {
     build();
     for (let i = 0; i < 9; i++) { const e = mkEvent(weightedVector()); e.ts -= i * 45000; e.age = ri(0, 14); S.events.push(e); S.mttd.push(e.det); }
     S.events.forEach(e => { if (e.age >= 8) { e.status = e.sev === "critical" ? "CONTAINED" : pick(["BLOCKED", "CONTAINED", "MONITORING"]); e.res = ri(24, 110); S.mttr.push(e.res); } else if (e.age >= 2) e.status = "INVESTIGATING"; });
     for (let i = 0; i < 12; i++) S.tl.push({ critical: ri(0, 1), high: ri(0, 2), medium: ri(0, 1) });
-    renderAll(); renderDrill(); renderAcademy(); renderFeedsChips(); renderPulse();
+    renderAll(); renderDrill(); renderAcademy(); renderFeedsChips(); renderPulse(); renderCases(); bindV2();
     $("#an6Upd").textContent = "last update " + pkt(Date.now()) + " PKT";
     const loop = () => { tick(); setTimeout(loop, tier() === "low" ? 7000 : tier() === "medium" ? 4500 : 3200); }; setTimeout(loop, 3200);
     const start = () => { if (start.d) return; start.d = 1; loadPulse(false); setInterval(() => { if (!document.hidden) loadPulse(false); }, 10 * 60000); };
